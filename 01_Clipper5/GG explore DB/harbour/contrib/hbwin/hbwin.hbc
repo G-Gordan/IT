@@ -1,0 +1,15 @@
+#
+# $Id: hbwin.hbc 18697 2012-11-29 00:30:07Z vszakats $
+#
+
+description=Windows specific functions (win-only)
+
+skip={!allwin}
+
+incpaths=.
+
+headers=${hb_name}.ch
+
+libs=${_HB_DYNPREF}${hb_name}${_HB_DYNSUFF}
+libs=png
+{wce}libs=sms CellCore

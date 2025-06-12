@@ -1,0 +1,14 @@
+#
+# $Id: hbgs.hbc 18181 2012-09-30 12:54:42Z vszakats $
+#
+
+description=Ghostscript wrapper (imaging)
+
+skip={dos|wce}
+
+libs=${_HB_DYNPREF}${hb_name}${_HB_DYNSUFF}
+
+libs=gs
+#{darwin}frameworks=Ghostscript
+
+{darwin}libpaths=/opt/local/lib

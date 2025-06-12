@@ -1,0 +1,10 @@
+#
+# $Id: hbdroid.hbc 18514 2012-11-11 13:01:36Z vszakats $
+#
+
+description=Android specific functions
+
+incpaths=.
+libpaths=lib/${hb_plat}/${hb_comp}
+
+libs=${hb_name}

@@ -1,0 +1,9 @@
+#
+# $Id: hbmk.hbm 18711 2012-11-30 16:31:51Z vszakats $
+#
+
+hbusb.hbc
+
+-w3 -es2
+
+-u+simpleio.ch

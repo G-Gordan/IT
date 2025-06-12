@@ -1,0 +1,11 @@
+#
+# $Id: rddado.hbc 17292 2012-02-28 15:05:06Z vszakats $
+#
+
+{!allwin}skip=yes
+
+incpaths=.
+libpaths=lib/${hb_plat}/${hb_comp}
+
+libs=${hb_name}
+libs=hbwin.hbc

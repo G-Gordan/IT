@@ -1,0 +1,25 @@
+/*
+ * $Id: pegs.txt 18567 2012-11-15 18:36:05Z vszakats $
+ */
+
+/* $DOC$
+   $NAME$
+      ft_Pegs()
+   $CATEGORY$
+      Game
+   $ONELINER$
+      FT_PEGS GAME (all work and no play...)
+   $SYNTAX$
+      ft_Pegs() -> NIL
+   $ARGUMENTS$
+      None
+   $RETURNS$
+      NIL
+   $DESCRIPTION$
+      This function can be used to alleviate boredom.  The object is to
+      remove all pegs except one.  This is done by jumping over adjacent
+      pegs.
+   $EXAMPLES$
+      ft_Pegs()
+   $END$
+ */

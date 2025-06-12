@@ -1,0 +1,10 @@
+#
+# $Id: hbi18n.hbp 17620 2012-06-12 02:30:41Z vszakats $
+#
+
+-q0 -w3 -es2 -kmo -l
+
+-nulrdd
+hbi18n.prg
+
+{!(HB_BUILD_DYN='no')&(win|wce|os2)}-shared

@@ -1,0 +1,44 @@
+********************
+*VIK.PRG
+*inicijalni program
+********************
+
+CLEAR ALL
+
+SET BELL OFF
+SET SAFETY OFF
+SET CONFIRM ON
+SET DELETED ON
+SET DATE GERMAN
+SET DELIMITERS OFF
+SET WRAP ON
+SET MESSAGE TO 24 CENTER
+
+IF ! FILE("CLANOVI.DBF")
+ CREATE Radna
+ STORE "CLN_ID    N5 0" TO polje1
+ STORE "CLN_IME   C32 " TO polje2
+ STORE "CLN_ROD   C16 " TO polje3
+ STORE "CLN_LK    C12 " TO polje4
+ STORE "CLN_STAN  C24 " TO polje5
+ STORE "CLN_TEL   C13 " TO polje6
+ STORE "CLN_DUG   N110" TO polje7
+ STORE "CLN_DATUM D8  " TO polje8
+ STORE "CLN_KOD   C1  " TO polje9
+ FOR i=1 TO 9
+  STORE STR(i,1) TO broj
+  APPEND BLANK
+  STORE "polje" + broj TO pl
+  REPLACE Field_name WITH SUBSTR(&pl,1,10)
+  REPLACE Field_type WITH SUBSTR(&pl,11,1)
+  REPLACE Field_len  WITH VAL(SUBSTR(&pl,12,2))
+  REPLACE Field_dec  WITH VAL(SUBSTR(&pl,14,1))
+ NEXT
+ CREATE Clanovi FROM Radna
+ INDEX ON cln_id TO Clanid
+ INDEX ON cln_ime TO Clnime
+ USE
+ENDIF
+ERASE Radna.dbf
+QUIT
+

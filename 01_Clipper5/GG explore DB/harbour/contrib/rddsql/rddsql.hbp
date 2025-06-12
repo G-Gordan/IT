@@ -1,0 +1,15 @@
+#
+# $Id: rddsql.hbp 18405 2012-10-24 11:51:19Z vszakats $
+#
+
+-hblib
+-inc
+
+-o${hb_name}
+
+-w3 -es2
+
+-hbx=
+
+sqlbase.c
+sqlmix.c

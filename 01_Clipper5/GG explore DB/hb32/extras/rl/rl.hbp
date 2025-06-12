@@ -1,0 +1,8 @@
+
+-orl
+-m -n
+-main=setup
+
+rlfront.prg
+rlback.prg
+rldialg.prg

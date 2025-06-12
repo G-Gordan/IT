@@ -1,0 +1,8 @@
+#
+# $Id: hbmk.hbm 18434 2012-11-04 13:48:43Z vszakats $
+#
+
+hbhttpd.hbc
+hbssl.hbc
+
+-w3 -es2

@@ -1,0 +1,9 @@
+#
+# $Id: hbtip.hbc 18434 2012-11-04 13:48:43Z vszakats $
+#
+
+description=TCP/IP-specific communication protocol functions
+
+incpaths=.
+
+libs=${_HB_DYNPREF}${hb_name}${_HB_DYNSUFF}
