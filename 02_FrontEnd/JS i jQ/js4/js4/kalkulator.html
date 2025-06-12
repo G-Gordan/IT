@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+  <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  
+  
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dropdown-meni.css">
+  
+  
+  <link rel="stylesheet" href="js/chosen/chosen.min.css">
+  <script src="js/chosen/chosen.jquery.min.js"></script>
+  
+  
+  <link rel="stylesheet" href="js/dynatable/jquery.dynatable.css">
+  <script src="js/dynatable/jquery.dynatable.js"></script>
+  
+  <script src="js/kalkulator.js"></script>
+  
+</head>
+<body>
+	<div class="container" >
+		<div class="row">
+			<div class="col-md-6 col-sm-12 col-xs-12">
+				<img src="img/logo.png" alt="CET Skola Racunara" />
+			</div>
+			<div class="col-md-6 col-sm-12 col-xs-12 text-right">
+				<span class="glyphicon glyphicon-earphone"></span> 011/1234-567
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid glavni-meni">
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-12">
+					<nav>
+						<a href="index.html">Pocetna</a>
+						<a href="cenovnik.html">Cenovnik</a>
+						<a href="kontakt.html">Kontakt</a>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</div>
+	<style>
+		.greska { background-color:red; }
+	</style>
+	<div class="container" style="background-color:white">
+		<div class="row">
+			<div class="col-md-12 glavni-sadrzaj">
+				<main>
+					<header>
+						<h1>Kalkulator</h1>
+					</header>
+					
+					
+					
+					
+					<table id="tabela"  class="table table-bordered">
+					  <thead>
+						<tr>
+						  <th>Name</th>
+						  <th>Hobby</th>
+						  <th>Favorite Music</th>
+						</tr>
+					  </thead>
+					  <tbody>
+						<tr>
+						  <td>Fred</td>
+						  <td>Roller Skating</td>
+						  <td>Disco</td>
+						</tr>
+						<tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr>
+						<tr>
+						  <td>Glen</td>
+						  <td>Traveling</td>
+						  <td>Classical</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr><tr>
+						  <td>Helen</td>
+						  <td>Rock Climbing</td>
+						  <td>Alternative</td>
+						</tr>
+					  </tbody>
+					</table>
+					<script>
+						$(function(){
+							$('#tabela').dynatable({
+							  table: {
+								defaultColumnIdStyle: 'camelCase'
+							  },
+							  dataset{
+								perPageDefault:5
+							  }
+							  
+							  );
+						});
+					</script>
+					
+					
+					
+					<div class="col-sm-12">
+					<select id="test" class="form-control" multiple  data-placeholder="Izaberite nekoliko opcija...">
+						<option>Opcija 1</option>
+						<option>Opcija 2</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 3</option>
+						<option>Opcija 4</option>
+						<option>Opcija 5</option>
+					</select>
+					</div>
+					<br/><br/>
+					
+					<script>
+						$(function(){
+							$('#test').chosen({
+									disable_search_threshold: 50000,
+									no_results_text: "Nema ovakvog zapisa!"
+									
+									});
+						});
+					</script>
+					
+					<input type="text" id="datum" />
+					<script>
+						$(function(){
+						
+							$('#datum').datepicker( { 
+													minDate: 0, 
+													maxDate: "+1M +10D" 
+											} );
+							$('#accordion').accordion({
+								collapsible: true,
+								heightStyle: "content"
+							});
+						});
+					</script>
+					
+				<div id="accordion">
+					<h3>Prvi razred</h3>
+					<div id="prvi_razred">
+						<div id="sveocene">
+							<div>Broj telefona 	<input type="text" value="4" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Srpski 		<input type="text" value="3" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Engleski 	<input type="text" value="2" class="ocena"   /> <input type="button" value="x" class="obrisi"  /> </div>
+						</div>
+						<input type="button" value="+" onclick="dodaj()" />
+						<input type="button" value="Izracunaj" id="izracunaj_button" /> <br/>
+						<!-- Zbir = <input type="text" id="zbir" value="" /> -->
+						<span id="rezultat"></span> <br/>
+						<span id="uspeh"></span>
+						
+						<hr/>
+						
+						<input type="text" id="brojevi" value="" placeholder="Brojevi razdvojeni zapetom" /> <br/>
+						<input type="button" value="Prosek unetih brojeva" onclick=" prosek() " /> <br/>
+						<span id="rezultat_proseka"></span><br/><br/>
+					</div>
+					<h3>Drugi razred</h3>
+					<div id="drugi_razred">
+						<div id="sveocene">
+							<div>Broj telefona 	<input type="text" value="4" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Srpski 		<input type="text" value="3" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Engleski 	<input type="text" value="2" class="ocena"   /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Hemija 		<input type="text" value="5" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizika 		<input type="text" value="4" class="ocena" /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Veronauka 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizicko 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+						</div>
+						<input type="button" value="+" onclick="dodaj()" />
+						<input type="button" value="Izracunaj" id="izracunaj_button" /> <br/>
+						<!-- Zbir = <input type="text" id="zbir" value="" /> -->
+						<span id="rezultat"></span> <br/>
+						<span id="uspeh"></span>
+						
+						<hr/>
+						
+						<input type="text" id="brojevi" value="" placeholder="Brojevi razdvojeni zapetom" /> <br/>
+						<input type="button" value="Prosek unetih brojeva" onclick=" prosek() " /> <br/>
+						<span id="rezultat_proseka"></span><br/><br/>
+					</div>
+					<h3>Treci razred</h3>
+					<div id="treci_razred">
+						<div id="sveocene">
+							<div>Broj telefona 	<input type="text" value="4" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Srpski 		<input type="text" value="3" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Engleski 	<input type="text" value="2" class="ocena"   /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Hemija 		<input type="text" value="5" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizika 		<input type="text" value="4" class="ocena" /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Veronauka 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizicko 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+						</div>
+						<input type="button" value="+" onclick="dodaj()" />
+						<input type="button" value="Izracunaj" id="izracunaj_button" /> <br/>
+						<!-- Zbir = <input type="text" id="zbir" value="" /> -->
+						<span id="rezultat"></span> <br/>
+						<span id="uspeh"></span>
+						
+						<hr/>
+						
+						<input type="text" id="brojevi" value="" placeholder="Brojevi razdvojeni zapetom" /> <br/>
+						<input type="button" value="Prosek unetih brojeva" onclick=" prosek() " /> <br/>
+						<span id="rezultat_proseka"></span><br/><br/>
+					</div>
+					<h3>Cetvrti razred</h3>
+					<div id="cetvrti_razred">
+						<div id="sveocene">
+							<div>Broj telefona 	<input type="text" value="4" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Srpski 		<input type="text" value="3" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Engleski 	<input type="text" value="2" class="ocena"   /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Hemija 		<input type="text" value="5" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizika 		<input type="text" value="4" class="ocena" /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Veronauka 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+							<div>Fizicko 	<input type="text" value="2" class="ocena"  /> <input type="button" value="x" class="obrisi"  /> </div>
+						</div>
+						<input type="button" value="+" onclick="dodaj()" />
+						<input type="button" value="Izracunaj" id="izracunaj_button" /> <br/>
+						<!-- Zbir = <input type="text" id="zbir" value="" /> -->
+						<span id="rezultat"></span> <br/>
+						<span id="uspeh"></span>
+						
+						<hr/>
+						
+						<input type="text" id="brojevi" value="" placeholder="Brojevi razdvojeni zapetom" /> <br/>
+						<input type="button" value="Prosek unetih brojeva" onclick=" prosek() " /> <br/>
+						<span id="rezultat_proseka"></span><br/><br/>
+					</div>
+				</div>	
+						
+						
+				</main>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<footer>
+			<p>
+				CET skola racunara <br/>
+				Knez Mihajlova 6/6
+			</p>
+		</footer>
+	</div>
+</body>
+</html>

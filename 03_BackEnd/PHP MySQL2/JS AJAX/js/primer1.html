@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+</head>
+<body>
+	<h1>AJAX test</h1>
+	<input type="button" onclick=" test() " value="Test" />
+	<div id="rezultat"></div>
+	<script>
+		function test(){
+			
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					document.getElementById("rezultat").innerHTML = this.responseText;
+				}
+			};
+			xhttp.open("GET", "skript.php", true);
+			xhttp.send();
+			
+		}
+	</script>
+	
+	<hr />
+	
+	A=<input type="text" id="a" /> <br />
+	B=<input type="text" id="b" /> <br />
+	<input type="button" value="Saberi" onclick=" saberi(); " />
+	<div id="zbir"></div>
+	<script>
+		function saberi(){
+			/*
+			var xhttp2 = new XMLHttpRequest();
+			xhttp2.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					document.getElementById("zbir").innerHTML = this.responseText;
+				}
+			};
+			// ovako treba da pozovem skript
+			// saberi.php?a=1&b=2
+			var a = document.getElementById('a').value;
+			var b = document.getElementById('b').value;
+			var adresa = "saberi.php?a="+a+"&b="+b;
+			xhttp2.open("GET", adresa, true);
+			xhttp2.send();
+			*/
+			$.ajax({
+				url:"saberi.php",
+				data:{
+					a:$('#a').val(),
+					b:$('#b').val()
+				},
+				success:function( odgovor ){  
+					
+					$("#zbir").html( odgovor );
+					
+					//document.getElementById('zbir').innerHTML = odgovor;
+				}
+			});
+		}
+	</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+  <link rel="stylesheet" href="css/main.css">
+  
+</head>
+<body>
+	<div class="container" >
+		<div class="row">
+			<div class="col-md-6 col-sm-12 col-xs-12">
+				<img src="img/logo.png" alt="CET Skola Racunara" />
+			</div>
+			<div class="col-md-6 col-sm-12 col-xs-12 text-right">
+				<span class="glyphicon glyphicon-earphone"></span> 011/1234-567
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid glavni-meni">
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-12">
+					<nav>
+						<a href="index.html">Pocetna</a>
+						<a href="cenovnik.html">Cenovnik</a>
+						<a href="kontakt.html">Kontakt</a>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container" style="background-color:white">
+		<div class="row">
+			<div class="col-md-9 col-sm-8 col-xs-12 glavni-sadrzaj">
+				<main>
+					<style>
+						#test{ width:50px; height:50px; background-color:red; font-size:14pt; color:white;
+							position:absolute; left:40px; top:30px;
+						}
+					</style>
+					<script>
+						$(function(){
+							$("#a").click(function(){
+								$("#test").animate( 
+										{  
+											left : '300px',
+											top : '300px',
+											width : '+=50',
+											height: '200px'
+											
+										}, 
+										3000, 
+										function(){ 
+											alert('kraj!'); 
+										} 
+								);
+							});
+						});
+					</script>
+					
+					<div style="width:100%; height:500px; background-color:yellow; position:relative;">
+						<div id="test">Test!</div>
+					</div>
+					<input type="button" id="a" />
+				</main>
+			</div>
+			<div class="col-md-3 col-sm-4 col-xs-12">
+				<aside>
+					<div class="container-fluid specijalna-ponuda">
+						<div class="row">
+							<div class="col-md-12">
+								<h3>Specijalna ponuda</h3>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-sm-5 col-xs-12">
+								<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+							</div>
+							<div class="col-sm-7 col-xs-12">
+								<strong>HTML i CSS</strong>
+								<span class="cena">100&euro;</span>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-sm-5 col-xs-12">
+								<img src="img/kursevi/js.png" alt="JavaScript" />
+							</div>
+							<div class="col-sm-7 col-xs-12">
+								<strong>JavaScript</strong>
+								<span class="cena">120&euro;</span>
+							</div>
+						</div>
+					</div>
+					<div class="container-fluid last-minute">
+						<div class="row">
+							<div class="col-md-12">
+								<h3>Last minute</h3>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-md-5">
+								<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+							</div>
+							<div class="col-md-7">
+								<strong>HTML i CSS</strong>
+								<span class="cena">100&euro;</span>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-md-5">
+								<img src="img/kursevi/js.png" alt="JavaScript" />
+							</div>
+							<div class="col-md-7">
+								<strong>JavaScript</strong>
+								<span class="cena">120&euro;</span>
+							</div>
+						</div>
+					</div>
+				</aside>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<footer>
+			<p>
+				CET skola racunara <br/>
+				Knez Mihajlova 6/6
+			</p>
+		</footer>
+	</div>
+</body>
+</html>

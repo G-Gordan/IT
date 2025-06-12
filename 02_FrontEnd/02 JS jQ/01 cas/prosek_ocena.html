@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<title>Prosek ocena</title>
+		<meta charset="utf-8" />
+		
+		<link rel="stylesheet" type="text/css" href="main.css" />
+		
+		<style>
+			
+		</style>
+		
+	</head>
+	<body>
+		
+		<main>
+			<header>
+				<h2>Prosek ocena</h2>
+			</header>
+			
+			<script>
+				function saberi() {
+				var mat02 = parseInt(document.getElementById('mat01').value);
+				var srb02 = parseInt(document.getElementById('srb01').value);
+				var eng02 = parseInt(document.getElementById('eng01').value);
+				var hem02 = parseInt(document.getElementById('hem01').value);
+				var fiz02 = parseInt(document.getElementById('fiz01').value);
+				
+				var zbir_ocena = mat02+srb02+eng02+hem02+fiz02;
+				var prosek = zbir_ocena/6
+				
+				document.getElementById('prosek').value = prosek;
+				
+				/*console.log(a+b);*/
+				//document.getElementById('zbir').value = zbir;
+				//document.getElementById("zbir").innerHTML = Zbir = prosek ;
+				}
+				
+			</script>
+			
+			<form>
+				
+				Matematika = <input type="text" ID="mat01" value="" /> <br/>
+				
+				Srpski = <input type="text" ID="srb01" value="" /> <br/>
+				
+				Engleski = <input type="text" ID="eng01" value="" /> <br/>
+				
+				Hemija = <input type="text" ID="hem01" value="" /> <br/>
+				
+				Fizika = <input type="text" ID="fiz01" value="" /> <br/>
+				
+				<hr/>
+				
+				<input type="button" value="Izracunaj" onclick=" saberi(); " /> <br/>
+				<input type="text" ID="prosek"; " /> <br/>			
+				
+				<!-- Zbir = <input type="text" id="zbir" value="" /> -->
+				
+			</form>
+			
+			
+			<!-- document.write(zbir); -->
+			
+		</main>
+		
+		
+		<!-- <table class="table table-striped table-bordered table-hover table-condensed">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Firstname</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>Anna</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Debbie</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>John</td>
+      </tr>
+    </tbody> -->
+		
+		
+		<footer>
+			
+			
+		</footer>
+	</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>CET skola racunara</title>
+		<meta charset="utf-8" />
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+		<link href="https://fonts.googleapis.com/css?family=Oswald:300,400&subset=latin-ext" rel="stylesheet">
+		<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet">
+
+		<style>
+		main{ background-color:silver!important; }
+			.cena{ font-family:oswald; color:blue; font-size:200%; display:block; }
+			.kurs{
+				width:50%;
+				display: inline-block;
+				box-sizing: border-box;
+				vertical-align:top;
+			}
+			.kurs img {
+				max-width:100px;
+				float: left;
+				margin-right:10px;
+				margin-bottom:10px;
+				/* ovde dodati overflow css trik, za sprecavanje prelamanja ispod slike */
+			}
+			.kurs p{ text-align:justify; overflow:auto; }
+			.kurs:nth-child(2n){
+				padding-right:20px;
+			}
+			@media screen and (max-width:600px){
+				.kurs{	width:100%;	}
+			}
+			
+			nav{
+				
+				background-color:black;
+				background-image:url('img/nav-bgr.png');
+				background-repeat:repeat-x;
+				background-position: center center;
+				/* background-attachment:scroll; */
+				background-size: cover;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<nav>
+			<a href="index.html" >Pocetna</a>
+			<a href="ponuda.html" class="trenutna_stranica">Ponuda</a>
+			<a href="kontakt.html" >Kontakt</a>
+		</nav>
+		<main>
+			<header>
+				<h1 id="glavni_naslov">Ponuda</h1>
+			</header>
+			<div class="kurs">
+				<h2>HTML & CSS</h2>
+				<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+				<p>
+					HTML i CSS su osnovni gradivni elementi Interneta, jezici koji pokreću web. U ovom kursu videćete kako HTML čini osnovu weba i na koji način se CSS ugrađuje i proširuje mogućnosti HTML-a. Upoznaćete se sa mogućnostima oba jezika, njihovom sintaksom, primenom i često korišćenim tehnikama. Razumećete osnove Bootstrap biblioteke i izgradnje responsive stranica. Naučićete kako da napravite web sajt od početka, pripremite sadržaj i grafiku i prilagodite web sajt mobilnim uređajima.
+					<span class="cena">100&euro;</span>
+				</p>
+			</div><div class="kurs">
+				<h2>JavaScript</h2>
+				<img src="img/kursevi/js.png" alt="JavaScript" />
+				<p>
+					HTML i CSS su osnovni gradivni elementi Interneta, jezici koji pokreću web. U ovom kursu videćete kako HTML čini osnovu weba i na koji način se CSS ugrađuje i proširuje mogućnosti HTML-a. Upoznaćete se sa mogućnostima oba jezika, njihovom sintaksom, primenom i često korišćenim tehnikama. Razumećete osnove Bootstrap biblioteke i izgradnje responsive stranica. Naučićete kako da napravite web sajt od početka, pripremite sadržaj i grafiku i prilagodite web sajt mobilnim uređajima.
+					<span class="cena">100&euro;</span>
+				</p>
+			</div><div class="kurs">
+				<h2>PHP</h2>
+				<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+				<p>
+					HTML i CSS su osnovni gradivni elementi Interneta, jezici koji pokreću web. U ovom kursu videćete kako HTML čini osnovu weba i na koji način se CSS ugrađuje i proširuje mogućnosti HTML-a. Upoznaćete se sa mogućnostima oba jezika, njihovom sintaksom, primenom i često korišćenim tehnikama. Razumećete osnove Bootstrap biblioteke i izgradnje responsive stranica. Naučićete kako da napravite web sajt od početka, pripremite sadržaj i grafiku i prilagodite web sajt mobilnim uređajima.
+					<span class="cena">100&euro;</span>
+				</p>
+			</div><div class="kurs">
+				<h2>Web developer</h2>
+				<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+				<p>
+					HTML i CSS su osnovni gradivni elementi Interneta, jezici koji pokreću web. U ovom kursu videćete kako HTML čini osnovu weba i na koji način se CSS ugrađuje i proširuje mogućnosti HTML-a. Upoznaćete se sa mogućnostima oba jezika, njihovom sintaksom, primenom i često korišćenim tehnikama. Razumećete osnove Bootstrap biblioteke i izgradnje responsive stranica. Naučićete kako da napravite web sajt od početka, pripremite sadržaj i grafiku i prilagodite web sajt mobilnim uređajima.
+					<span class="cena">100&euro;</span>
+				</p>
+			</div>
+			
+			
+			
+		</main>
+		<footer>
+			<hr />
+			<p>
+				Knez Mihajlova 6/6 <br />
+				011/1234567, 011/2345678 <br />
+				skola@cet.rs <br />
+			</p>
+		</footer>
+	</body>
+</html>

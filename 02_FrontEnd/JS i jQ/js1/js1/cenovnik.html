@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/dropdown-meni.css">
+  
+</head>
+<body>
+	<div class="container" >
+		<div class="row">
+			<div class="col-md-6 col-sm-12 col-xs-12">
+				<img src="img/logo.png" alt="CET Skola Racunara" />
+			</div>
+			<div class="col-md-6 col-sm-12 col-xs-12 text-right">
+				<span class="glyphicon glyphicon-earphone"></span> 011/1234-567
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid glavni-meni">
+		<div class="container">
+			<div class="row">
+				<div class="col-xs-12">
+					<nav>
+						<a href="index.html">Pocetna</a>
+						<a href="cenovnik.html">Cenovnik</a>
+						<a href="kontakt.html">Kontakt</a>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container" style="background-color:white">
+		<div class="row">
+			<div class="col-md-9 col-sm-8 col-xs-12 glavni-sadrzaj">
+				<main>
+					<header>
+						<h1>Cenovnik</h1>
+					</header>
+					
+					<script>
+						
+						/*
+						document.write( '<h2>Hello world!</h2>' );
+						
+						*/
+						// window.alert( 'Popup poruka' );
+						
+						/*
+						console.log( 'Hello world u konzoli...' );
+						
+						var a = 12;
+						var b = 5;
+						var zbir;
+						
+						zbir = a + b; // 17
+						zbir = a - b; // 7
+						zbir = a * b; // 60
+						zbir = a / b; // 2.4
+						zbir = a % b; // 2
+						
+						zbir = Math.ceil( a/b ) + Math.toFixed( a*3.15/7, 2 );
+						
+						*/
+						
+						/*
+						var ime = "Petar";
+						var poruka = "Zdravo " + ime;
+						
+						console.log(poruka);
+						
+						
+						a = 12;
+						b = "   asdf  13.5.5.5asdf asdf asdf asdf ";
+						zbir = parseFloat(a) +  parseFloat(b) ;
+						
+						console.log(zbir);
+						
+						console.log( 10/0 + 5 );
+						
+						
+						window.alert('Prikaz popup poruke');
+						
+						var izbor = window.confirm('Prikaz poruke sa OK Cancel / true false');
+						
+						var unos = window.prompt('Unos neke tekstualne vrednosti');
+						
+						
+						console.log(izbor);
+						console.log(unos);
+						
+						*/
+						
+						
+						window.alert("Unesi sabirke");
+						
+						var a = parseInt(window.prompt("A = "));
+						var b = parseInt(window.prompt("B = "));
+						
+						var zbir = a+b;
+						
+						window.alert(a+"+"+b+"="+zbir);
+						
+						var izbor = window.confirm("Da li zelite ponovno sabiranje?");
+					/*	
+						==
+						>
+						<
+						>=
+						<=
+						<>
+						!=
+						
+						&&		and	i
+						||		or	ili
+						!		not	ne
+						
+						if(  a<7 && a%2==1 )  broj manji od 7 i neparan
+					*/	
+						/*
+						if( izbor==false ){
+							window.alert("Pritisnuto OK");
+						} 
+						else {
+							window.alert("Nije pritisnuto OK");
+						}
+						*/
+					</script>
+					
+					
+					
+					
+					
+					<table class="table table-bordered table-hover table-condensed">
+						<thead>
+							<tr>
+								<th>Naslov</th>
+								<th>Cena</th>
+								<th>Trajanje</th>
+								<th>Termin</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>HTML i CSS</td>
+								<td>100&euro;</td>
+								<td>20/5</td>
+								<td>5.9.2016</td>
+							</tr>
+							<tr class="danger">
+								<td>JavaScript</td>
+								<td>100&euro;</td>
+								<td>20/5</td>
+								<td>Termin</td>
+							</tr>
+							<tr class="success">
+								<td>JavaScript</td>
+								<td>100&euro;</td>
+								<td>20/5</td>
+								<td>Termin</td>
+							</tr>
+							<tr>
+								<td>JavaScript</td>
+								<td>100&euro;</td>
+								<td>20/5</td>
+								<td>Termin</td>
+							</tr>
+						</tbody>
+					</table>
+					<!--
+					<table border="1" width="100%">
+						<tr>
+							<td colspan="2">A</td><td width="25%">C</td><td width="25%">D</td>
+						</tr>
+						<tr>
+							<td width="25%">asdfas dfasdfas dfa sdfas fas dfasdf</td><td rowspan="2" colspan="2">B</td><td>D</td>
+						</tr>
+						<tr>
+							<td>A</td>    <td>D</td>
+						</tr>
+					</table>
+					-->
+					
+					<h3>Specijalni popusti</h3>
+					
+					<ol>
+					
+						<li>Za studente
+							<ol>
+								<li>Za prosek &gt; 9.00 <strong>80% popusta</strong></li>
+								<li>Za prosek &gt; 7.00 <strong>20% popusta</strong></li>
+							</ol>
+						</li>
+						<li>Za penzionere</li>
+						<li>Za decu</li>
+						<li>Za bake</li>
+					
+					</ol>
+					
+
+					
+				</main>
+			</div>
+			<div class="col-md-3 col-sm-4 col-xs-12">
+				<aside>
+					<div class="container-fluid specijalna-ponuda">
+						<div class="row">
+							<div class="col-md-12">
+								<h3>Specijalna ponuda</h3>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-sm-5 col-xs-12">
+								<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+							</div>
+							<div class="col-sm-7 col-xs-12">
+								<strong>HTML i CSS</strong>
+								<span class="cena">100&euro;</span>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-sm-5 col-xs-12">
+								<img src="img/kursevi/js.png" alt="JavaScript" />
+							</div>
+							<div class="col-sm-7 col-xs-12">
+								<strong>JavaScript</strong>
+								<span class="cena">120&euro;</span>
+							</div>
+						</div>
+					</div>
+					<div class="container-fluid last-minute">
+						<div class="row">
+							<div class="col-md-12">
+								<h3>Last minute</h3>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-md-5">
+								<img src="img/kursevi/html-css.png" alt="HTML i CSS" />
+							</div>
+							<div class="col-md-7">
+								<strong>HTML i CSS</strong>
+								<span class="cena">100&euro;</span>
+							</div>
+						</div>
+						<div class="row kurs">
+							<div class="col-md-5">
+								<img src="img/kursevi/js.png" alt="JavaScript" />
+							</div>
+							<div class="col-md-7">
+								<strong>JavaScript</strong>
+								<span class="cena">120&euro;</span>
+							</div>
+						</div>
+					</div>
+				</aside>
+			</div>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<footer>
+			<p>
+				CET skola racunara <br/>
+				Knez Mihajlova 6/6
+			</p>
+		</footer>
+	</div>
+</body>
+</html>

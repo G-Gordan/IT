@@ -1,0 +1,5 @@
+index.php|Pocetna
+kategorije.php|Ponuda
+kontakt.php|Kontakt
+utisci.php|Utisci
+vesti.php|Vesti
