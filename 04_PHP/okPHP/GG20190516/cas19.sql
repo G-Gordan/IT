@@ -1,1 +1,0 @@
-SELECT * FROM vozila WHERE godiste > 2000 AND model LIKE '%a%' GROUP BY cena DESC LIMIT 3;

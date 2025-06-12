@@ -1,8 +1,0 @@
-SELECT * FROM test1;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 OR red_br>15 OR red_br=19 OR red_br<=6 OR red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 OR red_br>15 AND red_br=19 OR red_br<=6 OR red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 OR red_br>15 AND red_br=19 OR red_br<=6 AND red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 OR red_br>15 AND red_br=19 AND red_br<=6 AND red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 AND red_br>15 AND red_br=19 AND red_br<=6 AND red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 OR red_br>15 AND red_br=19 AND red_br<=6 OR red_br>22 ;
-SELECT opis AS Ime FROM test1 WHERE red_br<5 AND red_br>15 AND red_br=19 AND red_br<=6 OR red_br>22 ;
