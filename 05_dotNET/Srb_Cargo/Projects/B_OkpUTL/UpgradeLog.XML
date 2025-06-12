@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="OKP_UTL">
+</Property><Property Name="Solution File" Value="C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\OKP_UTL.sln">
+</Property><Property Name="User Options File" Value="C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\OKP_UTL.suo">
+</Property><Property Name="Date" Value="23. avgust 2017">
+</Property><Property Name="Time" Value="9:44">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="OKP_UTL.sln" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OKP_UTL.sln">
+</Event><Event ErrorLevel="0" Project="" Source="OKP_UTL.suo" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OKP_UTL.suo">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OKP_UTL.vbproj" Description="Project file successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OKP_UTL.vbproj">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OKP_UTL.vbproj.user" Description="Project user file successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OKP_UTL.vbproj.user">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="About.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\About.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="AssemblyInfo.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\AssemblyInfo.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="BlagajnaSaCO.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\BlagajnaSaCO.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="DatumOdDo.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\DatumOdDo.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="dencane.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\dencane.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Form1.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Form1.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormCR72.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormCR72.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormK211.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormK211.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormKP.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormKP.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormPregled.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormPregled.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormUTL.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormUTL.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="frmSplash.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\frmSplash.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="HelpForm.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\HelpForm.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="kola.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\kola.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="KolaExtra.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\KolaExtra.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="KorekcijaPoNajavi.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\KorekcijaPoNajavi.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="login.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\login.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\DbKonekcija.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\DbKonekcija.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\IconsMenuMain.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\IconsMenuMain.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\InitVar.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\InitVar.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\KalkModul.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\KalkModul.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\KalkModul72.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\KalkModul72.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\KalkModulCO.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\KalkModulCO.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\KalkModulKatarina.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\KalkModulKatarina.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\KalkModulRO.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\KalkModulRO.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\SplashModule1.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\SplashModule1.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\Upis.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\Upis.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\Util.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\Util.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="NacinPlacanjaPrev.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\NacinPlacanjaPrev.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="NakHelpForm.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\NakHelpForm.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="naknade.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\naknade.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OtpIzmena.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OtpIzmena.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PosPrimIzmena.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PosPrimIzmena.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledGrid.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledGrid.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledNHMGrid.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledNHMGrid.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledParametri.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledParametri.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledPoNajavi.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledPoNajavi.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledTL.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledTL.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PreglPoNajaviParam.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PreglPoNajaviParam.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PrIzmena.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PrIzmena.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="RacMesec.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\RacMesec.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="RacunskiMesecNaTL.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\RacunskiMesecNaTL.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Reports\OdDo1.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Reports\OdDo1.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Reports\OdDo2.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Reports\OdDo2.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="StatusKola.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\StatusKola.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="TLGrid.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\TLGrid.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="UpdateForm.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\UpdateForm.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="VPP.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\VPP.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="VPPPregled.vb" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\VPPPregled.vb">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="app.config" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\app.config">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Icon200.ico" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Icon200.ico">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="About.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\About.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="BlagajnaSaCO.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\BlagajnaSaCO.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="DatumOdDo.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\DatumOdDo.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="dencane.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\dencane.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Form1.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Form1.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormCR72.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormCR72.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormK211.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormK211.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormKP.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormKP.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormPregled.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormPregled.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="FormUTL.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\FormUTL.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="frmSplash.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\frmSplash.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="HelpForm.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\HelpForm.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="kola.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\kola.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="KolaExtra.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\KolaExtra.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="KorekcijaPoNajavi.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\KorekcijaPoNajavi.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="login.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\login.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Moduli\PregledNHMGrid.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Moduli\PregledNHMGrid.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="NacinPlacanjaPrev.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\NacinPlacanjaPrev.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="NakHelpForm.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\NakHelpForm.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="naknade.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\naknade.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OtpIzmena.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\OtpIzmena.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PosPrimIzmena.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PosPrimIzmena.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledGrid.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledGrid.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledParametri.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledParametri.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledPoNajavi.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledPoNajavi.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PregledTL.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PregledTL.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PreglPoNajaviParam.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PreglPoNajaviParam.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="PrIzmena.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\PrIzmena.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="RacMesec.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\RacMesec.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="RacunskiMesecNaTL.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\RacunskiMesecNaTL.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Reports\OdDo1.rpt" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Reports\OdDo1.rpt">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="Reports\OdDo2.rpt" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\Reports\OdDo2.rpt">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="StatusKola.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\StatusKola.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="TLGrid.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\TLGrid.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="UpdateForm.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\UpdateForm.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="VPP.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\VPP.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="VPPPregled.resx" Description="File successfully backed up as C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\Backup\VPPPregled.resx">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OKP_UTL.vbproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="OKP_UTL" Source="OKP_UTL.vbproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="OKP_UTL.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="OKP_UTL.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="OKP_UTL" Source="OKP_UTL.vbproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

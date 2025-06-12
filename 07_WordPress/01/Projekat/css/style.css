@@ -1,0 +1,132 @@
+
+/* Global */
+
+body {
+	margin: 0;
+	font: normal 14px/22px Arial, Sans-Serif;
+	color: #7a94a3;
+	background-image: url("../pics/background.jpg");
+	background-position: center center;
+	background-attachment:fixed;
+}
+
+a {
+	color: #366a94;
+	text-decoration: none;
+	outline: 0;
+}
+
+	a:hover {
+		
+	}
+	
+	a img {
+		border: 0;
+	}
+
+h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	font-weight: normal;
+}
+
+p {
+	margin: 20px 0;
+}
+
+blockquote {
+	margin: 20px 0;
+	font-style: italic;
+}
+
+ul {
+	margin: 20px 0;
+}
+
+table {
+	
+}
+
+table, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+form {
+	margin: 0;
+	padding: 0;
+}
+
+input, textarea, select, button {
+	outline: 0;
+	margin: 0;
+	font: normal 14px Arial, Sans-Serif;
+}
+
+	input::-moz-focus-inner, button::-moz-focus-inner {
+		border: 0;
+	}
+
+textarea {
+	line-height: 22px;
+	resize: none;
+}
+
+
+/* Clear */
+
+.clear {
+	clear: both;
+}
+
+.clearfix {
+	display: block;
+	zoom: 1;
+}
+
+.clearfix:after {
+	clear: both;
+	content: ".";
+	display: block;
+	visibility: hidden;
+	height: 0;
+	line-height: 0;
+}
+
+.page{
+	width:1400px;
+	margin: 0 auto;
+}
+#header{
+	background-color: #000;
+}
+#cover{
+	background-color: #f4f442;
+}
+#container{
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

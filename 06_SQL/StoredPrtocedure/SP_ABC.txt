@@ -1,0 +1,2812 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_ABC]    Script Date: 22.12.2017 10:50:58 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		D.S.Simic
+-- Create date: 14.04.2014
+-- Description:	ABC Analyse
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_ABC]
+	@Case_ varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(2000) = '',
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	IF @Case_ = 'ABCArtikelMaterialArt'
+	BEGIN
+		SELECT
+			Dicke,
+			Kaschierung,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			m2,
+			Lieferant,
+			EK_Vol,
+			CAST(EK_Vol/m2 AS NUMERIC(10, 3)) AS m2_DPreis,
+			EK_Vol_Gesamt,
+			EK_m2_Gesamt,
+			EK_Vol_Gesamt/EK_m2_Gesamt AS m2_d_Preis,
+			QUAN_ON_HAND,
+			CONSIGN_ONHAND_QTY
+		FROM
+		(
+		SELECT
+		--INV_PART_NUMBER,
+		--INV_PART_DESCRIPTION,
+			Artikelname,
+			Dicke,
+			Kaschierung,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			CAST(SUM(ISNULL(m2, 0)) AS NUMERIC(10, 2)) AS m2,
+			Lieferant,
+			--CAST(SUM(ISNULL(EK_Preis, 0)*ISNULL(Liefermenge, 0))/SUM(Liefermenge) AS NUMERIC(10, 3)) AS D_EK_Preis,
+			--CAST(SUM(ISNULL(Liefermenge, 0)) AS NUMERIC(10, 2)) AS Liefermenge,
+			CAST(SUM(ISNULL(EK_Vol, 0)) AS NUMERIC(10, 2)) AS EK_Vol,
+			(
+				SELECT TOP 1 SUM(RES) AS Res_
+				FROM
+				(
+					SELECT
+							--(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH *dbo.DATA0071.PRICE) AS RES,
+							CASE
+								WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+									ELSE
+									CASE 
+										WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+										ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+									END
+							END AS RES,
+							CASE 
+								WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+								ELSE 'XXXXXXXXXXXXXXX'
+							END AS Art
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+										  dbo.DATA0095 INNER JOIN
+										  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     
+								(dbo.DATA0095.TRAN_TP = 5) 
+								AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myVolTbl
+				WHERE
+					myVolTbl.Art = Artikelname 
+			) AS EK_Vol_Gesamt,
+			(
+				SELECT TOP 1 SUM(RES) AS Res_
+				FROM
+				(
+					SELECT
+							CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS RES,
+							CASE 
+								WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+								ELSE 'XXXXXXXXXXXXXXX'
+							END AS Art
+					FROM         dbo.DATA0107 INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+								  dbo.DATA0095 INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     
+								(dbo.DATA0095.TRAN_TP = 5) 
+								AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myVolTbl
+				WHERE
+					myVolTbl.Art = Artikelname 
+			) AS EK_m2_Gesamt,
+			SUM(ISNULL(QUAN_ON_HAND_m2, 0)) AS QUAN_ON_HAND,
+			SUM(ISNULL(CONSIGN_ONHAND_QTY_m2, 0)) AS CONSIGN_ONHAND_QTY
+
+		FROM
+		(
+			SELECT DISTINCT    
+				SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8) + '_' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11) AS Artikelname,
+				CASE
+					WHEN ISNUMERIC(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3))=1 THEN
+							CAST(CAST(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3) AS NUMERIC(10, 0))/100 AS NUMERIC(10, 2))
+						ELSE
+							0 --SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3)
+				END AS Dicke,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='D' THEN 
+							SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3)
+						ELSE
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='E' THEN 
+								SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/--' 
+							ELSE '--/--'
+						END
+				END AS Kaschierung,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2)='F4' THEN 'FR4' ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2) END AS Materialart,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='D' THEN 'dicy' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='P' THEN 'phenolisch'
+							ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)
+						END
+				END AS D_P,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='3' THEN 'TG130' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='5' THEN 'TG150'
+							ELSE 
+							CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='7' THEN 'TG170'
+								ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)
+							END
+						END
+				END AS TG,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='0' THEN 'nicht gefüllt' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='1' THEN 'gefüllt'
+							ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)
+						END
+				END AS gefuellt,
+				SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 17, 3) AS restliche_Codierung,
+				--SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) AS Kaschierung,
+				CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS m2,
+				dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+				dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE AS EK_Preis,
+				dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS Liefermenge,
+				CASE
+					WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+						ELSE
+						CASE 
+							WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+							ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+						END
+				END AS EK_Vol,
+				--dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH  * dbo.DATA0071.PRICE AS EK_Vol,
+				CAST(dbo.DATA0017.QUAN_ON_HAND*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS QUAN_ON_HAND_m2,
+				--dbo.DATA0017.QUAN_ON_HAND,
+				CAST(dbo.DATA0017.CONSIGN_ONHAND_QTY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS CONSIGN_ONHAND_QTY_m2,
+				--dbo.DATA0017.CONSIGN_ONHAND_QTY,
+				dbo.DATA0095.TRAN_DATE,
+				dbo.DATA0095.TTIME
+
+			FROM         dbo.DATA0107 INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+								  dbo.DATA0095 INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+			WHERE     --(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'PCB%') 
+						(dbo.DATA0095.TRAN_TP = 5) 
+						--AND (dbo.DATA0070.PURCHASE_ORDER_TYPE = 0) 
+						AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+						AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+						--AND (dbo.DATA0095.ENTERED_DATE < 12) 
+						AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+							OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+						AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+						AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+		) AS myTbl
+		GROUP BY
+		--INV_PART_NUMBER,
+			--INV_PART_DESCRIPTION,
+			Artikelname,
+			Dicke,
+			Kaschierung,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			Lieferant
+		) AS tblMain
+		ORDER BY
+			Dicke,
+			Kaschierung
+	END
+
+	IF @Case_ = 'ABCArtikelMaterialArtBMGrp'
+	BEGIN
+
+		--DECLARE
+		--@para1 varchar(250),
+		--@para2 varchar(250)
+		--@paraVJ varchar(250)
+
+		--SET @para1 = '01.01.2013'
+		--SET @para2 = '31.12.2013'
+
+		SELECT
+			Dicke,
+			Kaschierung,
+			--Formatcode,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			SUM(m2) AS m2,
+			--Lieferant,
+			SUM(EK_Vol) AS EK_Vol,
+			SUM(CAST(EK_Vol/m2 AS NUMERIC(10, 3))) AS m2_DPreis,
+			SUM(EK_Vol_Gesamt) AS EK_Vol_Gesamt,
+			SUM(EK_m2_Gesamt) AS EK_m2_Gesamt,
+			SUM(EK_Vol_Gesamt/EK_m2_Gesamt) AS m2_d_Preis,
+			SUM(QUAN_ON_HAND) AS QUAN_ON_HAND,
+			SUM(CONSIGN_ONHAND_QTY) AS CONSIGN_ONHAND_QTY
+		FROM
+		(
+		SELECT
+		--INV_PART_NUMBER,
+		--INV_PART_DESCRIPTION,
+			Artikelname,
+			Dicke,
+			Kaschierung,
+			--Formatcode,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			CAST(SUM(ISNULL(m2, 0)) AS NUMERIC(10, 2)) AS m2,
+			Lieferant,
+			--CAST(SUM(ISNULL(EK_Preis, 0)*ISNULL(Liefermenge, 0))/SUM(Liefermenge) AS NUMERIC(10, 3)) AS D_EK_Preis,
+			--CAST(SUM(ISNULL(Liefermenge, 0)) AS NUMERIC(10, 2)) AS Liefermenge,
+			CAST(SUM(ISNULL(EK_Vol, 0)) AS NUMERIC(10, 2)) AS EK_Vol,
+			(
+				SELECT TOP 1 SUM(RES) AS Res_
+				FROM
+				(
+					SELECT
+							(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH *dbo.DATA0071.PRICE) AS RES,
+							CASE 
+								WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+								ELSE 'XXXXXXXXXXXXXXX'
+							END AS Art
+					FROM         dbo.DATA0107 INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+								  dbo.DATA0095 INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     
+								(dbo.DATA0095.TRAN_TP = 5) 
+								AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myVolTbl
+				WHERE
+					myVolTbl.Art = Artikelname 
+			) AS EK_Vol_Gesamt,
+			(
+				SELECT TOP 1 SUM(RES) AS Res_
+				FROM
+				(
+					SELECT
+							CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS RES,
+							CASE 
+								WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+								ELSE 'XXXXXXXXXXXXXXX'
+							END AS Art
+					FROM         dbo.DATA0107 INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+								  dbo.DATA0095 INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     
+								(dbo.DATA0095.TRAN_TP = 5) 
+								AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myVolTbl
+				WHERE
+					myVolTbl.Art = Artikelname 
+			) AS EK_m2_Gesamt,
+			SUM(ISNULL(QUAN_ON_HAND_m2, 0)) AS QUAN_ON_HAND,
+			SUM(ISNULL(CONSIGN_ONHAND_QTY_m2, 0)) AS CONSIGN_ONHAND_QTY
+
+		FROM
+		(
+			SELECT DISTINCT    
+				SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8) + '_' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11) AS Artikelname,
+				CASE
+					WHEN ISNUMERIC(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3))=1 THEN
+							CAST(CAST(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3) AS NUMERIC(10, 0))/100 AS NUMERIC(10, 2))
+						ELSE
+							0 --SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3)
+				END AS Dicke,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='D' THEN 
+							SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3)
+						ELSE
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='E' THEN 
+								SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/--' 
+							ELSE '--/--'
+						END
+				END AS Kaschierung,
+				--'''' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 9, 3) AS Formatcode,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2)='F4' THEN 'FR4' ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2) END AS Materialart,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='D' THEN 'dicy' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='P' THEN 'phenolisch'
+							ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)
+						END
+				END AS D_P,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='3' THEN 'TG130' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='5' THEN 'TG150'
+							ELSE 
+							CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='7' THEN 'TG170'
+								ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)
+							END
+						END
+				END AS TG,
+				CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='0' THEN 'nicht gefüllt' 
+						ELSE 
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='1' THEN 'gefüllt'
+							ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)
+						END
+				END AS gefuellt,
+				SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 17, 3) AS restliche_Codierung,
+				--SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) AS Kaschierung,
+				CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS m2,
+				dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+				dbo.DATA0108.PRICE AS EK_Preis,
+				dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS Liefermenge,
+				dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH  * dbo.DATA0071.PRICE AS EK_Vol,
+				CAST(dbo.DATA0017.QUAN_ON_HAND*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS QUAN_ON_HAND_m2,
+				--dbo.DATA0017.QUAN_ON_HAND,
+				CAST(dbo.DATA0017.CONSIGN_ONHAND_QTY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS CONSIGN_ONHAND_QTY_m2,
+				--dbo.DATA0017.CONSIGN_ONHAND_QTY,
+				dbo.DATA0095.TRAN_DATE,
+				dbo.DATA0095.TTIME
+
+			FROM         dbo.DATA0008 INNER JOIN
+                      dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+                      dbo.DATA0095 INNER JOIN
+                      dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                      dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+                      dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+                      dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+                      dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR LEFT OUTER JOIN
+                      dbo.DATA0107 INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR
+			WHERE     --(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'PCB%') 
+						(dbo.DATA0095.TRAN_TP = 5) 
+						--AND (dbo.DATA0070.PURCHASE_ORDER_TYPE = 0) 
+						AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+						AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+						--AND (dbo.DATA0095.ENTERED_DATE < 12) 
+						AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+							OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+						AND (dbo.DATA0007.PR_GRP_CODE = 'E-BM')
+						--AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+						--AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+		) AS myTbl
+		GROUP BY
+		--INV_PART_NUMBER,
+			--INV_PART_DESCRIPTION,
+			Artikelname,
+			Dicke,
+			Kaschierung,
+			--Formatcode,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung,
+			Lieferant
+		) AS tblMain
+		GROUP BY
+			Dicke,
+			Kaschierung,
+			--Formatcode,
+			Materialart,
+			D_P,
+			TG,
+			gefuellt,
+			restliche_Codierung
+		ORDER BY
+			Dicke,
+			Kaschierung
+	END
+
+	IF @Case_ = 'ABCArtikelMaterialArtLieferantZRVJ'
+	BEGIN
+		DECLARE
+		--@para1 varchar(250),
+		--@para2 varchar(250),
+		@paraVJ varchar(250)
+
+		--SET @para1 = '01.01.2014'
+		--SET @para2 = '31.01.2014'
+
+		SET @paraVJ = LTRIM(STR(CAST(SUBSTRING(@para2, 7, 4) AS INT)-1))
+
+		DECLARE @tblArtikelArtLieferant table (
+									ZeitTyp varchar(2) null, 
+									Lieferant char(50) null,
+									EK_Volume NUMERIC(10,2) ,
+									EK_m2 NUMERIC(10,2) ,
+									EK_Vol_Gesamt NUMERIC(10,2)
+									)
+
+		INSERT @tblArtikelArtLieferant(
+									ZeitTyp, 
+									Lieferant,
+									EK_Volume,
+									EK_m2,
+									EK_Vol_Gesamt
+						)
+
+		SELECT
+		*
+		FROM
+		(
+				SELECT
+					'ZR' AS ZeitTyp,
+					Lieferant,
+					SUM(EK_Vol) AS EK_Vol,
+					--SUM(CASE WHEN EK_Vol_Gesamt>0 THEN EK_Vol/EK_Vol_Gesamt ELSE 0 END) AS Anteil_EK_Vol_ZR,
+					SUM(m2) AS EK_m2,
+					SUM(EK_Vol_AlleLiefArt) AS EK_Vol_Gesamt
+					--SUM(CASE WHEN EK_m2_Gesamt>0 THEN m2/EK_m2_Gesamt ELSE 0 END) AS Anteil_m2_ZR,
+
+				FROM
+				(
+				SELECT
+					CAST(SUM(ISNULL(m2, 0)) AS NUMERIC(10, 2)) AS m2,
+					Lieferant,
+					CAST(SUM(ISNULL(EK_Vol, 0)) AS NUMERIC(10, 2)) AS EK_Vol,
+					(
+					(
+						--SELECT TOP 1 SUM(RES) AS Res_
+						--FROM
+						--(
+							SELECT
+									--SUM(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH *dbo.DATA0071.PRICE) AS RES
+									SUM(
+										CASE
+											WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+												ELSE
+												CASE 
+													WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+													ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+												END
+										END
+										) AS RES
+									--CASE 
+									--	WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+									--	ELSE 'XXXXXXXXXXXXXXX'
+									--END AS Art
+							FROM         dbo.DATA0107 INNER JOIN
+												  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+												  dbo.DATA0095 INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+							WHERE     
+										(dbo.DATA0095.TRAN_TP = 5) 
+										AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+										AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+										--AND (YEAR(dbo.DATA0095.ENTERED_DATE) = @paraVJ)
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+										--AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+										--AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+										AND dbo.DATA0023.SUPPLIER_NAME = Lieferant
+						--) AS myVolTbl
+						--WHERE
+						--	--myVolTbl.Art = Artikelname 
+					) 
+					)AS EK_Vol_AlleLiefArt
+					
+				FROM
+				(
+					SELECT DISTINCT    
+						SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8) + '_' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11) AS Artikelname,
+						CASE
+							WHEN ISNUMERIC(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3))=1 THEN
+									CAST(CAST(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3) AS NUMERIC(10, 0))/100 AS NUMERIC(10, 2))
+								ELSE
+									0 --SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3)
+						END AS Dicke,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='D' THEN 
+									SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3)
+								ELSE
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='E' THEN 
+										SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/--' 
+									ELSE '--/--'
+								END
+						END AS Kaschierung,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2)='F4' THEN 'FR4' ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2) END AS Materialart,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='D' THEN 'dicy' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='P' THEN 'phenolisch'
+									ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)
+								END
+						END AS D_P,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='3' THEN 'TG130' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='5' THEN 'TG150'
+									ELSE 
+									CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='7' THEN 'TG170'
+										ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)
+									END
+								END
+						END AS TG,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='0' THEN 'nicht gefüllt' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='1' THEN 'gefüllt'
+									ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)
+								END
+						END AS gefuellt,
+						SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 17, 3) AS restliche_Codierung,
+						--SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) AS Kaschierung,
+						CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS m2,
+						dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+						dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE AS EK_Preis,
+						dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS Liefermenge,
+						--dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH  * dbo.DATA0071.PRICE AS EK_Vol,
+						(
+							CASE
+								WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+									ELSE
+									CASE 
+										WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+										ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+									END
+							END
+						) AS EK_Vol,
+						dbo.DATA0095.TRAN_DATE,
+						dbo.DATA0095.TTIME
+
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+										  dbo.DATA0095 INNER JOIN
+										  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     --(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'PCB%') 
+								(dbo.DATA0095.TRAN_TP = 5) 
+								--AND (dbo.DATA0070.PURCHASE_ORDER_TYPE = 0) 
+								AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								--AND (dbo.DATA0095.ENTERED_DATE < 12) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myTbl
+				GROUP BY 
+					Lieferant, 
+					Artikelname
+
+				) AS tblMain
+				GROUP BY 
+					Lieferant
+				--ORDER BY 
+				--	SUM(EK_Vol) DESC
+
+		UNION ALL
+
+				SELECT
+					'VJ' AS ZeitTyp,
+					Lieferant,
+					SUM(EK_Vol) AS EK_Vol,
+					--SUM(CASE WHEN EK_Vol_Gesamt>0 THEN EK_Vol/EK_Vol_Gesamt ELSE 0 END) AS Anteil_EK_Vol_ZR,
+					SUM(m2) AS EK_m2,
+					--SUM(CASE WHEN EK_m2_Gesamt>0 THEN m2/EK_m2_Gesamt ELSE 0 END) AS Anteil_m2_ZR,
+					--SUM(EK_Vol_AlleLiefArt) AS EK_Vol_AlleLiefArt,
+					(
+					(
+						--SELECT TOP 1 SUM(RES) AS Res_
+						--FROM
+						--(
+							SELECT
+									--SUM(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH *dbo.DATA0071.PRICE) AS RES
+									SUM(
+										CASE
+											WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+												ELSE
+												CASE 
+													WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+													ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+												END
+										END
+										) AS RES
+									--CASE 
+									--	WHEN LEN(dbo.DATA0017.INV_PART_NUMBER)>15 THEN  RTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8)) + '_' + LTRIM(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11)) 
+									--	ELSE 'XXXXXXXXXXXXXXX'
+									--END AS Art
+							FROM         dbo.DATA0107 INNER JOIN
+												  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+												  dbo.DATA0095 INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+							WHERE     
+										(dbo.DATA0095.TRAN_TP = 5) 
+										--AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+										--AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+										AND (YEAR(dbo.DATA0095.ENTERED_DATE) = @paraVJ)
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+										--AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+										--AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+										AND dbo.DATA0023.SUPPLIER_NAME = Lieferant
+						--) AS myVolTbl
+						--WHERE
+						--	--myVolTbl.Art = Artikelname 
+					) 
+					)AS EK_Vol_AlleLiefArt
+				FROM
+				(
+				SELECT
+					CAST(SUM(ISNULL(m2, 0)) AS NUMERIC(10, 2)) AS m2,
+					Lieferant,
+					CAST(SUM(ISNULL(EK_Vol, 0)) AS NUMERIC(10, 2)) AS EK_Vol
+
+
+				FROM
+				(
+					SELECT DISTINCT    
+						SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 1, 8) + '_' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, LEN(dbo.DATA0017.INV_PART_NUMBER)-11) AS Artikelname,
+						CASE
+							WHEN ISNUMERIC(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3))=1 THEN
+									CAST(CAST(SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3) AS NUMERIC(10, 0))/100 AS NUMERIC(10, 2))
+								ELSE
+									0 --SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 3, 3)
+						END AS Dicke,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='D' THEN 
+									SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/' + SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3)
+								ELSE
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 2, 1)='E' THEN 
+										SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) + '/--' 
+									ELSE '--/--'
+								END
+						END AS Kaschierung,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2)='F4' THEN 'FR4' ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 12, 2) END AS Materialart,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='D' THEN 'dicy' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)='P' THEN 'phenolisch'
+									ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 14, 1)
+								END
+						END AS D_P,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='3' THEN 'TG130' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='5' THEN 'TG150'
+									ELSE 
+									CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)='7' THEN 'TG170'
+										ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 15, 1)
+									END
+								END
+						END AS TG,
+						CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='0' THEN 'nicht gefüllt' 
+								ELSE 
+								CASE WHEN SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)='1' THEN 'gefüllt'
+									ELSE SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 16, 1)
+								END
+						END AS gefuellt,
+						SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 17, 3) AS restliche_Codierung,
+						--SUBSTRING(dbo.DATA0017.INV_PART_NUMBER, 6, 3) AS Kaschierung,
+						CAST(dbo.DATA0095.QUANTITY*CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS NUMERIC(10, 3)) AS NUMERIC(10, 3)) AS m2,
+						dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+						dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE AS EK_Preis,
+						dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS Liefermenge,
+						--dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH  * dbo.DATA0071.PRICE AS EK_Vol,
+						(
+							CASE
+								WHEN ISNULL(dbo.DATA0108.PRICE , 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0108.PRICE * dbo.DATA0107.EX_RATE
+									ELSE
+									CASE 
+										WHEN ISNULL(dbo.DATA0071.PRICE, 0)>0 THEN dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0071.PRICE * dbo.DATA0070.EXCHANGE_RATE
+										ELSE dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH * dbo.DATA0017.STD_COST
+									END
+							END
+						) AS EK_Vol,
+						dbo.DATA0095.TRAN_DATE,
+						dbo.DATA0095.TTIME
+
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR RIGHT OUTER JOIN
+										  dbo.DATA0095 INNER JOIN
+										  dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+					WHERE     --(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'PCB%') 
+								(dbo.DATA0095.TRAN_TP = 5) 
+								--AND (dbo.DATA0070.PURCHASE_ORDER_TYPE = 0) 
+								--AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103)) 
+								--AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103)) 
+								AND (YEAR(dbo.DATA0095.ENTERED_DATE) = @paraVJ)
+								--AND (dbo.DATA0095.ENTERED_DATE < 12) 
+								AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+									OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+								AND ISNUMERIC(dbo.DATA0017.ANALYSIS_CODE1)=1
+								AND ISNULL(dbo.DATA0017.ANALYSIS_CODE2, '')<>''
+				) AS myTbl
+				GROUP BY 
+					Lieferant, 
+					Artikelname
+
+				) AS tblMain
+				GROUP BY 
+					Lieferant
+				--ORDER BY 
+				--	SUM(EK_Vol) DESC
+		) AS myTblUNION
+		--ORDER BY 
+		--Lieferant, ZeitTyp DESC
+		--EK_Vol DESC
+
+		SELECT
+			DISTINCT 
+			--ZeitTyp, 
+			Lieferant,
+			ISNULL((SELECT SUM(tbltmp.EK_Volume) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='ZR' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_Volume_ZR,
+			ISNULL((SELECT SUM(tbltmp.EK_m2) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='ZR' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_m2_ZR,
+			ISNULL((SELECT SUM(tbltmp.EK_Vol_Gesamt) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='ZR' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_Vol_Gesamt_ZR,
+			ISNULL((SELECT SUM(tbltmp.EK_Volume) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='VJ' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_Volume_VJ,
+			ISNULL((SELECT SUM(tbltmp.EK_m2) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='VJ' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_m2_VJ,
+			ISNULL((SELECT SUM(tbltmp.EK_Vol_Gesamt) AS RES FROM @tblArtikelArtLieferant AS tbltmp WHERE ZeitTyp='VJ' AND tbltmp.Lieferant=tblMain.Lieferant), 0) AS EK_Vol_Gesamt_VJ
+		FROM
+			@tblArtikelArtLieferant AS tblMain
+		ORDER BY 
+			EK_Volume_ZR DESC, EK_Volume_VJ DESC
+	END
+
+
+	IF @Case_ = 'ABCArtikelLieferantNeu'
+	BEGIN
+		
+--Artikel-Lieferant:
+--Konsiartikel werden über normale Bestellungen berücksichtigt (keine Konsi-Ausprägungen)
+--Letzte Änderung: 20.02.2014
+
+	--DECLARE
+	--	@para1 varchar(250),
+	--	@para2 varchar(250),
+	--	@para3 varchar(250),
+	--	@para4 varchar(250)
+	--	SET @para1 = '01.01.2014'
+	--	SET @para2 = '31.12.2014'
+	--	SET @para3 = '%' --'bimsmehl'
+	--	SET @para4 = 'Brautmeier GmbH'
+
+		DECLARE
+		@para1VJ varchar(250),
+		@para2VJ varchar(250)
+		--@paraVJ varchar(250)
+
+		SET @para1VJ = SUBSTRING(@para1, 1, 6) + LTRIM(STR(CAST(SUBSTRING(@para1, 7, 4) AS INT)-1))
+		SET @para2VJ = SUBSTRING(@para2, 1, 6) + LTRIM(STR(CAST(SUBSTRING(@para2, 7, 4) AS INT)-1))
+		SET @paraVJ = LTRIM(STR(CAST(SUBSTRING(@para2, 7, 4) AS INT)-1))
+
+		DECLARE @tblArtLiefNeu table (
+									D17_RKEY NUMERIC(10, 0), 
+									--D23_RKEY NUMERIC(10, 0), 
+									INV_PART_NUMBER char(20) null, 
+									INV_PART_DESCRIPTION char(40) null, 
+									Lieferant char(50) null,
+									EK_Volume NUMERIC(10,2) ,
+									EK_VolumeVJ NUMERIC(10,2) ,
+									EK_VolumeVJ_ZR NUMERIC(10,2) ,
+									LMenge NUMERIC(10,2) ,
+									UNIT_CODE char(5) null,
+									DRPreis NUMERIC(10,3) ,
+									Letzter_EK_Preis NUMERIC(10,3) ,
+									letztes_LDatum smalldatetime ,
+		    						AnzBestellungen int,
+									DRWert NUMERIC(10,2),
+									DLMenge NUMERIC(10,2),
+									Preis_gewichtet12Mon NUMERIC(10,2),
+									DPreis_VJ_Lief NUMERIC(10,2),
+									DPreis_VJ_Lief_ZR NUMERIC(10,2),
+									PRODUCT_GROUP_NAME CHAR(30) null,
+									PRODUCT_NAME CHAR(30) null,
+									LMengeVJZR NUMERIC(10,2),
+									LMengeVJ NUMERIC(10,2)
+									)
+
+		INSERT @tblArtLiefNeu(
+									D17_RKEY, 
+									--D23_RKEY, 
+									INV_PART_NUMBER, 
+									INV_PART_DESCRIPTION, 
+									Lieferant,
+									EK_Volume,
+									EK_VolumeVJ,
+									EK_VolumeVJ_ZR,
+									LMenge,
+									UNIT_CODE,
+									DRPreis,
+									Letzter_EK_Preis,
+									letztes_LDatum,
+									AnzBestellungen,
+									DRWert,
+									DLMenge,
+									Preis_gewichtet12Mon,
+									DPreis_VJ_Lief,
+									DPreis_VJ_Lief_ZR,
+									PRODUCT_GROUP_NAME,
+									PRODUCT_NAME,
+									LMengeVJZR,
+									LMengeVJ
+						)
+
+			SELECT 
+				--BTyp, 
+				--MAX(D95_PTR) AS D95_PTR,
+				D17_RKEY,  
+				--D23_RKEY, 
+				INV_PART_NUMBER, 
+				INV_PART_DESCRIPTION,
+				Lieferant,
+				CAST(SUM(RWert) AS NUMERIC(10, 2)) AS EK_Volume,
+				0 AS EK_VolumeVJ,
+				0 AS EK_VolumeVJ_ZR,
+				CAST(SUM(LMenge) AS NUMERIC(10, 2)) AS LMenge,
+				UNIT_CODE,
+				--CAST(AVG(RPreis) AS NUMERIC(10, 3)) AS DRPreis,
+				CASE WHEN SUM(LMenge)>0 THEN ISNULL(SUM(LMenge*RPreis)/SUM(LMenge), 0) ELSE 0 END AS DRPreis,
+				CAST((
+					SELECT     TOP 1 dbo.DATA0108.PRICE
+					--FROM         dbo.DATA0017 AS D17 INNER JOIN
+					--					  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+					--					  dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR
+					FROM         dbo.DATA0017 AS D17 INNER JOIN
+                      dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+                      dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+                      dbo.DATA0023 AS D23 ON dbo.DATA0070.SUPPLIER_POINTER = D23.RKEY
+					WHERE     (dbo.DATA0071.PRICE > 0) AND (D17.RKEY = D17_RKEY) 
+								--AND D23.RKEY = D23_RKEY 
+								AND (D23.SUPPLIER_NAME = Lieferant)
+					ORDER BY dbo.DATA0071.DEL_DATE DESC
+				) AS NUMERIC(10, 3)) AS Letzter_EK_Preis,
+
+				--MAX(LDatum) AS letztes_LDatum,
+				--CONVERT(varchar(10), MAX(LDatum), 104) AS letztes_LDatum,
+				(
+					SELECT CONVERT(varchar(10), MAX(ResDatum), 104) AS RecMaxDatum
+					FROM
+					(
+						SELECT   
+							--CONVERT(varchar(10), dbo.DATA0095.ENTERED_DATE, 104) AS ResDatum,
+							dbo.DATA0095.ENTERED_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME
+							--dbo.DATA0023.RKEY AS D23ID
+						FROM         
+							dbo.DATA0095 INNER JOIN
+							dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+							dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+							dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+							dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+						WHERE    
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+								OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+						UNION ALL
+						SELECT
+							--CONVERT(varchar(10), dbo.DATA0341.TRAN_DATE, 104) AS ResDatum,
+							dbo.DATA0341.TRAN_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME
+							--dbo.DATA0023.RKEY AS D23ID
+						FROM        
+							dbo.DATA0017 INNER JOIN
+							dbo.DATA0341 ON dbo.DATA0017.RKEY = dbo.DATA0341.DATA0017_PTR INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0341.DATA0023_PTR = dbo.DATA0023.RKEY INNER JOIN
+							dbo.DATA0005 ON dbo.DATA0341.DATA0005_PTR = dbo.DATA0005.RKEY INNER JOIN
+							dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+							dbo.DATA0466 ON dbo.DATA0341.DATA0466_PTR = dbo.DATA0466.RKEY INNER JOIN
+							dbo.DATA0467 ON dbo.DATA0341.DATA0467_PTR = dbo.DATA0467.RKEY
+						WHERE     
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0341.TRAN_TP=1)
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0466.STATUS=2 OR (dbo.DATA0466.STATUS=1 AND dbo.DATA0467.QUAN_RECD>=dbo.DATA0467.QUAN_ORD))
+					) AS myTblMaxDatum
+					WHERE D17ID = D17_RKEY 
+							--AND D23ID = D23_RKEY 
+							AND SUPPLIER_NAME = Lieferant
+				) AS letztes_LDatum,
+
+				SUM(AnzBestellungen) AS AnzBestellungen,
+				CAST(AVG(RWert) AS NUMERIC(10, 2)) AS DRWert,
+				CAST(AVG(LMenge) AS NUMERIC(10, 2)) AS DLMenge,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					--Res_DREPreis,
+					--TRAN_DATE
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE * dbo.DATA0107.EX_RATE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE * D70.EXCHANGE_RATE
+										ELSE D17.STD_COST  --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							--D95.TRAN_DATE 
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+							--AND (ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0) 
+							--AND (D95.INVT_PTR=D17_RKEY)
+							--AND (D70.SUPPLIER_POINTER = D23_RKEY)
+					) AS myDPreisTbl
+					WHERE
+							(INVT_PTR=D17_RKEY)
+							--AND (SUPPLIER_POINTER = D23_RKEY)
+							AND SUPPLIER_NAME = Lieferant
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+					--ORDER BY TRAN_DATE DESC
+				) AS Preis_gewichtet12Mon,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE * dbo.DATA0107.EX_RATE--SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE * D70.EXCHANGE_RATE
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (YEAR(D95.TRAN_DATE)= CAST(@paraVJ AS INT))
+					) AS myDPreisTbl
+					WHERE
+						(INVT_PTR=D17_RKEY)
+						--AND (SUPPLIER_POINTER = D23_RKEY)
+						AND SUPPLIER_NAME = Lieferant
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+				) AS DPreis_VJ_Lief,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE * dbo.DATA0107.EX_RATE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE * D70.EXCHANGE_RATE
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							D95.INVT_PTR,
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (D95.TRAN_DATE <= CONVERT(DATETIME, @para2, 103))
+					) AS myDPreisTbl
+					WHERE
+						(INVT_PTR=D17_RKEY)
+						--AND (SUPPLIER_POINTER = D23_RKEY)
+						AND SUPPLIER_NAME = Lieferant
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+				) AS DPreis_VJ_Lief_ZR,
+				(
+					SELECT TOP 1  dbo.DATA0007.PRODUCT_GROUP_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_GROUP_NAME,
+				(
+					SELECT TOP 1  dbo.DATA0008.PRODUCT_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_NAME,
+				0 AS LMengeVJZR,
+				0 AS LMengeVJ
+
+			FROM (
+				--Lieferung T , Lieferung
+				SELECT  
+					'GGP' As BTyp,		
+					dbo.DATA0095.RKEY AS D95_PTR, 
+					dbo.DATA0017.RKEY AS D17_RKEY,
+					dbo.DATA0023.RKEY AS D23_RKEY,
+					dbo.DATA0017.INV_PART_NUMBER, 
+					dbo.DATA0017.INV_PART_DESCRIPTION,
+					dbo.DATA0023.SUPPLIER_NAME AS Lieferant, 
+					--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+					dbo.DATA0002.UNIT_CODE,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY, 
+					dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS LMenge,
+					(
+						SELECT     TOP 1 
+						CASE
+							WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE--/dbo.DATA0107.EX_RATE 
+								ELSE 
+									CASE
+										WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+											ELSE 
+												ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+									END
+						END AS RPreis
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+											  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						--FROM         dbo.DATA0107 INNER JOIN
+						--					  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+						--					  dbo.DATA0070 AS D70 INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+						--					  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									AND (D23.SUPPLIER_NAME = dbo.DATA0023.SUPPLIER_NAME)
+					) AS RPreis,
+					dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH*
+					(
+						SELECT     TOP 1 
+						CASE
+							WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+								ELSE 
+									CASE
+										WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+											ELSE 
+												ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+									END
+						END AS RPreis
+
+						--FROM         dbo.DATA0070 AS D70 INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+						--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+											  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									--AND (D70.SUPPLIER_POINTER = dbo.DATA0023.RKEY)
+									AND (D23.SUPPLIER_NAME = dbo.DATA0023.SUPPLIER_NAME)
+					) AS RWert,
+					dbo.DATA0070.SHIPPING_COST+dbo.DATA0070.MISC_CHARGE AS NK,
+					dbo.DATA0095.ENTERED_DATE AS LDatum,
+					1 AS AnzBestellungen,
+					'' AS LetzterLieferant,
+					0 As AnzLieferanten
+
+					FROM         dbo.DATA0005 INNER JOIN
+										  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+										  dbo.DATA0017 INNER JOIN
+										  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE    
+							(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+							AND
+							(dbo.DATA0095.TRAN_TP = 5) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+							AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+							AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103))
+							AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+								OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+
+
+				UNION ALL
+
+				--Retourniert
+				SELECT 
+					'GGP' As BTyp, 
+					dbo.DATA0095.RKEY AS D95_PTR, 
+					dbo.DATA0017.RKEY AS D17_RKEY,
+					dbo.DATA0023.RKEY AS D23_RKEY,
+					dbo.DATA0017.INV_PART_NUMBER, 
+					dbo.DATA0017.INV_PART_DESCRIPTION, 
+					dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+					--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+					dbo.DATA0002.UNIT_CODE,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY, 
+					(-1)*dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS LMenge,
+					(
+						SELECT     TOP 1 
+						CASE
+							WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+								ELSE 
+									CASE
+										WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+											ELSE 
+												ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+									END
+						END AS RPreis
+						--FROM         dbo.DATA0070 AS D70 INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+						--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+											  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+								AND (D23.SUPPLIER_NAME = dbo.DATA0023.SUPPLIER_NAME)
+					) AS RPreis,
+					-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH)*
+					(
+						SELECT     TOP 1 
+						CASE
+							WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+								ELSE 
+									CASE
+										WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+											ELSE 
+												(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+									END
+						END AS RPreis
+						--FROM         dbo.DATA0070 AS D70 INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+						--					  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						----WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+						--WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+						--			--AND (D70.SUPPLIER_POINTER = dbo.DATA0023.RKEY)
+						--			AND (D23.SUPPLIER_NAME = dbo.DATA0023.SUPPLIER_NAME)
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+											  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+								AND (D23.SUPPLIER_NAME = dbo.DATA0023.SUPPLIER_NAME)
+					) AS RWert,
+					dbo.DATA0070.SHIPPING_COST+dbo.DATA0070.MISC_CHARGE AS NK,
+					dbo.DATA0095.ENTERED_DATE AS LDatum,
+					0 AS AnzBestellungen,
+					'' AS LetzterLieferant,
+					0 As AnzLieferanten
+
+					FROM         dbo.DATA0005 INNER JOIN
+										  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+										  dbo.DATA0017 INNER JOIN
+										  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE    
+							(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+							AND
+							(dbo.DATA0095.TRAN_TP = 8 OR dbo.DATA0095.TRAN_TP = 20) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+							AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+							AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2, 103))
+
+				UNION ALL 
+
+				--offene Bestellungen
+				SELECT  
+					'GGP' As BTyp,
+					0 AS D95_PTR,
+					dbo.DATA0017.RKEY AS D17_RKEY,
+					dbo.DATA0023.RKEY AS D23_RKEY,
+					dbo.DATA0017.INV_PART_NUMBER, 
+					dbo.DATA0017.INV_PART_DESCRIPTION, 
+					dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+					--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+					dbo.DATA0002.UNIT_CODE,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY, 
+					dbo.DATA0071.QUAN_RECD AS LMenge,
+					0 AS RPreis,
+					0 AS RWert,
+					(
+						SELECT     TOP 1 (dbo.DATA0107.SHIPPING+dbo.DATA0107.MISC_TOT) AS Res
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+											  dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+						--WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+					) AS NK,
+					dbo.DATA0071.REQ_DATE AS LDatum,
+					1 AS AnzBestellungen,
+					'' AS LetzterLieferant,
+					0 As AnzLieferanten
+
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE     
+							(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+							AND 
+							(dbo.DATA0070.STATUS = 1)
+							AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+							AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+							AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2, 103))
+
+				UNION ALL 
+
+				--Debit/Belastung
+				SELECT  
+					'GGP' As BTyp,
+					0 AS D95_PTR,
+					dbo.DATA0017.RKEY AS D17_RKEY,
+					dbo.DATA0023.RKEY AS D23_RKEY,
+					dbo.DATA0017.INV_PART_NUMBER, 
+					dbo.DATA0017.INV_PART_DESCRIPTION, 
+					dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+					--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+					dbo.DATA0002.UNIT_CODE,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY, 
+					dbo.DATA0071.QUAN_RECD AS LMenge,
+					dbo.DATA0108.PRICE AS RPreis,
+					(-1)*dbo.DATA0132.AMOUNT AS RWert,
+					dbo.DATA0132.SHIPPING + dbo.DATA0132.MISC_TOT AS NK,
+					dbo.DATA0071.REQ_DATE AS LDatum,
+					1 AS AnzBestellungen,
+					'' AS LetzterLieferant,
+					0 As AnzLieferanten
+
+				FROM         dbo.DATA0132 INNER JOIN
+                      dbo.DATA0219 ON dbo.DATA0132.RKEY = dbo.DATA0219.DEBIT_PTR INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0219.DATA0108_PTR = dbo.DATA0108.RKEY INNER JOIN
+                      dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+                      dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                      dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+                      dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+                      dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+                      dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY
+				WHERE      
+							(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+							AND
+							(dbo.DATA0070.STATUS = 1)
+							AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+							AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+							AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2, 103))
+
+				UNION ALL 
+
+				--Bestellungen in Klärung 
+				SELECT  
+					'GGP' As BTyp,
+					0 AS D95_PTR,
+					dbo.DATA0017.RKEY AS D17_RKEY,
+					dbo.DATA0023.RKEY AS D23_RKEY,
+					dbo.DATA0017.INV_PART_NUMBER, 
+					dbo.DATA0017.INV_PART_DESCRIPTION, 
+					dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+					--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+					dbo.DATA0002.UNIT_CODE,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY, 
+					dbo.DATA0071.QUAN_RECD AS LMenge,
+					0 AS RPreis,
+					0 AS RWert,
+					(
+						SELECT     TOP 1 (dbo.DATA0107.SHIPPING+dbo.DATA0107.MISC_TOT) AS Res
+						FROM         dbo.DATA0070 AS D70 INNER JOIN
+											  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+											  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+											  dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+						WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)	
+					) AS NK,
+					dbo.DATA0071.REQ_DATE AS LDatum,
+					1 AS AnzBestellungen,
+					'' AS LetzterLieferant,
+					0 As AnzLieferanten
+
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE      
+							(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+							AND
+							(dbo.DATA0070.STATUS = 5)
+							AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+							AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1, 103))
+							AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2, 103))
+
+
+			)  AS ResTbl
+			GROUP BY
+				D17_RKEY, 
+ 				--D23_RKEY,
+				INV_PART_NUMBER, 
+				INV_PART_DESCRIPTION,
+				Lieferant,
+
+				UNIT_CODE,
+				QUAN_ON_HAND,
+				CONSIGN_ONHAND_QTY,
+				LetzterLieferant,
+				AnzLieferanten
+			--ORDER BY INV_PART_NUMBER, INV_PART_DESCRIPTION --SUM(CAST(RWert AS NUMERIC(10, 2))) DESC --INV_PART_NUMBER, INV_PART_DESCRIPTION , BTyp
+
+
+
+
+			--INSERT
+			----------------------------------
+			INSERT @tblArtLiefNeu(
+										D17_RKEY, 
+										--D23_RKEY, 
+										INV_PART_NUMBER, 
+										INV_PART_DESCRIPTION, 
+										Lieferant,
+										EK_Volume,
+										EK_VolumeVJ,
+										EK_VolumeVJ_ZR,
+										LMenge,
+										UNIT_CODE,
+										DRPreis,
+										Letzter_EK_Preis,
+										letztes_LDatum,
+										AnzBestellungen,
+										DRWert,
+										DLMenge,
+										Preis_gewichtet12Mon,
+										DPreis_VJ_Lief,
+										PRODUCT_GROUP_NAME,
+										PRODUCT_NAME
+							)
+			--UPDATE tblArtLief
+			--SET tblArtLief.EK_VolumeVJ_ZR = myTblEK_VolumeVJ_ZR.EK_VolumeVJ_ZR
+			SELECT
+				myTblEK_VolumeVJ_ZR.D17_RKEY,
+				--myTblEK_VolumeVJ_ZR.D23_RKEY,
+				myTblEK_VolumeVJ_ZR.INV_PART_NUMBER,
+				myTblEK_VolumeVJ_ZR.INV_PART_DESCRIPTION,
+				myTblEK_VolumeVJ_ZR.Lieferant,
+				0,
+				0,
+				myTblEK_VolumeVJ_ZR.EK_VolumeVJ_ZR,
+				0,
+				myTblEK_VolumeVJ_ZR.EK_Einheit,
+				0,
+				CAST((
+					SELECT     TOP 1 dbo.DATA0108.PRICE
+					--FROM         dbo.DATA0017 AS D17 INNER JOIN
+					--					  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+					--					  dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR
+					FROM         dbo.DATA0017 AS D17 INNER JOIN
+                      dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+                      dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+                      dbo.DATA0023 AS D23 ON dbo.DATA0070.SUPPLIER_POINTER = D23.RKEY
+					WHERE     (dbo.DATA0071.PRICE > 0) AND (D17.RKEY = D17_RKEY) 
+								--AND D23.RKEY = D23_RKEY 
+								AND (D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant)
+					ORDER BY dbo.DATA0071.DEL_DATE DESC
+				) AS NUMERIC(10, 3)) AS Letzter_EK_Preis,
+				(
+					SELECT CONVERT(varchar(10), MAX(ResDatum), 104) AS RecMaxDatum
+					FROM
+					(
+						SELECT   
+							--CONVERT(varchar(10), dbo.DATA0095.ENTERED_DATE, 104) AS ResDatum,
+							dbo.DATA0095.ENTERED_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME,
+							dbo.DATA0023.RKEY AS D23ID
+						FROM         
+							dbo.DATA0095 INNER JOIN
+							dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+							dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+							dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+							dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+						WHERE    
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+								OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+						UNION ALL
+						SELECT
+							--CONVERT(varchar(10), dbo.DATA0341.TRAN_DATE, 104) AS ResDatum,
+							dbo.DATA0341.TRAN_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME,
+							dbo.DATA0023.RKEY AS D23ID
+						FROM        
+							dbo.DATA0017 INNER JOIN
+							dbo.DATA0341 ON dbo.DATA0017.RKEY = dbo.DATA0341.DATA0017_PTR INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0341.DATA0023_PTR = dbo.DATA0023.RKEY INNER JOIN
+							dbo.DATA0005 ON dbo.DATA0341.DATA0005_PTR = dbo.DATA0005.RKEY INNER JOIN
+							dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+							dbo.DATA0466 ON dbo.DATA0341.DATA0466_PTR = dbo.DATA0466.RKEY INNER JOIN
+							dbo.DATA0467 ON dbo.DATA0341.DATA0467_PTR = dbo.DATA0467.RKEY
+						WHERE     
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0341.TRAN_TP=1)
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0466.STATUS=2 OR (dbo.DATA0466.STATUS=1 AND dbo.DATA0467.QUAN_RECD>=dbo.DATA0467.QUAN_ORD))
+					) AS myTblMaxDatum
+					WHERE D17ID = D17_RKEY 
+							--AND D23ID = D23_RKEY 
+							AND SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant
+				) AS letztes_LDatum,
+				0,
+				0,
+				0,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					--Res_DREPreis,
+					--TRAN_DATE
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							--D95.TRAN_DATE 
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+							--D108.PRICE AS RE_Preis, D71.PRICE BE_Preis, D71.QUAN_RECD, D71.QUAN_RETN, D95.INVT_PTR AS INVPTR, D70.SUPPLIER_POINTER
+						--FROM         dbo.DATA0095 AS D95 INNER JOIN
+						--					  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+						--					  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+						--					  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+							  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+							  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+							  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+							  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+							  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+							  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+							--AND (ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0) 
+							--AND (D95.INVT_PTR=D17_RKEY)
+							--AND (D70.SUPPLIER_POINTER = D23_RKEY)
+					) AS myDPreisTbl 
+					WHERE
+							(INVT_PTR=D17_RKEY)
+							--AND (SUPPLIER_POINTER = D23_RKEY)
+							AND SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+					--ORDER BY TRAN_DATE DESC
+				) AS Preis_gewichtet12Mon,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+						--FROM         dbo.DATA0095 AS D95 INNER JOIN
+						--					  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+						--					  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+						--					  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+							  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+							  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+							  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+							  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+							  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+							  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (YEAR(D95.TRAN_DATE)= CAST(@paraVJ AS INT))
+					) AS myDPreisTbl
+					WHERE
+						(INVT_PTR=D17_RKEY)
+						--AND (SUPPLIER_POINTER = D23_RKEY)
+						AND (SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant)
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+				) AS DPreis_VJ_Lief,
+				(
+					SELECT TOP 1  dbo.DATA0007.PRODUCT_GROUP_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_GROUP_NAME,
+				(
+					SELECT TOP 1  dbo.DATA0008.PRODUCT_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_NAME
+	
+
+			FROM
+			--@tblArtLief AS tblArtLief,
+			(
+						SELECT 
+							D17_RKEY,  
+							--D23_RKEY,
+							INV_PART_NUMBER, 
+							INV_PART_DESCRIPTION, 
+							Lieferant,
+							CAST(SUM(RWert) AS NUMERIC(10, 2)) AS EK_VolumeVJ_ZR,
+							EK_Einheit
+
+						FROM (
+							--Lieferung T , Lieferung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+										--D23.SUPPLIER_NAME
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 5) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+
+
+							UNION ALL
+
+							--Retourniert
+							SELECT 
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH)*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									--D23.SUPPLIER_NAME
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									--WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 8 OR dbo.DATA0095.TRAN_TP = 20) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--offene Bestellungen
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								0 AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE     
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND 
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Debit/Belastung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								(-1)*dbo.DATA0132.AMOUNT AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+							FROM         dbo.DATA0132 INNER JOIN
+								  dbo.DATA0219 ON dbo.DATA0132.RKEY = dbo.DATA0219.DEBIT_PTR INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0219.DATA0108_PTR = dbo.DATA0108.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+								  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Bestellungen in Klärung 
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								0 AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+								
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 5)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+						)  AS ResTbl
+						GROUP BY
+							D17_RKEY, 
+							--D23_RKEY,
+							INV_PART_NUMBER, 
+							INV_PART_DESCRIPTION, 
+							Lieferant,
+							EK_Einheit
+			) AS myTblEK_VolumeVJ_ZR
+			WHERE 
+			--STR(myTblEK_VolumeVJ_ZR.D17_RKEY) + ';' + STR(myTblEK_VolumeVJ_ZR.D23_RKEY) Not In (SELECT STR(tblArtLief .D17_RKEY) + ';' + STR(tblArtLief .D23_RKEY) FROM @tblArtLief AS tblArtLief )
+			STR(myTblEK_VolumeVJ_ZR.D17_RKEY) + ';' + RTRIM(myTblEK_VolumeVJ_ZR.Lieferant) COLLATE SQL_Latin1_General_CP1_CI_AS
+				Not In (SELECT STR(tblArtLiefNeu.D17_RKEY) + ';' + RTRIM(tblArtLiefNeu.Lieferant) COLLATE SQL_Latin1_General_CP1_CI_AS FROM @tblArtLiefNeu AS tblArtLiefNeu )
+			--tblArtLief.D17_RKEY = myTblEK_VolumeVJ_ZR.D17_RKEY
+			--AND
+			--tblArtLief.D23_RKEY = myTblEK_VolumeVJ_ZR.D23_RKEY
+			----------------------------------
+
+
+			--INSERT VORJAHR Werte
+			----------------------------------
+			INSERT @tblArtLiefNeu(
+										D17_RKEY, 
+										--D23_RKEY, 
+										INV_PART_NUMBER, 
+										INV_PART_DESCRIPTION, 
+										Lieferant,
+										EK_Volume,
+										EK_VolumeVJ,
+										EK_VolumeVJ_ZR,
+										LMenge,
+										UNIT_CODE,
+										DRPreis,
+										Letzter_EK_Preis,
+										letztes_LDatum,
+										AnzBestellungen,
+										DRWert,
+										DLMenge,
+										Preis_gewichtet12Mon,
+										DPreis_VJ_Lief,
+										PRODUCT_GROUP_NAME,
+										PRODUCT_NAME
+							)
+			--UPDATE tblArtLief
+			--SET tblArtLief.EK_VolumeVJ_ZR = myTblEK_VolumeVJ_ZR.EK_VolumeVJ_ZR
+			SELECT
+				myTblEK_VolumeVJ_ZR.D17_RKEY,
+				--myTblEK_VolumeVJ_ZR.D23_RKEY,
+				myTblEK_VolumeVJ_ZR.INV_PART_NUMBER,
+				myTblEK_VolumeVJ_ZR.INV_PART_DESCRIPTION,
+				myTblEK_VolumeVJ_ZR.Lieferant,
+				0,
+				0,
+				myTblEK_VolumeVJ_ZR.EK_VolumeVJ_ZR,
+				0,
+				myTblEK_VolumeVJ_ZR.EK_Einheit,
+				0,
+				CAST((
+					SELECT     TOP 1 dbo.DATA0108.PRICE
+					--FROM         dbo.DATA0017 AS D17 INNER JOIN
+					--					  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+					--					  dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR
+					FROM         dbo.DATA0017 AS D17 INNER JOIN
+                      dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+                      dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+                      dbo.DATA0023 AS D23 ON dbo.DATA0070.SUPPLIER_POINTER = D23.RKEY
+					WHERE     (dbo.DATA0071.PRICE > 0) AND (D17.RKEY = D17_RKEY) 
+								--AND D23.RKEY = D23_RKEY 
+								AND (D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant)
+					ORDER BY dbo.DATA0071.DEL_DATE DESC
+				) AS NUMERIC(10, 3)) AS Letzter_EK_Preis,
+				(
+					SELECT CONVERT(varchar(10), MAX(ResDatum), 104) AS RecMaxDatum
+					FROM
+					(
+						SELECT   
+							--CONVERT(varchar(10), dbo.DATA0095.ENTERED_DATE, 104) AS ResDatum,
+							dbo.DATA0095.ENTERED_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME,
+							dbo.DATA0023.RKEY AS D23ID
+						FROM         
+							dbo.DATA0095 INNER JOIN
+							dbo.DATA0017 ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+							dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+							dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+							dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+						WHERE    
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+								OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+						UNION ALL
+						SELECT
+							--CONVERT(varchar(10), dbo.DATA0341.TRAN_DATE, 104) AS ResDatum,
+							dbo.DATA0341.TRAN_DATE AS ResDatum,
+							dbo.DATA0017.RKEY AS D17ID,
+							dbo.DATA0023.SUPPLIER_NAME,
+							dbo.DATA0023.RKEY AS D23ID
+						FROM        
+							dbo.DATA0017 INNER JOIN
+							dbo.DATA0341 ON dbo.DATA0017.RKEY = dbo.DATA0341.DATA0017_PTR INNER JOIN
+							dbo.DATA0023 ON dbo.DATA0341.DATA0023_PTR = dbo.DATA0023.RKEY INNER JOIN
+							dbo.DATA0005 ON dbo.DATA0341.DATA0005_PTR = dbo.DATA0005.RKEY INNER JOIN
+							dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+							dbo.DATA0466 ON dbo.DATA0341.DATA0466_PTR = dbo.DATA0466.RKEY INNER JOIN
+							dbo.DATA0467 ON dbo.DATA0341.DATA0467_PTR = dbo.DATA0467.RKEY
+						WHERE     
+							--(dbo.DATA0017.RKEY = D17_RKEY)
+							--AND 
+							(dbo.DATA0341.TRAN_TP=1)
+							--AND (dbo.DATA0023.SUPPLIER_NAME = Lieferant)
+							AND (dbo.DATA0466.STATUS=2 OR (dbo.DATA0466.STATUS=1 AND dbo.DATA0467.QUAN_RECD>=dbo.DATA0467.QUAN_ORD))
+					) AS myTblMaxDatum
+					WHERE D17ID = D17_RKEY 
+							--AND D23ID = D23_RKEY 
+							AND SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant
+				) AS letztes_LDatum,
+				0,
+				0,
+				0,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					--Res_DREPreis,
+					--TRAN_DATE
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							--D95.TRAN_DATE 
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+							--D108.PRICE AS RE_Preis, D71.PRICE BE_Preis, D71.QUAN_RECD, D71.QUAN_RETN, D95.INVT_PTR AS INVPTR, D70.SUPPLIER_POINTER
+						--FROM         dbo.DATA0095 AS D95 INNER JOIN
+						--					  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+						--					  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+						--					  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+							  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+							  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+							  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+							  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+							  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+							  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+							--AND (ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0) 
+							--AND (D95.INVT_PTR=D17_RKEY)
+							--AND (D70.SUPPLIER_POINTER = D23_RKEY)
+					) AS myDPreisTbl 
+					WHERE
+							(INVT_PTR=D17_RKEY)
+							--AND (SUPPLIER_POINTER = D23_RKEY)
+							AND SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+					--ORDER BY TRAN_DATE DESC
+				) AS Preis_gewichtet12Mon,
+				(
+					SELECT
+					SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE --SUM(D108.PRICE*D108.QUANTITY)/SUM(D108.QUANTITY) --D108.PRICE 
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+										ELSE D17.STD_COST --D95.QUANTITY/D17.STOCK_PURCH*(SELECT TOP 1 STD_COST FROM dbo.DATA0017 WHERE RKEY=225)
+									END
+							END AS Res_DREPreis,
+							(D95.QUANTITY/D17.STOCK_PURCH) AS Menge,
+							D95.INVT_PTR,
+							--D70.SUPPLIER_POINTER
+						--FROM         dbo.DATA0095 AS D95 INNER JOIN
+						--					  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+						--					  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+						--					  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+						--					  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+							D23.SUPPLIER_NAME
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+							  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+							  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+							  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+							  dbo.DATA0017 AS D17 ON D95.INVT_PTR = D17.RKEY INNER JOIN
+							  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+							  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (YEAR(D95.TRAN_DATE)= CAST(@paraVJ AS INT))
+					) AS myDPreisTbl
+					WHERE
+						(INVT_PTR=D17_RKEY)
+						--AND (SUPPLIER_POINTER = D23_RKEY)
+						AND (SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = Lieferant)
+					GROUP BY
+						INVT_PTR,
+						--SUPPLIER_POINTER
+						SUPPLIER_NAME
+				) AS DPreis_VJ_Lief,
+				(
+					SELECT TOP 1  dbo.DATA0007.PRODUCT_GROUP_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_GROUP_NAME,
+				(
+					SELECT TOP 1  dbo.DATA0008.PRODUCT_NAME
+					FROM         dbo.DATA0017 INNER JOIN
+										  dbo.DATA0008 ON dbo.DATA0017.PROD_CODE_SELL_PTR = dbo.DATA0008.RKEY INNER JOIN
+										  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY
+					WHERE     (dbo.DATA0017.RKEY = D17_RKEY)
+				) AS PRODUCT_NAME
+	
+
+			FROM
+			--@tblArtLief AS tblArtLief,
+			(
+						SELECT 
+							D17_RKEY,  
+							--D23_RKEY,
+							INV_PART_NUMBER, 
+							INV_PART_DESCRIPTION, 
+							Lieferant,
+							CAST(SUM(RWert) AS NUMERIC(10, 2)) AS EK_VolumeVJ_ZR,
+							EK_Einheit
+
+						FROM (
+							--Lieferung T , Lieferung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+										--D23.SUPPLIER_NAME
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 5) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE < CONVERT(DATETIME, @para1VJ, 103)
+											OR dbo.DATA0095.ENTERED_DATE > CONVERT(DATETIME, @para2VJ, 103))
+										AND (YEAR(dbo.DATA0095.ENTERED_DATE)= CAST(@paraVJ AS INT))
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+
+
+							UNION ALL
+
+							--Retourniert
+							SELECT 
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH)*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									--D23.SUPPLIER_NAME
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									--WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 8 OR dbo.DATA0095.TRAN_TP = 20) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE < CONVERT(DATETIME, @para1VJ, 103)
+											OR dbo.DATA0095.ENTERED_DATE > CONVERT(DATETIME, @para2VJ, 103))
+										AND (YEAR(dbo.DATA0095.ENTERED_DATE)= CAST(@paraVJ AS INT))
+
+							UNION ALL 
+
+							--offene Bestellungen
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								0 AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE     
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND 
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE < CONVERT(DATETIME, @para1VJ, 103)
+											OR dbo.DATA0071.REQ_DATE > CONVERT(DATETIME, @para2VJ, 103))
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+
+							UNION ALL 
+
+							--Debit/Belastung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								(-1)*dbo.DATA0132.AMOUNT AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+
+							FROM         dbo.DATA0132 INNER JOIN
+								  dbo.DATA0219 ON dbo.DATA0132.RKEY = dbo.DATA0219.DEBIT_PTR INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0219.DATA0108_PTR = dbo.DATA0108.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+								  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE < CONVERT(DATETIME, @para1VJ, 103)
+											OR dbo.DATA0071.REQ_DATE > CONVERT(DATETIME, @para2VJ, 103))
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+
+							UNION ALL 
+
+							--Bestellungen in Klärung 
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0017.INV_PART_NUMBER, 
+								dbo.DATA0017.INV_PART_DESCRIPTION, 
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								--RTRIM(dbo.DATA0023.SUPPLIER_NAME) + ' (' + dbo.DATA0023.CODE + ')' AS Lieferant,
+								0 AS RWert,
+								dbo.DATA0002.UNIT_CODE AS EK_Einheit
+								
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 5)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE < CONVERT(DATETIME, @para1VJ, 103)
+											OR dbo.DATA0071.REQ_DATE > CONVERT(DATETIME, @para2VJ, 103))
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+
+						)  AS ResTbl
+						GROUP BY
+							D17_RKEY, 
+							--D23_RKEY,
+							INV_PART_NUMBER, 
+							INV_PART_DESCRIPTION, 
+							Lieferant,
+							EK_Einheit
+			) AS myTblEK_VolumeVJ_ZR
+			WHERE 
+			--STR(myTblEK_VolumeVJ_ZR.D17_RKEY) + ';' + STR(myTblEK_VolumeVJ_ZR.D23_RKEY) Not In (SELECT STR(tblArtLief .D17_RKEY) + ';' + STR(tblArtLief .D23_RKEY) FROM @tblArtLief AS tblArtLief )
+			STR(myTblEK_VolumeVJ_ZR.D17_RKEY) + ';' + RTRIM(myTblEK_VolumeVJ_ZR.Lieferant) COLLATE SQL_Latin1_General_CP1_CI_AS
+				Not In (SELECT STR(tblArtLiefNeu.D17_RKEY) + ';' + RTRIM(tblArtLiefNeu.Lieferant) COLLATE SQL_Latin1_General_CP1_CI_AS FROM @tblArtLiefNeu AS tblArtLiefNeu )
+			--tblArtLief.D17_RKEY = myTblEK_VolumeVJ_ZR.D17_RKEY
+			--AND
+			--tblArtLief.D23_RKEY = myTblEK_VolumeVJ_ZR.D23_RKEY
+			----------------------------------
+
+
+
+			--UPDATE EK_VolumeVJ Vorjahr
+			----------------------------------
+			UPDATE tblArtLiefNeu
+			SET 
+				tblArtLiefNeu.EK_VolumeVJ = myTblEK_VolumeVJ.EK_VolumeVJ,
+				tblArtLiefNeu.LMengeVJ = myTblEK_VolumeVJ.LMengeVJ
+			FROM
+			@tblArtLiefNeu AS tblArtLiefNeu,
+			(
+						SELECT 
+							D17_RKEY,  
+							--D23_RKEY,
+							Lieferant,
+							CAST(SUM(LMengeVJ) AS NUMERIC(10, 2)) AS LMengeVJ,
+							CAST(SUM(RWert) AS NUMERIC(10, 2)) AS EK_VolumeVJ
+
+						FROM (
+							--Lieferung T , Lieferung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS LMengeVJ,
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									--WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 5) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (YEAR(dbo.DATA0095.ENTERED_DATE)= CAST(@paraVJ AS INT))
+										--AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										--AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+
+
+							UNION ALL
+
+							--Retourniert
+							SELECT 
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH) AS LMengeVJ,
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH)*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									----WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									--WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 8 OR dbo.DATA0095.TRAN_TP = 20) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (YEAR(dbo.DATA0095.ENTERED_DATE)= CAST(@paraVJ AS INT))
+										--AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										--AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--offene Bestellungen
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJ,
+								0 AS RWert
+
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE     
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND 
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+										--AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										--AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Debit/Belastung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJ,
+								(-1)*dbo.DATA0132.AMOUNT AS RWert
+
+							FROM         dbo.DATA0132 INNER JOIN
+								  dbo.DATA0219 ON dbo.DATA0132.RKEY = dbo.DATA0219.DEBIT_PTR INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0219.DATA0108_PTR = dbo.DATA0108.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+								  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+										--AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										--AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Bestellungen in Klärung 
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJ,
+								0 AS RWert
+								
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 5)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (YEAR(dbo.DATA0071.REQ_DATE)= CAST(@paraVJ AS INT))
+										--AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										--AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+
+						)  AS ResTbl
+						GROUP BY
+							D17_RKEY, 
+							--D23_RKEY
+							Lieferant
+			) AS myTblEK_VolumeVJ
+			WHERE 
+			tblArtLiefNeu.D17_RKEY = myTblEK_VolumeVJ.D17_RKEY
+			AND
+			--tblArtLief.D23_RKEY = myTblEK_VolumeVJ.D23_RKEY
+			tblArtLiefNeu.Lieferant COLLATE SQL_Latin1_General_CP1_CI_AS = myTblEK_VolumeVJ.Lieferant
+			----------------------------------
+									
+
+			--UPDATE EK_VolumeVJ Zeitraum
+			----------------------------------
+			UPDATE tblArtLiefNeu
+			SET 
+				tblArtLiefNeu.EK_VolumeVJ_ZR = myTblEK_VolumeVJ_ZR.EK_VolumeVJ_ZR,
+				tblArtLiefNeu.LMengeVJZR = myTblEK_VolumeVJ_ZR.LMengeVJZR
+			FROM
+			@tblArtLiefNeu AS tblArtLiefNeu,
+			(
+						SELECT 
+							D17_RKEY,  
+							--D23_RKEY,
+							Lieferant,
+							CAST(SUM(LMengeVJZR) AS NUMERIC(10, 2)) AS LMengeVJZR,
+							CAST(SUM(RWert) AS NUMERIC(10, 2)) AS EK_VolumeVJ_ZR
+
+						FROM (
+							--Lieferung T , Lieferung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH AS LMengeVJZR, --EK-Menge Vorjahr Zeitraum
+								dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									--WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 5) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+										AND (dbo.DATA0070.STATUS=2 OR dbo.DATA0070.STATUS=6
+											OR (dbo.DATA0070.STATUS=1 AND dbo.DATA0071.QUAN_RECD>=dbo.DATA0071.QUAN_ORD))
+
+
+							UNION ALL
+
+							--Retourniert
+							SELECT 
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH) AS LMengeVJZR, --EK-Menge Vorjahr Zeitraum
+								-1*(dbo.DATA0095.QUANTITY/dbo.DATA0017.STOCK_PURCH)*
+								(
+									SELECT     TOP 1 
+									CASE
+										WHEN ISNULL(D108.PRICE, 0)>0 THEN D108.PRICE 
+											ELSE 
+												CASE
+													WHEN ISNULL(D71.PRICE, 0)>0 THEN D71.PRICE 
+														ELSE 
+															ISNULL(dbo.DATA0017.STD_COST, 0) --(SELECT TOP 1 ISNULL(STD_COST, 0) AS Res FROM DATA0017 WHERE RKEY=dbo.DATA0017.RKEY)
+												END
+									END AS RPreis
+									--FROM         dbo.DATA0070 AS D70 INNER JOIN
+									--					  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+									--					  dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR
+									----WHERE     (D70.PO_NUMBER = dbo.DATA0070.PO_NUMBER) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									--WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+									FROM         dbo.DATA0070 AS D70 INNER JOIN
+														  dbo.DATA0071 AS D71 ON D70.RKEY = D71.PO_PTR INNER JOIN
+														  dbo.DATA0023 AS D23 ON D70.SUPPLIER_POINTER = D23.RKEY LEFT OUTER JOIN
+														  dbo.DATA0108 AS D108 ON D71.RKEY = D108.DATA0071_PTR
+									WHERE     (D71.RKEY = dbo.DATA0071.RKEY) AND (D71.INVT_PTR = dbo.DATA0017.RKEY)
+												AND D23.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0023.SUPPLIER_NAME
+								) AS RWert
+
+								FROM         dbo.DATA0005 INNER JOIN
+													  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+													  dbo.DATA0017 INNER JOIN
+													  dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+													  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0095.TRAN_TP = 8 OR dbo.DATA0095.TRAN_TP = 20) --AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--offene Bestellungen
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJZR, --EK-Menge Vorjahr Zeitraum
+								0 AS RWert
+
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE     
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND 
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Debit/Belastung
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJZR, --EK-Menge Vorjahr Zeitraum
+								(-1)*dbo.DATA0132.AMOUNT AS RWert
+
+							FROM         dbo.DATA0132 INNER JOIN
+								  dbo.DATA0219 ON dbo.DATA0132.RKEY = dbo.DATA0219.DEBIT_PTR INNER JOIN
+								  dbo.DATA0108 ON dbo.DATA0219.DATA0108_PTR = dbo.DATA0108.RKEY INNER JOIN
+								  dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+								  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 1)
+										AND (dbo.DATA0071.QUAN_RECD<dbo.DATA0071.QUAN_ORD)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+							UNION ALL 
+
+							--Bestellungen in Klärung 
+							SELECT  
+								dbo.DATA0017.RKEY AS D17_RKEY,
+								--dbo.DATA0023.RKEY AS D23_RKEY,
+								dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+								dbo.DATA0071.QUAN_RECD AS LMengeVJZR, --EK-Menge Vorjahr Zeitraum
+								0 AS RWert
+								
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+												  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0005 ON dbo.DATA0070.EMPLOYEE_POINTER = dbo.DATA0005.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0071.PURCHASE_UNIT_PTR = dbo.DATA0002.RKEY
+							WHERE      
+										(dbo.DATA0017.INV_PART_DESCRIPTION COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para3)   
+										AND
+										(dbo.DATA0070.STATUS = 5)
+										AND dbo.DATA0023.SUPPLIER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para4
+										AND (dbo.DATA0071.REQ_DATE >= CONVERT(DATETIME, @para1VJ, 103))
+										AND (dbo.DATA0071.REQ_DATE <= CONVERT(DATETIME, @para2VJ, 103))
+
+
+						)  AS ResTbl
+						GROUP BY
+							D17_RKEY, 
+							--D23_RKEY
+							Lieferant
+			) AS myTblEK_VolumeVJ_ZR
+			WHERE 
+			tblArtLiefNeu.D17_RKEY = myTblEK_VolumeVJ_ZR.D17_RKEY
+			AND
+			--tblArtLief.D23_RKEY = myTblEK_VolumeVJ_ZR.D23_RKEY
+			tblArtLiefNeu.Lieferant COLLATE SQL_Latin1_General_CP1_CI_AS = myTblEK_VolumeVJ_ZR.Lieferant
+			----------------------------------
+
+
+
+
+
+			SELECT
+			--D17_RKEY, 
+			--D23_RKEY,
+			--PRODUCT_GROUP_NAME,
+			--PRODUCT_NAME,
+			INV_PART_NUMBER, --Artikel
+			INV_PART_DESCRIPTION, --Bezeichnung
+			Lieferant, --Lieferant
+			ISNULL(EK_Volume_ArtGesamt, 0) AS EK_Volume_ArtGesamt, --EK-Volumen ZR ges
+			ISNULL(EK_Volume, 0) AS EK_Volume, --EK-Volumen Lieferant ZR ges
+			ISNULL(EK_VolumeVJ_ZR, 0) AS EK_VolumeVJ_ZR, --EK-Volumen Lieferant ZR VJ
+			ISNULL(EK_VolumeVJ, 0) AS EK_VolumeVJ, --EK-Volumen Lieferant VJ
+			ISNULL(EK_Volume, 0)-ISNULL(EK_VolumeVJ_ZR, 0) AS Diff_ZR_abs, --Diff. im ZR abs
+			CASE WHEN ISNULL(EK_VolumeVJ_ZR, 0)>0 THEN 
+				(ISNULL(EK_Volume, 0)-ISNULL(EK_VolumeVJ_ZR, 0))/ISNULL(EK_VolumeVJ_ZR, 0)*100 ELSE 0 END AS Diff_ZR_Proz, --Diff. im ZR in %
+			CASE WHEN ISNULL(EK_Volume_ArtGesamt, 0)>0 THEN 
+				ISNULL(EK_Volume, 0)/ISNULL(EK_Volume_ArtGesamt, 0)*100 ELSE 0 END AS Ant_LiefArt_Proz, --Anteil Lieferant an Artikel
+			--Anteil am EK-Volumen von Lieferant
+			ISNULL(Preis_gewichtet12Mon, 0) AS Preis_gewichtet12Mon, --O RE-Preis der letzten 12 Monate
+			ISNULL(DPreis_VJ_Lief, 0) AS DPreis_VJ_Lief, --O RE-Preis des Vorjahres
+			ISNULL(DPreis_VJ_Lief_ZR, 0) AS DPreis_VJ_Lief_ZR, --O RE-Preis des Zeitraums je Lieferant
+			ISNULL(Letzter_EK_Preis, 0) AS Letzter_EK_Preis, --Letzter EK-Preis je Lieferant
+			CASE WHEN ISNULL(letztes_LDatum, '')='' THEN '' ELSE CONVERT(varchar(10), letztes_LDatum, 104) END AS letztes_LDatum, --le Pr vom
+			ISNULL(DPreis_VJ_Lief_ZR, 0)-ISNULL(DPreis_VJ_Lief, 0) AS Diff_DPreis_ZR_Min_DPreisVJ, --Diff. O Pr ZR - O Pr VJ
+			ISNULL(LMenge, 0) AS LMenge, --EK-Menge Zeitraum
+
+			ISNULL(LMengeVJZR, 0) AS LMengeVJZR, --EK-Menge VJ ZR
+			ISNULL(LMengeVJ, 0) AS LMengeVJ, --EK-Menge VJ
+
+			UNIT_CODE, --EK Einheit
+			ISNULL(LMenge, 0)*(ISNULL(DPreis_VJ_Lief_ZR, 0)-ISNULL(Preis_gewichtet12Mon, 0)) AS Abweich_abs, --Abweichung absolut
+
+			CASE WHEN ISNULL(Preis_gewichtet12Mon, 0)>0 THEN 
+				(ISNULL(DPreis_VJ_Lief_ZR, 0)-ISNULL(Preis_gewichtet12Mon, 0))/ISNULL(Preis_gewichtet12Mon, 0)
+				ELSE 0 END AS Abweich_Proz, --Abweichung in %
+
+			CASE WHEN EK_Volume_TOTAL>0 THEN ROUND(ISNULL(EK_Volume/EK_Volume_TOTAL*100, 0), 2) ELSE ROUND(0, 2) END AS Proz_Anteil, --Anteil am EK-Volumen von Lieferant
+			ISNULL(AnzBestellungen, 0) AS AnzBestellungen, --Anz. Lieferungen
+			ISNULL(DRWert, 0) AS DRWert, --O Rechnungswert
+			ISNULL(DLMenge, 0) AS DLMenge --O Liefermenge
+
+			--ISNULL(DPreis_VJ, 0) AS DPreis_VJ,
+			--ISNULL(DPreis_VJ_Lief, 0) AS DPreis_VJ_Lief, --O RE-Preis des Vorjahres (2013) je Lieferant
+			
+			
+			
+			--ISNULL(DPreis_VJ_Lief_ZR, 0)-ISNULL(Preis_gewichtet12Mon, 0) AS Diff_DPreis, --Differenz d Preis Zeitraum - d Preis l 12 Monate
+			--Anteil am EK-Volumen der Grupppe
+
+
+			--CASE WHEN EK_Volume_TOTAL>0 THEN ISNULL(EK_Volume/EK_Volume_TOTAL*100, 0) ELSE 0 END AS Proz_Anteil,
+			--ISNULL(EK_VolumeVJ_ZR, 0) AS EK_VolumeVJ_ZR,
+			--UNIT_CODE,
+			--ISNULL(DRPreis, 0) AS DRPreis,
+			----letztes_LDatum,
+			----CONVERT(varchar(10), letztes_LDatum, 104) AS letztes_LDatum,
+			--ISNULL(AnzBestellungen, 0) AS AnzBestellungen,
+			--ISNULL(DRWert, 0) AS DRWert,
+			--ISNULL(DLMenge, 0) AS DLMenge
+			FROM
+			(
+				SELECT
+				(SELECT TOP 1 SUM(EK_Volume) FROM @tblArtLiefNeu AS myTmpTblArtLiefNeu WHERE myTmpTblArtLiefNeu.D17_RKEY = myTmpTblArtLiefMain.D17_RKEY) AS EK_Volume_ArtGesamt,
+				(SELECT TOP 1 SUM(EK_Volume) FROM @tblArtLiefNeu AS myTmpTblArtLiefNeu) AS EK_Volume_TOTAL,
+				* 
+				FROM @tblArtLiefNeu AS myTmpTblArtLiefMain --ORDER BY INV_PART_NUMBER, INV_PART_DESCRIPTION
+			) AS tbl
+--WHERE Lieferant = 'Rolf Schmidt KG'
+--WHERE INV_PART_DESCRIPTION LIKE 'FR4 0,10 35/35%' --'Prepreg 7628/610x460Kgel.TG150 phen.gef.'
+			ORDER BY EK_Volume_ArtGesamt DESC, INV_PART_DESCRIPTION, EK_Volume DESC
+	END
+
+END

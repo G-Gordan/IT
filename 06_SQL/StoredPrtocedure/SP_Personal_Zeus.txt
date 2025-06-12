@@ -1,0 +1,526 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_Personal_Zeus]    Script Date: 22.12.2017 12:01:22 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		DSI
+-- Create date: 24.02.2017
+-- Description:	Wird für Zeusabfragen benötigt (z.B. Routinen für die runde GebT, Jubiläen usw.)
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_Personal_Zeus]
+	@p_Case_ varchar(255) = '',
+	@p_para1 varchar(255) = '',
+	@p_para2 varchar(255) = '',
+	@p_para3 varchar(255) = '',
+	@p_para4 varchar(255) = '',
+	@p_para5 varchar(255) = '',
+	@p_para6 varchar(255) = '',
+	@p_para7 varchar(255) = '',
+	@p_para8 varchar(255) = '',
+	@p_para9 varchar(2000) = '',
+	@p_para10 varchar(2000) = '',
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+	DECLARE
+		@Case_ varchar(255) = '',
+		@para1 varchar(255) = '',
+		@para2 varchar(255) = '',
+		@para3 varchar(255) = '',
+		@para4 varchar(255) = '',
+		@para5 varchar(255) = '',
+		@para6 varchar(255) = '',
+		@para7 varchar(255) = '',
+		@para8 varchar(255) = '',
+		@para9 varchar(2000) = '',
+		@para10 varchar(2000) = ''
+
+		SET @Case_ = @p_Case_
+		SET @para1 = @p_para1
+		SET @para2 = @p_para2
+		SET @para3 = @p_para3
+		SET @para4 = @p_para4
+		SET @para5 = @p_para5
+		SET @para6 = @p_para6
+		SET @para7 = @p_para7
+		SET @para8 = @p_para8
+		SET @para9 = @p_para9
+		SET @para10 = @p_para10
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	DECLARE
+		@DatumGeb smalldatetime
+	SET @DatumGeb = CONVERT(DATETIME, @para1, 103) --CONVERT(DATETIME, GETDATE(), 103) --'21.12.2006' GETDATE() --'21.12.2006'  '29.05.2017'
+	DECLARE
+		@DatumRundeGeb smalldatetime
+	SET @DatumRundeGeb = CONVERT(DATETIME, @para1, 103) --CONVERT(DATETIME, GETDATE(), 103) --'21.12.2006' GETDATE() --'21.12.2006'  '29.05.2017'
+	DECLARE
+		@DatumJubi smalldatetime
+	SET @DatumJubi = CONVERT(DATETIME, @para1, 103) --CONVERT(DATETIME, GETDATE(), 103) --'25.05.2017' GETDATE()
+	DECLARE
+		@DatumBefrist smalldatetime
+	SET @DatumBefrist = CONVERT(DATETIME, @para1, 103) --CONVERT(DATETIME, GETDATE(), 103) --'25.05.2017' GETDATE()
+
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Geburtstage
+	----------------------------------------------------------------------------------------------------------------------------
+	IF @Case_ = 'Geburt_JanBisNov'
+	BEGIN
+		SELECT
+			*
+		FROM
+		(
+			SELECT     
+				YEAR(@DatumGeb) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) AS MAAlter, 
+				PERSINFO_DETAIL_1.D_BIRTHDAY AS GeburtstagsJahr, 
+				DATEADD (YEAR , YEAR(@DatumGeb) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) , PERSINFO_DETAIL_1.D_BIRTHDAY )   AS GeburtstagAm, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				DEPARTMENT_.S_NAME AS Abteilung
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  
+				AND ISNULL(PERSINFO_DETAIL_1.D_BIRTHDAY, '')<>''
+				AND PERSPARAM_T_.D_VALIDUNTIL  > GETDATE()
+		) AS tblGeburt
+		WHERE
+			GeburtstagAm = DATEADD (DAY , 2 , @DatumGeb)
+			OR
+			GeburtstagAm = @DatumGeb
+		ORDER BY
+			GeburtstagAm
+	END
+
+	IF @Case_ = 'Geburt_Dez'
+	BEGIN
+		SELECT
+			*
+		FROM
+		(
+			SELECT     
+				YEAR(@DatumGeb)+1 - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) AS MAAlter, 
+				PERSINFO_DETAIL_1.D_BIRTHDAY AS GeburtstagsJahr, 
+				DATEADD (YEAR , YEAR(@DatumGeb)+1 - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) , PERSINFO_DETAIL_1.D_BIRTHDAY )   AS GeburtstagAm, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				DEPARTMENT_.S_NAME AS Abteilung
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  
+				AND ISNULL(PERSINFO_DETAIL_1.D_BIRTHDAY, '')<>''
+				AND PERSPARAM_T_.D_VALIDUNTIL  > GETDATE()
+		) AS tblGeburt
+		WHERE
+			YEAR(GeburtstagAm) = YEAR(GETDATE())+1
+			AND MONTH(GeburtstagAm) = 1
+		ORDER BY
+			GeburtstagAm
+	END
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Geburtstage
+	----------------------------------------------------------------------------------------------------------------------------
+
+
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Runde Geburtstage
+	----------------------------------------------------------------------------------------------------------------------------
+	IF @Case_ = 'RundeGeburt_JanBisNov'
+	BEGIN	
+		SELECT
+			*
+		FROM
+		(
+			SELECT     
+				YEAR(@DatumRundeGeb) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) AS RundGeburtstag, 
+				PERSINFO_DETAIL_1.D_BIRTHDAY AS Geburtstag, 
+				DATEADD (YEAR , YEAR(@DatumRundeGeb) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) , PERSINFO_DETAIL_1.D_BIRTHDAY )   AS GeburtstagAm, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				DEPARTMENT_.S_NAME AS Abteilung
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  AND PERSPARAM_T_.D_VALIDUNTIL  > GETDATE()
+				AND YEAR(@DatumRundeGeb) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY)  IN (10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+
+			UNION ALL
+
+			SELECT     
+				(YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) AS RundGeburtstag, 
+				PERSINFO_DETAIL_1.D_BIRTHDAY AS Geburtstag, 
+				DATEADD (YEAR , (YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) , PERSINFO_DETAIL_1.D_BIRTHDAY )   AS GeburtstagAm, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				DEPARTMENT_.S_NAME AS Abteilung
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  AND PERSPARAM_T_.D_VALIDUNTIL  > GETDATE()
+				AND (YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY)  IN (10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+		) AS tblRundGeb
+		WHERE
+			--GeburtstagAm = DATEADD (DAY , 1 , @DatumRundeGeb)
+			--OR
+			--GeburtstagAm = DATEADD (DAY , 7 , @DatumRundeGeb)
+			--OR
+			GeburtstagAm = DATEADD (DAY , 14 , @DatumRundeGeb) 
+		ORDER BY
+			GeburtstagAm
+	
+	END
+
+	IF @Case_ = 'RundeGeburt_Dez'
+	BEGIN
+		SELECT
+			*
+		FROM
+		(
+			SELECT     
+				(YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) AS RundGeburtstag, 
+				PERSINFO_DETAIL_1.D_BIRTHDAY AS Geburtstag, 
+				DATEADD (YEAR , (YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY) , PERSINFO_DETAIL_1.D_BIRTHDAY )   AS GeburtstagAm, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				DEPARTMENT_.S_NAME AS Abteilung
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  AND PERSPARAM_T_.D_VALIDUNTIL  > GETDATE()
+				AND (YEAR(@DatumRundeGeb)+1) - YEAR(PERSINFO_DETAIL_1.D_BIRTHDAY)  IN (10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+		) AS tblRundGeb
+		WHERE
+			YEAR(GeburtstagAm) = YEAR(@DatumRundeGeb) + 1
+			--AND MONTH(GeburtstagAm) = 1
+		ORDER BY
+			GeburtstagAm
+	END
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Runde Geburtstage
+	----------------------------------------------------------------------------------------------------------------------------
+
+
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Jubiläum
+	----------------------------------------------------------------------------------------------------------------------------
+	IF @Case_ = 'JubiJahre_10_20_25_30_40_Jan_Nov'
+	BEGIN
+		/*
+		SELECT
+			*
+		FROM
+			(
+			SELECT   
+				YEAR(GETDATE()) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) AS JubiJahr,
+				PERSINFO_MASTER_.S_NAME, 
+				PERSINFO_MASTER_.S_SURNAME AS FamName, 
+				PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+				COSTCENTER_T_1.S_NAME AS Bereich,
+				COSTCENTER_T_1.S_Shortname   AS Kst_S_Shortname,
+				PERSINFO_MASTER_.S_PERSNR, 
+				PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM AS Eintritt, 
+				PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL AS Austritt, 
+				PERSINFO_MASTER_.B_DELETE AS Aktiv
+			--FROM          GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+			--                       GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+			FROM         GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_1 RIGHT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_1 ON COSTCENTER_T_1.I_COSTCENTERID = PERSPARAM_T_1.I_COSTCENTERID RIGHT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID ON 
+								  PERSPARAM_T_1.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+			--ORDER BY PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL DESC, PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM DESC
+		) AS tblEinAustritt
+		WHERE 
+			( (YEAR(Eintritt) + 10 = YEAR(GETDATE()) And Austritt >= GETDATE()) OR (YEAR(Eintritt) + 10 = YEAR(GETDATE()) AND ISNULL(Austritt, '') = '') )
+			OR
+			( (YEAR(Eintritt) + 20 = YEAR(GETDATE()) And Austritt >= GETDATE()) OR (YEAR(Eintritt) + 20 = YEAR(GETDATE()) AND ISNULL(Austritt, '') = '') )
+			OR
+			( (YEAR(Eintritt) + 25 = YEAR(GETDATE()) And Austritt >= GETDATE()) OR (YEAR(Eintritt) + 25 = YEAR(GETDATE()) AND ISNULL(Austritt, '') = '') )
+			OR
+			( (YEAR(Eintritt) + 30 = YEAR(GETDATE()) And Austritt >= GETDATE()) OR (YEAR(Eintritt) + 30 = YEAR(GETDATE()) AND ISNULL(Austritt, '') = '') )
+			OR
+			( (YEAR(Eintritt) + 40 = YEAR(GETDATE()) And Austritt >= GETDATE()) OR (YEAR(Eintritt) + 40 = YEAR(GETDATE()) AND ISNULL(Austritt, '') = '') )
+		ORDER BY 
+			JubiJahr,
+			FamName
+		*/
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				*
+			FROM
+				(
+				SELECT   
+					YEAR(@DatumJubi) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) AS JubiJahr,
+					DATEADD (YEAR , YEAR(@DatumJubi) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) , PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM )   AS JubiAm, 
+					PERSINFO_MASTER_.S_NAME, 
+					PERSINFO_MASTER_.S_SURNAME AS FamName, 
+					PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+					COSTCENTER_T_1.S_NAME AS Bereich,
+					COSTCENTER_T_1.S_Shortname   AS Kst_S_Shortname,
+					PERSINFO_MASTER_.S_PERSNR, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM AS Eintritt, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL AS Austritt, 
+					PERSINFO_MASTER_.B_DELETE AS Aktiv
+				FROM         GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_1 RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_1 ON COSTCENTER_T_1.I_COSTCENTERID = PERSPARAM_T_1.I_COSTCENTERID RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID ON 
+									  PERSPARAM_T_1.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+			) AS tblEinAustrittAktJahr
+			WHERE 
+				( (YEAR(Eintritt) + 10 = YEAR(@DatumJubi) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 10 = YEAR(@DatumJubi) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 20 = YEAR(@DatumJubi) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 20 = YEAR(@DatumJubi) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 25 = YEAR(@DatumJubi) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 25 = YEAR(@DatumJubi) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 30 = YEAR(@DatumJubi) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 30 = YEAR(@DatumJubi) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 40 = YEAR(@DatumJubi) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 40 = YEAR(@DatumJubi) AND ISNULL(Austritt, '') = '') )
+
+			UNION ALL
+
+			SELECT
+				*
+			FROM
+				(
+				SELECT   
+					(YEAR(@DatumJubi)+1) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) AS JubiJahr,
+					DATEADD (YEAR , (YEAR(@DatumJubi)+1) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) , PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM )   AS JubiAm, 
+					PERSINFO_MASTER_.S_NAME, 
+					PERSINFO_MASTER_.S_SURNAME AS FamName, 
+					PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+					COSTCENTER_T_1.S_NAME AS Bereich,
+					COSTCENTER_T_1.S_Shortname   AS Kst_S_Shortname,
+					PERSINFO_MASTER_.S_PERSNR, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM AS Eintritt, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL AS Austritt, 
+					PERSINFO_MASTER_.B_DELETE AS Aktiv
+				FROM         GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_1 RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_1 ON COSTCENTER_T_1.I_COSTCENTERID = PERSPARAM_T_1.I_COSTCENTERID RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID ON 
+									  PERSPARAM_T_1.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+			) AS tblEinAustrittNechstJahr
+			WHERE 
+				( (YEAR(Eintritt) + 10 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 10 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 20 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 20 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 25 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 25 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 30 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 30 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 40 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 40 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+		) AS tblJubi
+		WHERE
+			JubiAm = DATEADD (DAY , 1 , @DatumJubi) 
+			--OR JubiAm = DATEADD (DAY , 7 , @DatumJubi) 
+			OR JubiAm = DATEADD (DAY , 14 , @DatumJubi) 
+		ORDER BY 
+			JubiAm,
+			FamName
+	END
+
+	IF @Case_ = 'JubiJahre_10_20_25_30_40_Dez'
+	BEGIN
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				*
+			FROM
+				(
+				SELECT   
+					(YEAR(@DatumJubi)+1) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) AS JubiJahr,
+					DATEADD (YEAR , (YEAR(@DatumJubi)+1) - YEAR(PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM) , PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM )   AS JubiAm, 
+					PERSINFO_MASTER_.S_NAME, 
+					PERSINFO_MASTER_.S_SURNAME AS FamName, 
+					PERSINFO_MASTER_.S_FIRSTNAME AS Vorname, 
+					COSTCENTER_T_1.S_NAME AS Bereich,
+					COSTCENTER_T_1.S_Shortname   AS Kst_S_Shortname,
+					PERSINFO_MASTER_.S_PERSNR, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM AS Eintritt, 
+					PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL AS Austritt, 
+					PERSINFO_MASTER_.B_DELETE AS Aktiv
+				--FROM          GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+				--                       GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+				FROM         GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_1 RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_1 ON COSTCENTER_T_1.I_COSTCENTERID = PERSPARAM_T_1.I_COSTCENTERID RIGHT OUTER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+									  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_ ON PERSINFO_MASTER_.I_PERSID = PERSINFO_DETAIL_.I_PERSID ON 
+									  PERSPARAM_T_1.I_PERSID = PERSINFO_DETAIL_.I_PERSID
+				--ORDER BY PERSINFO_DETAIL_.D_STAFFMEMSHIPUNTIL DESC, PERSINFO_DETAIL_.D_STAFFMEMSHIPFROM DESC
+			) AS tblEinAustrittNechstJahr
+			WHERE 
+				( (YEAR(Eintritt) + 10 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 10 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 20 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 20 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 25 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 25 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 30 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 30 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+				OR
+				( (YEAR(Eintritt) + 40 = (YEAR(@DatumJubi)+1) And Austritt >= @DatumJubi) OR (YEAR(Eintritt) + 40 = (YEAR(@DatumJubi)+1) AND ISNULL(Austritt, '') = '') )
+		) AS tblJubi
+		WHERE
+			YEAR(JubiAm) = YEAR(@DatumJubi)+1
+			--AND MONTH(JubiAm) = 1
+		ORDER BY 
+			JubiAm,
+			FamName
+	END
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Jubiläum
+	----------------------------------------------------------------------------------------------------------------------------
+
+
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Befristungen
+	----------------------------------------------------------------------------------------------------------------------------
+	IF @Case_ = 'Befristungen_Jan_Nov'
+	BEGIN
+		/*
+		SELECT     
+			DEPARTMENT_.S_NAME AS Abteilung,
+			DEPARTMENT_.S_SORTNAME AS Abt_Kuerzel,
+			COSTCENTER_T_.S_NAME AS Kst, 
+			COSTCENTER_T_.S_SORTNAME  AS KstNr,
+			COSTCENTER_T_.S_Shortname   AS Kst_S_Shortname,
+			PERSINFO_MASTER_.S_NAME, 
+			PERSINFO_MASTER_.S_SURNAME, 
+			PERSINFO_MASTER_.S_FIRSTNAME,
+			PERSINFO_DETAIL_1.D_BIRTHDAY,
+			PERSINFO_MASTER_.S_PERSNR,
+			PERSPARAM_T_.D_VALIDFROM,
+			PERSPARAM_T_.D_VALIDUNTIL,
+			PERSINFO_DETAIL_1.D_STAFFMEMSHIPFROM AS Eintritt, 
+			PERSINFO_DETAIL_1.D_STAFFMEMSHIPUNTIL AS Austritt
+
+		FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+							  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+							  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+							  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+							  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+		WHERE     
+			PERSINFO_MASTER_.B_DELETE = 0  
+			AND YEAR(PERSPARAM_T_.D_VALIDUNTIL)  = YEAR(GETDATE())
+
+		ORDER BY
+			D_VALIDUNTIL,
+			PERSINFO_MASTER_.S_NAME, 
+			DEPARTMENT_.S_NAME,
+			DEPARTMENT_.S_SORTNAME
+		*/
+
+		SELECT
+			*
+		FROM
+		(
+			SELECT     
+				DEPARTMENT_.S_NAME AS Abteilung,
+				DEPARTMENT_.S_SORTNAME AS Abt_Kuerzel,
+				COSTCENTER_T_.S_NAME AS Kst, 
+				COSTCENTER_T_.S_SORTNAME  AS KstNr,
+				COSTCENTER_T_.S_Shortname   AS Kst_S_Shortname,
+				PERSINFO_MASTER_.S_NAME, 
+				PERSINFO_MASTER_.S_SURNAME, 
+				PERSINFO_MASTER_.S_FIRSTNAME,
+				PERSINFO_DETAIL_1.D_BIRTHDAY,
+				PERSINFO_MASTER_.S_PERSNR,
+				PERSPARAM_T_.D_VALIDFROM,
+				PERSPARAM_T_.D_VALIDUNTIL,
+				PERSINFO_DETAIL_1.D_STAFFMEMSHIPFROM AS Eintritt, 
+				PERSINFO_DETAIL_1.D_STAFFMEMSHIPUNTIL AS Austritt
+
+			FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								  GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								  GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+			WHERE     
+				PERSINFO_MASTER_.B_DELETE = 0  
+				AND YEAR(PERSPARAM_T_.D_VALIDUNTIL)  = YEAR(GETDATE())
+		) AS tblBefristungen
+		WHERE
+			D_VALIDUNTIL = DATEADD (DAY , 1 , @DatumBefrist)	
+			--OR D_VALIDUNTIL = DATEADD (DAY , 7 , @DatumBefrist)
+			OR D_VALIDUNTIL = DATEADD (DAY , 14 , @DatumBefrist) 
+		ORDER BY
+			D_VALIDUNTIL,
+			S_NAME,
+			Kst, 
+			Abt_Kuerzel
+	END
+
+	IF @Case_ = 'Befristungen_Dez'
+	BEGIN
+		SELECT     
+			DEPARTMENT_.S_NAME AS Abteilung,
+			DEPARTMENT_.S_SORTNAME AS Abt_Kuerzel,
+			COSTCENTER_T_.S_NAME AS Kst, 
+			COSTCENTER_T_.S_SORTNAME  AS KstNr,
+			COSTCENTER_T_.S_Shortname   AS Kst_S_Shortname,
+			PERSINFO_MASTER_.S_NAME, 
+			PERSINFO_MASTER_.S_SURNAME, 
+			PERSINFO_MASTER_.S_FIRSTNAME,
+			PERSINFO_DETAIL_1.D_BIRTHDAY,
+			PERSINFO_MASTER_.S_PERSNR,
+			PERSPARAM_T_.D_VALIDFROM,
+			PERSPARAM_T_.D_VALIDUNTIL,
+			PERSINFO_DETAIL_1.D_STAFFMEMSHIPFROM AS Eintritt, 
+			PERSINFO_DETAIL_1.D_STAFFMEMSHIPUNTIL AS Austritt
+
+		FROM         GGP_SRV_104.ISGUS.dbo.PERSINFO_MASTER AS PERSINFO_MASTER_ INNER JOIN
+								GGP_SRV_104.ISGUS.dbo.PERSPARAM_T AS PERSPARAM_T_ ON PERSINFO_MASTER_.I_PERSID = PERSPARAM_T_.I_PERSID INNER JOIN
+								GGP_SRV_104.ISGUS.dbo.DEPARTMENT AS DEPARTMENT_ ON PERSINFO_MASTER_.I_DEPARTMENTID = DEPARTMENT_.I_PATTERNID INNER JOIN
+								GGP_SRV_104.ISGUS.dbo.COSTCENTER_T AS COSTCENTER_T_ ON PERSPARAM_T_.I_COSTCENTERID = COSTCENTER_T_.I_COSTCENTERID LEFT OUTER JOIN
+								GGP_SRV_104.ISGUS.dbo.PERSINFO_DETAIL AS PERSINFO_DETAIL_1 ON PERSPARAM_T_.I_PERSID = PERSINFO_DETAIL_1.I_PERSID
+		WHERE     
+			PERSINFO_MASTER_.B_DELETE = 0  
+			AND YEAR(PERSPARAM_T_.D_VALIDUNTIL)  = YEAR(GETDATE()) + 1
+			--AND MONTH(PERSPARAM_T_.D_VALIDUNTIL)  = 1
+
+		ORDER BY
+			D_VALIDUNTIL,
+			S_NAME,
+			COSTCENTER_T_.S_NAME, 
+			DEPARTMENT_.S_SORTNAME
+	END
+	----------------------------------------------------------------------------------------------------------------------------
+	-- Befristungen
+	----------------------------------------------------------------------------------------------------------------------------
+
+
+END

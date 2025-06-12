@@ -1,0 +1,14 @@
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\bin\Debug\OKP_izv01.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\bin\Debug\OKP_izv01.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\bin\Debug\OKP_izv01.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.Form1.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.Resources.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.vbproj.GenerateResource.Cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.FormIz.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.FormTr.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.FormUn.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\OKP_izv01\OKP_izv01\obj\Debug\OKP_izv01.FormUv.resources

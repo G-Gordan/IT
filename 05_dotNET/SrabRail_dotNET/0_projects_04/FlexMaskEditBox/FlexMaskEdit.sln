@@ -1,0 +1,27 @@
+Microsoft Visual Studio Solution File, Format Version 7.00
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "FlexMaskEditBox", "FlexMaskEditBox.vbproj", "{173EADF3-8B40-4E39-86D6-279D74952804}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "WindowsApplication1", "WindowsApplication1\WindowsApplication1.vbproj", "{18CD2A76-4727-4AE4-8B60-27BDA0E92FC1}"
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		ConfigName.0 = Debug
+		ConfigName.1 = Release
+	EndGlobalSection
+	GlobalSection(ProjectDependencies) = postSolution
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{173EADF3-8B40-4E39-86D6-279D74952804}.Debug.ActiveCfg = Debug|.NET
+		{173EADF3-8B40-4E39-86D6-279D74952804}.Debug.Build.0 = Debug|.NET
+		{173EADF3-8B40-4E39-86D6-279D74952804}.Release.ActiveCfg = Release|.NET
+		{173EADF3-8B40-4E39-86D6-279D74952804}.Release.Build.0 = Release|.NET
+		{18CD2A76-4727-4AE4-8B60-27BDA0E92FC1}.Debug.ActiveCfg = Debug|.NET
+		{18CD2A76-4727-4AE4-8B60-27BDA0E92FC1}.Debug.Build.0 = Debug|.NET
+		{18CD2A76-4727-4AE4-8B60-27BDA0E92FC1}.Release.ActiveCfg = Release|.NET
+		{18CD2A76-4727-4AE4-8B60-27BDA0E92FC1}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

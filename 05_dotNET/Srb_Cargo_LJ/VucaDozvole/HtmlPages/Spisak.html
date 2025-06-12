@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="dSpisak">
+        <div id="dUnos" style="width:480px;height:700px;float:left; ">
+            <span style="display:block; background-color:  #24486C; color:white; width:456px; height:30px; padding-top:7px;padding-left:20px; font:bold 12px Arial;">Unesite novog korisnika</span>
+
+            <div id="dTable" style="width:450px;height:300px;border:3px solid #336699;padding:20px 0px 0px 20px;">
+                <table>
+                    <tr>
+                        <!--<td style=" width:130px;">
+                            Broj
+                        </td>
+                        <td class="tdBroj" style="font:bold 12px verdana;"></td>-->
+                        <td>Broj</td>
+                        <td><input type="text" name="tbBroj" id="tbBroj" class="tbBroj" /></td>
+                    </tr>
+                    <tr>
+                        <td>Prezime i ime</td>
+                        <td><input type="text" name="tbIme" id="tbIme" class="tbIme" /></td>
+                    </tr>
+                    <tr>
+                        <td>Zvanje</td>
+                        <td><input type="text" name="tbZvanje" id="tbZvanje" class="tbZvanje" /></td>
+                    </tr>
+                    <tr>
+                        <td>Preduzeće</td>
+                        <td><input type="text" name="tbPred" id="tbPred" class="tbPred" /></td>
+                    </tr>
+                    <tr>
+                        <td>Org.deo</td>
+                        <td><input type="text" name="tbOrg" id="tbOrg" class="tbOrg" /></td>
+                    </tr>
+                    <tr>
+                        <td>Vazi za reon - prugu</td>
+                        <td><input type="text" name="tbReon" id="tbReon" class="tbReon" /></td>
+                    </tr>
+                    <tr>
+                        <td>Broj lične karte</td>
+                        <td><input type="text" name="tbBrLK" id="tbBrLK" class="tbBrLK" /></td>
+                    </tr>
+                    <tr>
+                        <td>SUP</td>
+                        <td><input type="text" name="tbSUP" id="tbSUP" class="tbSUP" /></td>
+                    </tr>
+                    <tr>
+                        <td>Datum izdavanja</td>
+                        <td><input type="text" name="tbDatum" id="tbDatum" class="tbDatum" /></td>
+                    </tr>
+                </table>
+            </div>
+           
+
+            <div style="margin-top:5px;">
+                <input id="btnStPrik" type="button" value="Prikaz dozvole" class="btnStPrik tbDugme" style="width:110px; height:40px;" />
+                <input id="btnUnos" type="button" value="Unos dozvole" class="btnUnos tbDugme" style="margin-left:5px; width:120px; height:40px;" />
+                <input id="btnStDoz" type="button" value="Unos i štampa" class="btnStDoz tbDugme" style="margin-left:5px; width:120px;height:40px;" />
+                <input id="btnNovi" type="button" value="Poništi" class="btnNovi tbDugme" style="margin-left:5px; width:100px;height:40px;" />
+            </div>
+            <div class="dSlikaU">
+                <span class="stsBroj"></span>
+                <span class="stsIme"></span>
+                <span class="stsZv"></span>
+                <span class="stsSek"></span>
+                <span class="stsPru"></span>
+
+                <span class="stsLk"></span>
+                <span class="stsSup"></span>
+                <span class="stsDat"></span>
+
+            </div>
+           
+        </div>
+        <div id="dPrikaz" class="dPrikaz">
+            <div id="dPrikazKUZ" class="dPrikazKUZ">
+                <table>
+                    <tr>
+                        <td style="width:35px; padding-left:10px;">Broj</td>
+                        <td style="width:220px; padding-left:10px;">Prezime i ime</td>
+                        <td style="width:60px; padding-left:0px;">Broj LK</td>
+                        <td style="width:65px; padding-left:0px;">Datum izd</td>
+                        <td>Štamp</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="dPrikazKU" class="dPrikazKU">
+                <table class="tabKor"></table>
+            </div>
+            <br />
+            
+        </div>
+        <!--border:1px solid red;-->
+        <div class="dZaStampu" style="clear:both;visibility:hidden;">
+            <span class="staIme" style=" font:normal 12px arial; margin:25px 0px 0px 160px;display:block;width:312px; text-align:center;"></span>
+            <span class="staZv" style=" font:normal 12px arial; margin:12px 0px 0px 160px;display:block;width:312px; text-align:center;"></span>
+            <span class="staSek" style="font:normal 12px arial; margin:10px 0px 0px 160px;display:block; width:312px; text-align:center;"></span>
+            <span class="staPru" style=" font:normal 12px arial; margin:12px 0px 0px 160px;display:block; width:312px; text-align:center;"></span>
+            <div style="font:normal 12px arial; margin:12px 0px 0px 160px;display:block; width:412px; height:20px;">
+                <span class="staLk" style="text-align:center;width:140px;float:left;"></span>
+                <span class="staSup" style="float:left;text-align:center;width:140px;margin-left:30px;"></span>
+            </div>
+            <div class="staDat" style=" font:normal 12px arial; margin:10px 0px 0px 160px;display:block;width:140px; text-align:center;"></div>
+        </div>
+
+
+
+    </div>
+
+</body>
+</html>

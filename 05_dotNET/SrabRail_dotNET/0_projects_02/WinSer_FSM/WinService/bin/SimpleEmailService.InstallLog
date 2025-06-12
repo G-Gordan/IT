@@ -1,0 +1,35 @@
+Call Installing. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Rolling back. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Installing. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Rolling back. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Installing. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Rolling back. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Call Installing. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog
+Installing service Simple File-Based Emailer...
+Service Simple File-Based Emailer has been successfully installed.
+Creating EventLog source Simple File-Based Emailer in log Application...
+Call Committing. on the E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe assembly.
+Affected parameters are:
+   assemblypath = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.exe
+   logfile = E:\VB_NET_PROJECTS\SimpleEmailService\bin\SimpleEmailService.InstallLog

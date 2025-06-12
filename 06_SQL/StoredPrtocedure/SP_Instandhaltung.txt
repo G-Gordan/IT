@@ -1,0 +1,282 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_Instandhaltung]    Script Date: 22.12.2017 11:32:01 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+-- =============================================
+-- Author:		DSI
+-- Create date: 02.09.2015
+-- Description:	Instandhaltungsapplikation
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_Instandhaltung]
+	@p_Case_ varchar(255) = '',
+	@p_para varchar(255) = '',
+	@p_para1 varchar(255) = '',
+	@p_para2 varchar(255) = '',
+	@p_para3 varchar(255) = '',
+	@p_para4 varchar(255) = '',
+	@p_para5 varchar(255) = '',
+	@p_para6 varchar(255) = '',
+	@p_para7 varchar(255) = '',
+	@p_para8 varchar(255) = '',
+	@p_para9 varchar(255) = '',
+	@p_para10 varchar(255) = '', 
+	@p_para11 varchar(255) = '',
+	@p_para12 varchar(255) = '', 
+	@p_para13 varchar(2000) = '',
+	@p_val1 numeric(10, 0) = 0,
+	@p_val2 numeric(10, 0) = 0,
+	@p_val3 numeric(10, 0) = 0,
+	@p_val4 numeric(10, 0) = 0,
+	@p_val5 numeric(10, 0) = 0,
+	@p_val6 decimal(10, 0) = 0,
+	@p_val7 decimal(10, 0) = 0,
+	@p_val8 decimal(10, 0) = 0,
+	@p_val9 decimal(10, 0) = 0,
+	@p_val10 decimal(10, 0) = 0,
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+
+	DECLARE
+	@Case_ varchar(255) = '',
+	@para varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(255) = '',
+	@para10 varchar(255) = '', 
+	@para11 varchar(255) = '',
+	@para12 varchar(255) = '', 
+	@para13 varchar(2000) = '',
+	@val1 numeric(10, 0) = 0,
+	@val2 numeric(10, 0) = 0,
+	@val3 numeric(10, 0) = 0,
+	@val4 numeric(10, 0) = 0,
+	@val5 numeric(10, 0) = 0,
+	@val6 decimal(10, 0) = 0,
+	@val7 decimal(10, 0) = 0,
+	@val8 decimal(10, 0) = 0,
+	@val9 decimal(10, 0) = 0,
+	@val10 decimal(10, 0) = 0
+
+	SET @Case_ = @p_Case_
+	SET @para = @p_para
+	SET @para1 = @p_para1
+	SET @para2 = @p_para2
+	SET @para3 = @p_para3
+	SET @para4 = @p_para4
+	SET @para5 = @p_para5
+	SET @para6 = @p_para6
+	SET @para7 = @p_para7
+	SET @para8 = @p_para8
+	SET @para9 = @p_para9
+	SET @para10 = @p_para10
+	SET @para11 = @p_para11
+	SET @para12 = @p_para12
+	SET @para13 = @p_para13
+	SET @val1 = @p_val1
+	SET @val2 = @p_val2
+	SET @val3 = @p_val3
+	SET @val4 = @p_val4
+	SET @val5 = @p_val5
+	SET @val6 = @p_val6
+	SET @val7 = @p_val7
+	SET @val8 = @p_val8
+	SET @val9 = @p_val9
+	SET @val10 = @p_val10
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	
+
+	IF @Case_ = 'INSERT_Arbeitszeit'
+	BEGIN
+		--#######################################################################################
+		BEGIN TRANSACTION  --####################################################################
+		--#######################################################################################
+
+		INSERT LIVE2.dbo.Inst_Arbeitszeit(
+											D5_PTR,
+											Anlage_PTR,
+											Kategorie,
+											Taetigkeit_PTR,
+											StartDatumZeit,
+											Bemerkung,
+											Ersatzteil_SOBE_1,
+											Ersatzteil_SOBE_2,
+											Ersatzteil_SOBE_3,
+											Ersatzteil_SOBE_4,
+											Ersatzteil_SOBE_5,
+											D17_PTR_1,
+											D17_PTR_2,
+											D17_PTR_3,
+											D17_PTR_4,
+											D17_PTR_5,
+											AnlageTyp
+										) 
+		SELECT  
+				CAST(@para AS NUMERIC(10, 0)),
+				CAST(@para2 AS INT),
+				CAST(@para3 AS VARCHAR(50)),
+				CAST(@para4 AS INT),
+				GETDATE(),
+				CAST(@para13 AS VARCHAR(1000)),
+				@val1,
+				@val2,
+				@val3,
+				@val4,
+				@val5,
+				@val6,
+				@val7,
+				@val8,
+				@val9,
+				@val10,
+				CAST(@para5 AS VARCHAR(10))
+
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : INSERT Inst_Arbeitszeit...'
+			RETURN @@ERROR
+		END
+		ELSE
+		BEGIN
+			--#######################################################################################
+			COMMIT TRANSACTION  --###################################################################
+			--#######################################################################################
+			SELECT  @OUTPUT_RES = 'OK'
+		END
+	END
+
+	IF @Case_ = 'UPDATE_Arbeitszeit'
+	BEGIN
+		--#######################################################################################
+		BEGIN TRANSACTION  --####################################################################
+		--#######################################################################################
+
+		UPDATE LIVE2.dbo.Inst_Arbeitszeit
+		SET 
+			Anlage_PTR = CAST(@para2 AS INT),
+			Kategorie = CAST(@para3 AS VARCHAR(50)),
+			Taetigkeit_PTR = CAST(@para4 AS INT),
+			EndDatumZeit = GETDATE(),
+			Bemerkung = CAST(@para13 AS VARCHAR(1000)),
+			Ersatzteil_SOBE_1 = @val1,
+			Ersatzteil_SOBE_2 = @val2,
+			Ersatzteil_SOBE_3 = @val3,
+			Ersatzteil_SOBE_4 = @val4,
+			Ersatzteil_SOBE_5 = @val5,
+			D17_PTR_1 = @val6,
+			D17_PTR_2 = @val7,
+			D17_PTR_3 = @val8,
+			D17_PTR_4 = @val9,
+			D17_PTR_5 = @val10,
+			AnlageTyp = CAST(@para5 AS VARCHAR(10))
+		WHERE 
+			LIVE2.dbo.Inst_Arbeitszeit.D5_PTR = CAST(@para AS NUMERIC(10, 0)) AND LIVE2.dbo.Inst_Arbeitszeit.ID = CAST(@para1 AS INT)
+
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : INSERT Inst_Arbeitszeit...'
+			RETURN @@ERROR
+		END
+		ELSE
+		BEGIN
+			--#######################################################################################
+			COMMIT TRANSACTION  --###################################################################
+			--#######################################################################################
+			SELECT  @OUTPUT_RES = 'OK'
+		END
+	END
+
+	IF @Case_ = 'AbteilungAnlage'
+	BEGIN
+		SELECT
+			ID,
+			Abteilung,
+			Anlage,
+			Typ
+		FROM
+		(
+			SELECT LIVE2.dbo.MatRueck_Anlage.ID, LIVE2.dbo.MatRueck_Abteilung.Abteilung, LIVE2.dbo.MatRueck_Anlage.Anlage, 'MR' AS Typ 
+			FROM LIVE2.dbo.MatRueck_Anlage INNER JOIN 
+			LIVE2.dbo.MatRueck_AnlageAbteilung ON LIVE2.dbo.MatRueck_Anlage.ID = LIVE2.dbo.MatRueck_AnlageAbteilung.Anlage_PTR INNER JOIN 
+			LIVE2.dbo.MatRueck_Abteilung ON LIVE2.dbo.MatRueck_AnlageAbteilung.Abteilung_PTR = LIVE2.dbo.MatRueck_Abteilung.ID 
+			WHERE LIVE2.dbo.MatRueck_Abteilung.Abteilung <> 'Arbeitsbekleidung' 
+					AND LIVE2.dbo.MatRueck_Anlage.Anlage COLLATE SQL_Latin1_General_CP1_CI_AS LIKE CASE WHEN @para='' THEN '%' ELSE '%' + @para + '%' END
+
+			UNION ALL
+
+			SELECT ID, Abteilung, Anlage, 'INST' AS Typ 
+			FROM LIVE2.dbo.Inst_AbteilungAnlage
+			WHERE Anlage COLLATE SQL_Latin1_General_CP1_CI_AS LIKE CASE WHEN @para='' THEN '%' ELSE '%' + @para + '%' END
+		) AS tblAbteilungAnlage
+		ORDER BY Abteilung, Anlage
+	END
+
+	IF @Case_ = 'Arbeitszeiten'
+	BEGIN
+		SELECT
+			ID,
+			StartDatumZeit, 
+			EndDatumZeit, 
+			Anlage, 
+			Kategorie, 
+			Taetigkeit, 
+			Bemerkung, 
+			Ersatzteil_SOBE_1, 
+			Ersatzteil_SOBE_2, 
+			Ersatzteil_SOBE_3, 
+			Ersatzteil_SOBE_4, 
+			Ersatzteil_SOBE_5, 
+			D17_PTR_1, 
+			D17_PTR_2,
+			D17_PTR_3, 
+			D17_PTR_4, 
+			D17_PTR_5, 
+			Anlage_PTR, 
+			AnlageTyp
+		FROM
+		(
+			SELECT     TOP 100 PERCENT LIVE2.dbo.Inst_Arbeitszeit.ID, LIVE2.dbo.Inst_Arbeitszeit.StartDatumZeit, LIVE2.dbo.Inst_Arbeitszeit.EndDatumZeit, 
+								  LIVE2.dbo.MatRueck_Anlage.Anlage, LIVE2.dbo.Inst_Arbeitszeit.Kategorie, LIVE2.dbo.Inst_Taetigkeiten.Taetigkeit, LIVE2.dbo.Inst_Arbeitszeit.Bemerkung, 
+								  LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_1, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_2, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_3, 
+								  LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_4, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_5, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_1, 
+								  LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_2, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_3, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_4, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_5, 
+								  LIVE2.dbo.MatRueck_Anlage.ID AS Anlage_PTR, LIVE2.dbo.Inst_Arbeitszeit.AnlageTyp
+			FROM         LIVE2.dbo.Inst_Arbeitszeit INNER JOIN
+								  LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.Inst_Arbeitszeit.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+								  LIVE2.dbo.Inst_Taetigkeiten ON LIVE2.dbo.Inst_Arbeitszeit.Taetigkeit_PTR = LIVE2.dbo.Inst_Taetigkeiten.ID
+			WHERE     (LIVE2.dbo.Inst_Arbeitszeit.D5_PTR = CAST(@para AS NUMERIC(10, 0))) AND (LIVE2.dbo.Inst_Arbeitszeit.AnlageTyp = 'MR')
+			UNION ALL
+			SELECT     TOP 100 PERCENT LIVE2.dbo.Inst_Arbeitszeit.ID, LIVE2.dbo.Inst_Arbeitszeit.StartDatumZeit, LIVE2.dbo.Inst_Arbeitszeit.EndDatumZeit, 
+								  LIVE2.dbo.Inst_AbteilungAnlage.Anlage, LIVE2.dbo.Inst_Arbeitszeit.Kategorie, LIVE2.dbo.Inst_Taetigkeiten.Taetigkeit, LIVE2.dbo.Inst_Arbeitszeit.Bemerkung, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_1, 
+								  LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_2, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_3, LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_4, 
+								  LIVE2.dbo.Inst_Arbeitszeit.Ersatzteil_SOBE_5, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_1, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_2, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_3, 
+								  LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_4, LIVE2.dbo.Inst_Arbeitszeit.D17_PTR_5, 
+								  LIVE2.dbo.Inst_AbteilungAnlage.ID AS Anlage_PTR, LIVE2.dbo.Inst_Arbeitszeit.AnlageTyp
+								  
+			FROM         LIVE2.dbo.Inst_Arbeitszeit INNER JOIN
+							  LIVE2.dbo.Inst_AbteilungAnlage ON LIVE2.dbo.Inst_Arbeitszeit.Anlage_PTR = LIVE2.dbo.Inst_AbteilungAnlage.ID INNER JOIN
+							  LIVE2.dbo.Inst_Taetigkeiten ON LIVE2.dbo.Inst_Arbeitszeit.Taetigkeit_PTR = LIVE2.dbo.Inst_Taetigkeiten.ID
+			WHERE     (LIVE2.dbo.Inst_Arbeitszeit.D5_PTR = CAST(@para AS NUMERIC(10, 0))) AND (LIVE2.dbo.Inst_Arbeitszeit.AnlageTyp = 'INST')
+		) AS tblAbtAnlage
+		ORDER BY StartDatumZeit DESC
+	END
+END

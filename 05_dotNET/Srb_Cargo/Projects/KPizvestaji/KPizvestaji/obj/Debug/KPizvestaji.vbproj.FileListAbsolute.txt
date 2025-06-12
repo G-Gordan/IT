@@ -1,0 +1,10 @@
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\bin\Debug\KPizvestaji.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\bin\Debug\KPizvestaji.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\bin\Debug\KPizvestaji.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.Form1.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.Resources.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.vbproj.GenerateResource.Cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\KPizvestaji\KPizvestaji\obj\Debug\KPizvestaji.pdb

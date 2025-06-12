@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="PozivSPApp">
+</Property><Property Name="Solution File" Value="C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\PozivSPApp.sln">
+</Property><Property Name="Date" Value="26. oktobar 2017">
+</Property><Property Name="Time" Value="9:38">
+</Property></Properties><Event ErrorLevel="0" Project="PozivSPApp" Source="PozivSPApp.vbproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="PozivSPApp" Source="PozivSPApp.vbproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="PozivSPApp.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="PozivSPApp.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="PozivSPApp" Source="PozivSPApp.vbproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

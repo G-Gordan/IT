@@ -1,0 +1,14 @@
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\ResolveAssemblyReference.cache
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.Form1.resources
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.Form2.resources
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.Resources.resources
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.vbproj.GenerateResource.Cache
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\bin\Debug\IzvestajiOKP.exe
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\bin\Debug\IzvestajiOKP.pdb
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\bin\Debug\IzvestajiOKP.xml
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.exe
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.xml
+D:\.net\Radne verzije\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\IzvestajiOKP\IzvestajiOKP\obj\Debug\IzvestajiOKP.pdb

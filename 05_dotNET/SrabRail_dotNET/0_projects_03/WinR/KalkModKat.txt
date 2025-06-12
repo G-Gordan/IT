@@ -1,0 +1,22 @@
+
+                            ElseIf kNacinObrac = 7 Then
+                                'BrutoMasaPoKolima = BrutoMasaPoKolima + MasaTemp + Tara
+                                'Dim stavkaM As Integer
+                                'For stavkaM = 1 To stavkaM + 1
+                                Dim RMPoKolima As Integer
+                                RacMasaPoKolima = BrutoMasaPoKolima
+                                RMPoKolima = RacMasaPoKolima / 1000                                
+                                'kNadjiMasu(mBrojUg, Aneks, Stavka, OdStan, DoStan, Voz, kBrutoMasaOd, kBrutoMasaDo, RacMasaPoKolima, kPovVr)
+                                kNadjiMasu(mBrojUg, Aneks, Stavka, OdStan, DoStan, Voz, kBrutoMasaOd, kBrutoMasaDo, RMPoKolima, kPovVr)
+                                PrevozninaPoUg = Voz
+                                bVozarinskiStavPoKolima = Voz
+                                kPrevoznina = PrevozninaPoUg
+
+                                'MasaTemp = MasaTemp + Tara
+                                'bZaokruziMasuNa100k(MasaTemp)
+
+                                NHMRed.Item("VozarinskiStavNHM") = Voz
+                                NHMRed.Item("RacMasaNHM") = MasaTemp
+                                KolaRed.Item("RacunskaMasa") = MasaTemp
+                                KolaRed.Item("VozarinskiStav") = bVozarinskiStavPoKolima
+                                'Next

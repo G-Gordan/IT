@@ -1,0 +1,2 @@
+D:\.net\WinService\obj\Debug\SimpleEmailService.exe
+D:\.net\WinService\obj\Debug\SimpleEmailService.pdb

@@ -1,0 +1,797 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_ZeitLeistUeberwach]    Script Date: 22.12.2017 12:11:35 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_ZeitLeistUeberwach]
+	@Case_ varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(2000) = '',
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+	DECLARE
+		@D1 AS smalldatetime,
+		@D2 AS smalldatetime,
+		@D3 AS smalldatetime,	
+		@D4 AS smalldatetime,
+		@D5 AS smalldatetime,
+		@D6 AS smalldatetime,
+		@D7 AS smalldatetime
+
+	IF @Case_ = 'SELECT_Abteilungen'
+	BEGIN
+
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+
+		DECLARE @tmpTblAbt TABLE (
+									Abteilung varchar(50), 
+									Kst char(20)
+								)
+
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Instandhaltung', 100
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Abwasser', 110
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Galvanolabor', 117
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'AOI', 123 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Sicht-Kontrollen', 124
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'QS / QM', 125
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'AV', 127
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'CAM', 135
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Siebherstellung', 140 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'ML-Presse', 163 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'E-Test', 170 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Zuschnitt', 190 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Bohrerei', 205 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Fräsen', 210 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ritzen', 215 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Siebdruck', 220  
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Fotodruck', 240 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Gießlinie', 250 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Galvanik', 280 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Black Hole', 290 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'LBA', 300 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ätzen alkalisch', 305
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ätzen sauer', 308
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'HAL', 310 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Verwaltung', 350  
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Versand', 360 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Betriebsleitung', 365 
+
+/*
+		SELECT
+			Datum,
+			Abteilung,
+			Kostenstelle,
+			MA,
+			EMPL_CODE,
+			SUM(Gesamt_ProdStunden) AS Zeit_Paradigm,
+			ISNULL((
+				SELECT TOP 1 SUM(Ist_AZ) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+				WHERE
+				LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(STR(DATEPART(wk, Datum)))) + LTRIM(RTRIM(Kst)) + LTRIM(RTRIM(PersNr))
+				COLLATE SQL_Latin1_General_CP1_CI_AS = Schluessel_Paradigm
+			), 0) AS Zeit_Diamant
+		FROM
+		(
+			SELECT
+				LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DATEPART(wk, dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(dbo.DATA0034.ANALYSIS_CODE_2)) + LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))  AS Schluessel_Paradigm,
+				dbo.DATA0059.START_DATE AS Datum,
+				DATEPART(wk, dbo.DATA0059.START_DATE) AS KW,
+				ISNULL((
+					SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+					WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0034.ANALYSIS_CODE_2
+				), '') AS Abteilung,
+				dbo.DATA0034.ANALYSIS_CODE_2 AS Kostenstelle,
+				dbo.DATA0005.EMPL_CODE,
+				dbo.DATA0005.EMPLOYEE_NAME AS MA,
+				--dbo.DATA0006.WORK_ORDER_NUMBER,
+				----dbo.DATA0038.PARAMETER_1 AS AGName,
+				--		--SUM(
+				--			(
+				--			(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+				--			/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)) 
+				--		AS m2,
+				--		'ZU m2' As BzgGr,
+				--SUM
+				CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+							, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) ) AS float)/60 AS Gesamt_ProdStunden
+
+
+			--FROM         dbo.DATA0006 INNER JOIN
+			--					  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+			--					  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+			--					  dbo.DATA0056 ON dbo.DATA0048.TPUT_PTR = dbo.DATA0056.RKEY INNER JOIN
+			--					  dbo.DATA0038 ON dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER AND dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR INNER JOIN
+			--					  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+			--					  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+			FROM         dbo.DATA0006 INNER JOIN
+								  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+								  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+								  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+			WHERE   
+				dbo.DATA0059.START_DATE IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+		) AS TblParadigm
+		WHERE 
+			Abteilung<>''
+		GROUP BY 
+			Schluessel_Paradigm,
+			Datum,
+			Abteilung,
+			Kostenstelle,
+			MA,
+			EMPL_CODE
+		ORDER BY
+			Datum DESC, Abteilung, MA 
+*/
+
+		--ZUES
+		-----------------------------------------------------------------------------
+		IF @para2=''
+		BEGIN
+			SET @para2 = '-8'
+		END
+
+		DECLARE @tmpTblZeus TABLE (
+									Datum smalldatetime, 
+									AZ_Zeus DECIMAL(20, 4),
+									AZ_Para DECIMAL(20, 4),
+									MA varchar(50), 
+									PersNr varchar(10),
+									Schluessel_Zeus varchar(50),
+									Kostenstelle varchar(10)
+								)
+
+		INSERT @tmpTblZeus(
+							Datum , 
+							AZ_Zeus ,
+							MA , 
+							PersNr ,
+							Schluessel_Zeus,
+							Kostenstelle
+							)
+
+		SELECT 
+			Datum,
+			SUM(Ist_AZ) AS AZ_Zeus,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))  AS Schluessel_,
+			Kst
+
+		FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+		WHERE  Datum > DATEADD(day, CAST(@para2 AS INT),(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)) AND ist_az>0
+		GROUP BY
+			Datum,
+			Kst,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))
+
+
+		--PARADIGM
+		-----------------------------------------------------------------------------
+		UPDATE
+			tblZeus
+		SET
+			tblZeus.AZ_Para = tblPara.Gesamt_ProdStunden
+		FROM
+			@tmpTblZeus  tblZeus INNER JOIN
+			(
+				SELECT
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE)) AS Schluessel_Para,
+					SUM(
+							ISNULL((CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+								, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) ) AS float)/60), 0)
+						) AS Gesamt_ProdStunden
+				FROM         dbo.DATA0006 INNER JOIN
+									  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+									  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+									  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+				--WHERE   
+					----dbo.DATA0059.START_DATE = DATEADD(day,-8,(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP))
+					--dbo.DATA0059.START_DATE IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+				GROUP BY 
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))
+
+			) tblPara
+		ON 
+			tblZeus.Schluessel_Zeus COLLATE SQL_Latin1_General_CP1_CI_AS = tblPara.Schluessel_Para
+
+
+
+		SELECT 
+			Datum,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					Kst_Max
+				ELSE
+					RTRIM(Kst_Max) + ', ' + RTRIM(Kst_Min) + '...'
+			END AS Kostenstelle,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					ISNULL((
+						SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+						WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = tblMain.Kst_Max
+					), tblMain.Kst_Max) 
+				ELSE
+					'Diverse'
+			END AS Abteilung,
+			MA,
+			PersNr,
+			ISNULL(AZ_Zeus, 0) AS AZ_Zeus,
+			ISNULL(AZ_Para, 0) AS AZ_Para
+
+		FROM
+		(
+			SELECT
+				Datum,
+				MAX(Kostenstelle) AS Kst_Max,
+				MIN(Kostenstelle) AS Kst_Min,
+				MA,
+				PersNr,
+				SUM(AZ_Zeus) AS AZ_Zeus,
+				AZ_Para
+			FROM @tmpTblZeus AS tblZeus
+			GROUP BY Datum, MA, PersNr, AZ_Para
+		) AS tblMain
+		ORDER BY MA, Datum
+	END
+
+	IF @Case_ = 'SELECT_Abteilungen_Filter'
+	BEGIN
+
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Instandhaltung', 100
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Abwasser', 110
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Galvanolabor', 117
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'AOI', 123 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Sicht-Kontrollen', 124
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'QS / QM', 125
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'AV', 127
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'CAM', 135
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Siebherstellung', 140 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'ML-Presse', 163 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'E-Test', 170 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Zuschnitt', 190 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Bohrerei', 205 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Fräsen', 210 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ritzen', 215 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Siebdruck', 220  
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Fotodruck', 240 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Gießlinie', 250 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Galvanik', 280 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Black Hole', 290 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'LBA', 300 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ätzen alkalisch', 305
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Ätzen sauer', 308
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'HAL', 310 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Verwaltung', 350  
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Versand', 360 
+		INSERT @tmpTblAbt(Abteilung, Kst) SELECT 'Betriebsleitung', 365 
+
+		--ZUES
+		-----------------------------------------------------------------------------
+		IF @para2=''
+		BEGIN
+			SET @para2 = '-8'
+		END
+
+		INSERT @tmpTblZeus(
+							Datum , 
+							AZ_Zeus ,
+							MA , 
+							PersNr ,
+							Schluessel_Zeus,
+							Kostenstelle
+							)
+
+		SELECT 
+			Datum,
+			SUM(Ist_AZ) AS AZ_Zeus,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))  AS Schluessel_,
+			Kst
+
+		FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+		WHERE  Datum > DATEADD(day, CAST(@para2 AS INT),(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)) AND ist_az>0
+		GROUP BY
+			Datum,
+			Kst,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))
+
+
+		--PARADIGM
+		-----------------------------------------------------------------------------
+		UPDATE
+			tblZeus
+		SET
+			tblZeus.AZ_Para = tblPara.Gesamt_ProdStunden
+		FROM
+			@tmpTblZeus  tblZeus INNER JOIN
+			(
+				SELECT
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE)) AS Schluessel_Para,
+					SUM(
+							ISNULL((CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+								, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) ) AS float)/60), 0)
+						) AS Gesamt_ProdStunden
+				FROM         dbo.DATA0006 INNER JOIN
+									  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+									  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+									  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+				--WHERE   
+					----dbo.DATA0059.START_DATE = DATEADD(day,-8,(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP))
+					--dbo.DATA0059.START_DATE IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+				GROUP BY 
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))
+
+			) tblPara
+		ON 
+			tblZeus.Schluessel_Zeus COLLATE SQL_Latin1_General_CP1_CI_AS = tblPara.Schluessel_Para
+
+
+
+		SELECT 
+			Datum,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					Kst_Max
+				ELSE
+					RTRIM(Kst_Max) + ', ' + RTRIM(Kst_Min) + '...'
+			END AS Kostenstelle,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					ISNULL((
+						SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+						WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = tblMain.Kst_Max
+					), tblMain.Kst_Max) 
+				ELSE
+					'Diverse'
+			END AS Abteilung,
+			MA,
+			PersNr,
+			ISNULL(AZ_Zeus, 0) AS AZ_Zeus,
+			ISNULL(AZ_Para, 0) AS AZ_Para
+
+		FROM
+		(
+			SELECT
+				Datum,
+				MAX(Kostenstelle) AS Kst_Max,
+				MIN(Kostenstelle) AS Kst_Min,
+				MA,
+				PersNr,
+				SUM(AZ_Zeus) AS AZ_Zeus,
+				AZ_Para
+			FROM @tmpTblZeus AS tblZeus
+			GROUP BY Datum, MA, PersNr, AZ_Para
+		) AS tblMain
+		WHERE 
+			Kst_Max COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1
+			OR
+			Kst_Min COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1
+			OR
+			(SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+			 WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = tblMain.Kst_Max
+			) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1
+			OR
+			MA COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1
+			OR
+			PersNr COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1
+		ORDER BY MA, Datum
+	END
+
+	IF @Case_ = 'SELECT_AbteilungMA'
+	BEGIN
+
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+/*
+		SELECT
+			Datum,
+			--Abteilung,
+			--Kostenstelle,
+			MA,
+			EMPL_CODE,
+			SUM(Gesamt_ProdStunden) AS Zeit_Paradigm,
+			ISNULL((
+				SELECT TOP 1 SUM(Ist_AZ) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+				WHERE
+				LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(STR(DATEPART(wk, Datum)))) + LTRIM(RTRIM(Kst)) + LTRIM(RTRIM(PersNr))
+				COLLATE SQL_Latin1_General_CP1_CI_AS = Schluessel_Paradigm
+			), -1) AS Zeit_Diamant
+		FROM
+		(
+			SELECT
+				LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DATEPART(wk, dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(dbo.DATA0034.ANALYSIS_CODE_2)) + LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))  AS Schluessel_Paradigm,
+				dbo.DATA0059.START_DATE AS Datum,
+				DATEPART(wk, dbo.DATA0059.START_DATE) AS KW,
+				--ISNULL((
+				--	SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+				--	WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0034.ANALYSIS_CODE_2
+				--), '') AS Abteilung,
+				--'CAM' AS Abteilung,
+				--dbo.DATA0034.ANALYSIS_CODE_2 AS Kostenstelle,
+				dbo.DATA0005.EMPL_CODE,
+				dbo.DATA0005.EMPLOYEE_NAME AS MA,
+				--dbo.DATA0006.WORK_ORDER_NUMBER,
+				----dbo.DATA0038.PARAMETER_1 AS AGName,
+				--		--SUM(
+				--			(
+				--			(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+				--			/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)) 
+				--		AS m2,
+				--		'ZU m2' As BzgGr,
+				--SUM
+				CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+							, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) ) AS float)/60 AS Gesamt_ProdStunden
+
+
+			--FROM         dbo.DATA0006 INNER JOIN
+			--					  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+			--					  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+			--					  dbo.DATA0056 ON dbo.DATA0048.TPUT_PTR = dbo.DATA0056.RKEY INNER JOIN
+			--					  dbo.DATA0038 ON dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER AND dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR INNER JOIN
+			--					  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+			--					  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+			FROM         dbo.DATA0006 INNER JOIN
+								  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+								  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+								  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+								  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+			WHERE   
+				dbo.DATA0059.START_DATE IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+				AND dbo.DATA0034.ANALYSIS_CODE_2 = @para1 --'135'
+				AND dbo.DATA0005.EMPL_CODE = @para2 --'2387'
+		) AS TblParadigm
+		--WHERE 
+		--	Abteilung<>''
+		GROUP BY 
+			Schluessel_Paradigm,
+			Datum,
+			--Abteilung,
+			--Kostenstelle,
+			MA,
+			EMPL_CODE
+		ORDER BY
+			Datum DESC --, Abteilung, MA 
+*/
+
+		--ZUES
+		-----------------------------------------------------------------------------
+		--DECLARE @tmpTblZeus TABLE (
+		--							Datum smalldatetime, 
+		--							AZ_Zeus DECIMAL(20, 4),
+		--							AZ_Para DECIMAL(20, 4),
+		--							MA varchar(50), 
+		--							PersNr varchar(10),
+		--							Schluessel_Zeus varchar(50),
+		--							Kostenstelle varchar(10)
+		--						)
+		IF @para2=''
+		BEGIN
+			SET @para2 = '-8'
+		END
+
+		INSERT @tmpTblZeus(
+							Datum , 
+							AZ_Zeus ,
+							MA , 
+							PersNr ,
+							Schluessel_Zeus,
+							Kostenstelle
+							)
+
+		SELECT 
+			Datum,
+			SUM(Ist_AZ) AS AZ_Zeus,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))  AS Schluessel_,
+			Kst
+
+		FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+		--WHERE  Datum > DATEADD(day, CAST(@para2 AS INT),(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)) AND ist_az>0
+		WHERE YEAR(Datum)=2016
+		GROUP BY
+			Datum,
+			Kst,
+			MA,
+			PersNr,
+			LTRIM(RTRIM(STR(YEAR(Datum)))) + LTRIM(RTRIM(STR(MONTH(Datum)))) + LTRIM(RTRIM(STR(DAY(Datum)))) + LTRIM(RTRIM(PersNr))
+
+
+		--PARADIGM
+		-----------------------------------------------------------------------------
+		UPDATE
+			tblZeus
+		SET
+			tblZeus.AZ_Para = tblPara.Gesamt_ProdStunden
+		FROM
+			@tmpTblZeus  tblZeus INNER JOIN
+			(
+				SELECT
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE)) AS Schluessel_Para,
+					SUM(
+							ISNULL((CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+								, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) ) AS float)/60), 0)
+						) AS Gesamt_ProdStunden
+				FROM         dbo.DATA0006 INNER JOIN
+									  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+									  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+									  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+				WHERE   
+					dbo.DATA0059.START_DATE >= '01.01.2016' -- DATEADD(day, CAST(@para2 AS INT),(SELECT TOP 1 MAX(Datum) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP))
+					--dbo.DATA0059.START_DATE IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+				GROUP BY 
+					LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) +  LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))
+
+			) tblPara
+		ON 
+			tblZeus.Schluessel_Zeus COLLATE SQL_Latin1_General_CP1_CI_AS = tblPara.Schluessel_Para
+
+
+
+		SELECT 
+			Datum,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					Kst_Max
+				ELSE
+					RTRIM(Kst_Max) + ', ' + RTRIM(Kst_Min) + '...'
+			END AS Kostenstelle,
+			CASE
+				WHEN Kst_Max=Kst_Min THEN
+					ISNULL((
+						SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+						WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = tblMain.Kst_Max
+					), tblMain.Kst_Max) 
+				ELSE
+					'Diverse'
+			END AS Abteilung,
+			MA,
+			PersNr,
+			ISNULL(AZ_Zeus, 0) AS AZ_Zeus,
+			ISNULL(AZ_Para, 0) AS AZ_Para,
+			Kst
+
+		FROM
+		(
+			SELECT
+				Datum,
+				MAX(Kostenstelle) AS Kst_Max,
+				MIN(Kostenstelle) AS Kst_Min,
+				MA,
+				PersNr,
+				SUM(AZ_Zeus) AS AZ_Zeus,
+				AZ_Para,
+				Kostenstelle AS Kst
+			FROM @tmpTblZeus AS tblZeus
+			GROUP BY Datum, MA, PersNr, AZ_Para, Kostenstelle
+		) AS tblMain
+		--WHERE PersNr = @para1
+		ORDER BY Datum DESC, MA
+	END
+
+	IF @Case_ = 'SELECT_MAAbmeldungen'
+	BEGIN
+
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+
+		SELECT
+			--LTRIM(RTRIM(STR(YEAR(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(MONTH(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DAY(dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(STR(DATEPART(wk, dbo.DATA0059.START_DATE)))) + LTRIM(RTRIM(dbo.DATA0034.ANALYSIS_CODE_2)) + LTRIM(RTRIM(dbo.DATA0005.EMPL_CODE))  AS Schluessel_Paradigm,
+			dbo.DATA0059.START_DATE AS Datum,
+			--DATEPART(wk, dbo.DATA0059.START_DATE) AS KW,
+			--ISNULL((
+			--	SELECT Abteilung FROM @tmpTblAbt AS tblAbt 
+			--	WHERE Kst COLLATE SQL_Latin1_General_CP1_CI_AS = dbo.DATA0034.ANALYSIS_CODE_2
+			--), '') AS Abteilung,
+			--'CAM' AS Abteilung,
+			--dbo.DATA0034.ANALYSIS_CODE_2 AS Kostenstelle,
+			dbo.DATA0005.EMPL_CODE,
+			dbo.DATA0005.EMPLOYEE_NAME AS MA,
+			dbo.DATA0006.WORK_ORDER_NUMBER,
+			RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+			dbo.DATA0038.PARAMETER_1 AS AGName,
+			SUM(
+						(
+						(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+						/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)) 
+				) AS ZU_m2,
+			SUM(
+						CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+						/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT)
+				) AS Anz_ZU,
+			SUM(ISNULL(dbo.ARTIKELDATEN.Ritzweg, 0)) AS Ritzweg,
+			SUM(
+				CAST(DATEDIFF(ss , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+						, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE)) AS FLOAT)
+			)AS Gesamt_ProdSekunden,
+			SUM(
+				CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+						, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE)) AS FLOAT)
+			)AS Gesamt_ProdMinuten,
+			SUM(
+				CAST(DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+						, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE)) AS FLOAT)/60
+			)AS Gesamt_ProdStunden
+
+
+		FROM         dbo.DATA0006 INNER JOIN
+							  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+							  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+							  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+							  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+							  dbo.DATA0056 ON dbo.DATA0048.TPUT_PTR = dbo.DATA0056.RKEY INNER JOIN
+							  dbo.DATA0038 ON dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER AND dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR INNER JOIN
+							  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+							  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+		--FROM         dbo.DATA0006 INNER JOIN
+		--					  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+		--					  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+		--					  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+		--					  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY
+		WHERE   
+			dbo.DATA0059.START_DATE >= '01.01.2016'  --IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+			----AND dbo.DATA0034.ANALYSIS_CODE_2 = @para1 --'135'
+			--AND dbo.DATA0005.EMPL_CODE = @para2 --'2387'
+		GROUP BY
+				dbo.DATA0059.START_DATE,
+				dbo.DATA0005.EMPL_CODE,
+				dbo.DATA0005.EMPLOYEE_NAME,
+				dbo.DATA0006.WORK_ORDER_NUMBER,
+				dbo.DATA0038.PARAMETER_1,
+				dbo.DATA0050.CUSTOMER_PART_NUMBER,
+				dbo.DATA0050.CP_REV
+
+		ORDER BY dbo.DATA0059.START_DATE DESC
+	END
+
+	IF @Case_ = 'SELECT_FAAbmeldezeiten'
+	BEGIN
+
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+
+		SELECT
+			dbo.DATA0005.EMPL_CODE,
+			dbo.DATA0005.EMPLOYEE_NAME AS MA,
+			RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+			dbo.DATA0006.WORK_ORDER_NUMBER,
+			dbo.DATA0038.PARAMETER_1 AS AGName,
+			--		--SUM(
+			--			(
+			--			(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+			--			/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)) 
+			--		AS m2,
+			--		'ZU m2' As BzgGr,
+			--SUM
+			DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+						, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE)) AS Gesamt_ProdMin,
+			ISNULL(dbo.ARTIKELDATEN.Ritzweg, 0) AS Ritzweg,
+			dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) AS StartZeit, 
+			dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) AS StopZeit
+
+		FROM         dbo.DATA0006 INNER JOIN
+							  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+							  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+							  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+							  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+							  dbo.DATA0056 ON dbo.DATA0048.TPUT_PTR = dbo.DATA0056.RKEY INNER JOIN
+							  dbo.DATA0038 ON dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER AND dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR INNER JOIN
+							  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+							  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+		WHERE   
+			dbo.DATA0059.START_DATE >= '01.01.2016'  --IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+			----AND dbo.DATA0034.ANALYSIS_CODE_2 = @para1 --'135' 
+			--AND dbo.DATA0005.EMPL_CODE = @para2 --'2313'
+		ORDER BY
+		dbo.DATA0059.START_DATE DESC, dbo.DATA0059.START_TIME
+	END
+
+	IF @Case_ = 'SELECT_Unstimmigkeiten'
+	BEGIN
+		SET @D1 = (SELECT TOP 1 DATEADD(day,-6,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '09.10.2014', 103)
+		SET @D2 = (SELECT TOP 1 DATEADD(day,-5,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '10.10.2014', 103)
+		SET @D3 = (SELECT TOP 1 DATEADD(day,-4,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '11.10.2014', 103)
+		SET @D4 = (SELECT TOP 1 DATEADD(day,-3,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '12.10.2014', 103)
+		SET @D5 = (SELECT TOP 1 DATEADD(day,-2,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '13.10.2014', 103)
+		SET @D6 = (SELECT TOP 1 DATEADD(day,-1,MAX(Datum)) AS RES FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '14.10.2014', 103)
+		SET @D7 = (SELECT TOP 1 MAX(Datum) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP)--CONVERT(DATETIME, '15.10.2014', 103)
+
+		SELECT
+		*
+		FROM
+		(
+				SELECT
+					dbo.DATA0005.EMPL_CODE,
+					dbo.DATA0005.EMPLOYEE_NAME AS MA,
+					RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+					dbo.DATA0006.WORK_ORDER_NUMBER,
+					dbo.DATA0038.PARAMETER_1 AS AGName,
+					DATEDIFF(mi , dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) 
+								, dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE)) AS Gesamt_ProdMin,
+					dbo.UF_ToDateTime(dbo.DATA0059.START_TIME, dbo.DATA0059.START_DATE) AS StartZeit, 
+					dbo.UF_ToDateTime(dbo.DATA0059.STOP_TIME, dbo.DATA0059.STOP_DATE) AS StopZeit,
+					dbo.DATA0005.EMPL_CODE + STR(YEAR(dbo.DATA0059.START_DATE)) + STR(MONTH(dbo.DATA0059.START_DATE)) + STR(DAY(dbo.DATA0059.START_DATE)) AS Schluessel
+					--dbo.DATA0005.EMPL_CODE + STR(DAY(dbo.DATA0059.START_DATE)) AS Schluessel
+
+				FROM         dbo.DATA0006 INNER JOIN
+									  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+									  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+									  dbo.DATA0059 ON dbo.DATA0048.RKEY = dbo.DATA0059.TRAN_PTR INNER JOIN
+									  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0056 ON dbo.DATA0048.TPUT_PTR = dbo.DATA0056.RKEY INNER JOIN
+									  dbo.DATA0038 ON dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER AND dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR INNER JOIN
+									  dbo.DATA0005 ON dbo.DATA0059.EMPL_PTR = dbo.DATA0005.RKEY --INNER JOIN
+									  --dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+				WHERE   
+					dbo.DATA0059.START_DATE >= '01.01.2016'  --IN (@D1, @D2, @D3, @D4, @D5, @D6, @D7)
+		) AS tblUnstimm
+		WHERE 
+			Schluessel 	COLLATE SQL_Latin1_General_CP1_CI_AS IN (
+													SELECT PersNr + STR(YEAR(Datum)) + STR(MONTH(Datum)) + STR(DAY(Datum)) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+													--SELECT PersNr + STR(DAY(Datum)) FROM LIVE2.dbo.ZeitLeistUeberwach_TMP
+													WHERE Ist_AZ=0
+												)
+	END
+
+END

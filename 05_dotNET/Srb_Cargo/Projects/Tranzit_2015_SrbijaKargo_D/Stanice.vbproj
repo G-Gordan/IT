@@ -1,0 +1,1121 @@
+﻿<Project DefaultTargets="Build" ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0A3405BD-4CBF-4B98-98F5-47ED9DF1AC39}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>Stanice</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyMode>None</AssemblyOriginatorKeyMode>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>WinExe</OutputType>
+    <OptionCompare>Binary</OptionCompare>
+    <OptionExplicit>On</OptionExplicit>
+    <OptionStrict>Off</OptionStrict>
+    <RootNamespace>Stanice</RootNamespace>
+    <StartupObject>Stanice.login</StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <MyType>WindowsFormsWithCustomSubMain</MyType>
+    <OldToolsVersion>0.0</OldToolsVersion>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>Stanice.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>
+    </DefineConstants>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032</NoWarn>
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\</OutputPath>
+    <DocumentationFile>Stanice.xml</DocumentationFile>
+    <BaseAddress>285212672</BaseAddress>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>
+    </DefineConstants>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>1</WarningLevel>
+    <NoWarn>42016,42017,42018,42019,42032</NoWarn>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CrystalDecisions.CrystalReports.Engine">
+      <Name>CrystalDecisions.CrystalReports.Engine</Name>
+      <HintPath>C:\Program Files\Common Files\Crystal Decisions\1.1\Managed\CrystalDecisions.CrystalReports.Engine.dll</HintPath>
+      <AssemblyFolderKey>hklm\crystal.net</AssemblyFolderKey>
+    </Reference>
+    <Reference Include="CrystalDecisions.Enterprise.Framework, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304" />
+    <Reference Include="CrystalDecisions.Enterprise.InfoStore, Version=10.5.3700.0, Culture=neutral, PublicKeyToken=692fbea5521e1304" />
+    <Reference Include="CrystalDecisions.ReportSource">
+      <Name>CrystalDecisions.ReportSource</Name>
+      <HintPath>C:\Program Files\Common Files\Crystal Decisions\1.1\Managed\CrystalDecisions.ReportSource.dll</HintPath>
+      <AssemblyFolderKey>hklm\crystal.net</AssemblyFolderKey>
+    </Reference>
+    <Reference Include="CrystalDecisions.Shared">
+      <Name>CrystalDecisions.Shared</Name>
+      <HintPath>C:\Program Files\Common Files\Crystal Decisions\1.1\Managed\CrystalDecisions.Shared.dll</HintPath>
+      <AssemblyFolderKey>hklm\crystal.net</AssemblyFolderKey>
+    </Reference>
+    <Reference Include="CrystalDecisions.Windows.Forms">
+      <Name>CrystalDecisions.Windows.Forms</Name>
+      <HintPath>C:\Program Files\Common Files\Crystal Decisions\1.1\Managed\CrystalDecisions.Windows.Forms.dll</HintPath>
+      <AssemblyFolderKey>hklm\crystal.net</AssemblyFolderKey>
+    </Reference>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Web.Services">
+      <Name>System.Web.Services</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Data" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Windows.Forms" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="DbKonekcija.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Form1.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InitVar.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IskazRazlike_J.vb">
+      <DependentUpon>IskazRazlike_J.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="IZVESTAJ.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="login.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Module1.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Pogresan unos ili obradapodataka_v.vb">
+      <DependentUpon>Pogresan unos ili obradapodataka_v.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="proveraug.vb">
+      <DependentUpon>proveraug.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_1.vb">
+      <DependentUpon>T_1_1.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_1_d.vb">
+      <DependentUpon>T_1_1_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_7-tovarena_kola_sever_jug_parametar.vb">
+      <DependentUpon>T_1_7-tovarena_kola_sever_jug_parametar.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_8_d.vb">
+      <DependentUpon>T_1_8_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_9.vb">
+      <DependentUpon>T_1_9.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_1_9_d.vb">
+      <DependentUpon>T_1_9_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_10.vb">
+      <DependentUpon>T_2_10.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_11_Zbir_po saobracajima_sort5_godina2014_dd.vb">
+      <DependentUpon>T_2_11_Zbir_po saobracajima_sort5_godina2014_dd.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_5_TCL_NHM_kontenerskiN.vb">
+      <DependentUpon>T_2_5_TCL_NHM_kontenerskiN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_7a.vb">
+      <DependentUpon>T_2_7a.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_7aPDV.vb">
+      <DependentUpon>T_2_7aPDV.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_7a_d.vb">
+      <DependentUpon>T_2_7a_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_7a_svi.vb">
+      <DependentUpon>T_2_7a_svi.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_7a_svidd.vb">
+      <DependentUpon>T_2_7a_svidd.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_8b.vb">
+      <DependentUpon>T_2_8b.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_2_9nov.vb">
+      <DependentUpon>T_2_9nov.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_1.vb">
+      <DependentUpon>T_3_1.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a.vb">
+      <DependentUpon>T_3_10a.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_CO2god.vb">
+      <DependentUpon>T_3_10a_CO2god.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_CO2god_sao.vb">
+      <DependentUpon>T_3_10a_CO2god_sao.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_Din.vb">
+      <DependentUpon>T_3_10a_Din.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_Din_d.vb">
+      <DependentUpon>T_3_10a_Din_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_Eur_svi_d.vb">
+      <DependentUpon>T_3_10a_Eur_svi_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_Eur_svi_KP211UNG.vb">
+      <DependentUpon>T_3_10a_Eur_svi_KP211UNG.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_Eur_svi_KP211UNG_n.vb">
+      <DependentUpon>T_3_10a_Eur_svi_KP211UNG_n.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_RO2god_nov.vb">
+      <DependentUpon>T_3_10a_RO2god_nov.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_10a_RO_nov.vb">
+      <DependentUpon>T_3_10a_RO_nov.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_11_Prodos_R_vozovi_odMakisaN.vb">
+      <DependentUpon>T_3_11_Prodos_R_vozovi_odMakisaN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_12_RAD_UGOVORI_god_bezN2N.vb">
+      <DependentUpon>T_3_12_RAD_UGOVORI_god_bezN2N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_13_ugovor_god_mes_v.vb">
+      <DependentUpon>T_3_13_ugovor_god_mes_v.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_14_StimulacijeSviN_v.vb">
+      <DependentUpon>T_3_14_StimulacijeSviN_v.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_15.vb">
+      <DependentUpon>T_3_15.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_16_RAD_UGOVORI_god_od_RanzirneN.vb">
+      <DependentUpon>T_3_16_RAD_UGOVORI_god_od_RanzirneN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_1_d.vb">
+      <DependentUpon>T_3_1_d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_1_doM.vb">
+      <DependentUpon>T_3_1_doM.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_1_d_doM.vb">
+      <DependentUpon>T_3_1_d_doM.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_1_d_Izbor.vb">
+      <DependentUpon>T_3_1_d_Izbor.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_8.vb">
+      <DependentUpon>T_3_8.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_9.vb">
+      <DependentUpon>T_3_9.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_9a.vb">
+      <DependentUpon>T_3_9a.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_3_9aaa.vb">
+      <DependentUpon>T_3_9aaa.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_1.vb">
+      <DependentUpon>T_4_1.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_10_CO_SpedicijeN_relacije.vb">
+      <DependentUpon>T_4_10_CO_SpedicijeN_relacije.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_10_listaB_po_tarifi_N.vb">
+      <DependentUpon>T_4_10_listaB_po_tarifi_N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_10_nov.vb">
+      <DependentUpon>T_4_10_nov.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_11.vb">
+      <DependentUpon>T_4_11.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_11d.vb">
+      <DependentUpon>T_4_11d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_11_CO_SpedicijeUIT.vb">
+      <DependentUpon>T_4_11_CO_SpedicijeUIT.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_12_lista_za_OKP_M1M2_N.vb">
+      <DependentUpon>T_4_12_lista_za_OKP_M1M2_N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_13_listaB_N2_N.vb">
+      <DependentUpon>T_4_13_listaB_N2_N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_14_ugovor_god_mesNHM.vb">
+      <DependentUpon>T_4_14_ugovor_god_mesNHM.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_15_Prodos_prosek_brvoz_bruto_neto.vb">
+      <DependentUpon>T_4_15_Prodos_prosek_brvoz_bruto_neto.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_16_god_mesNHM.vb">
+      <DependentUpon>T_4_16_god_mesNHM.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_17.vb">
+      <DependentUpon>T_4_17.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_18_Prodos_god_relacije_samoN2N.vb">
+      <DependentUpon>T_4_18_Prodos_god_relacije_samoN2N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_1a_provera naknad.vb">
+      <DependentUpon>T_4_1a_provera naknad.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_1_ProveraNN.vb">
+      <DependentUpon>T_4_1_ProveraNN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_2_ProveraR.vb">
+      <DependentUpon>T_4_2_ProveraR.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_5_ProveraNNmunicijaUg.vb">
+      <DependentUpon>T_4_5_ProveraNNmunicijaUg.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_6_CO_SpedicijeN.vb">
+      <DependentUpon>T_4_6_CO_SpedicijeN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_7_lista_za_OKP_M1jeM2_N.vb">
+      <DependentUpon>T_4_7_lista_za_OKP_M1jeM2_N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_8_listaB_N.vb">
+      <DependentUpon>T_4_8_listaB_N.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_4_9_listaB_kratkaN.vb">
+      <DependentUpon>T_4_9_listaB_kratkaN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_10aa.vb">
+      <DependentUpon>T_5_10aa.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_10aad.vb">
+      <DependentUpon>T_5_10aad.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_10aRdo_i_od10_8_2015bb.vb">
+      <DependentUpon>T_5_10aRdo_i_od10_8_2015bb.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_11a.vb">
+      <DependentUpon>T_5_11a.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_11ad.vb">
+      <DependentUpon>T_5_11ad.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_12.vb">
+      <DependentUpon>T_5_12.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_13_PrExSh_odMakisai_relacije_zbirN.vb">
+      <DependentUpon>T_5_13_PrExSh_odMakisai_relacije_zbirN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_14.vb">
+      <DependentUpon>T_5_14.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_15.vb">
+      <DependentUpon>T_5_15.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_15t.vb">
+      <DependentUpon>T_5_15t.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_16.vb">
+      <DependentUpon>T_5_16.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_17.vb">
+      <DependentUpon>T_5_17.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_18.vb">
+      <DependentUpon>T_5_18.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_19_tranzit_broj_vozova_po_relacijama_i mesecima_odMakisaView.vb">
+      <DependentUpon>T_5_19_tranzit_broj_vozova_po_relacijama_i mesecima_odMakisaView.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_1_PrExSh_doMakisa_relacije_zbirN.vb">
+      <DependentUpon>T_5_1_PrExSh_doMakisa_relacije_zbirN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_2_PrExSh_direktni_relacije_zbirN.vb">
+      <DependentUpon>T_5_2_PrExSh_direktni_relacije_zbirN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_3.vb">
+      <DependentUpon>T_5_3.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_3_ugovor_mesec_vozovi_relacije_zbirN.vb">
+      <DependentUpon>T_5_3_ugovor_mesec_vozovi_relacije_zbirN.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_5kon.vb">
+      <DependentUpon>T_5_5kon.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_8.vb">
+      <DependentUpon>T_5_8.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_8d.vb">
+      <DependentUpon>T_5_8d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_9.vb">
+      <DependentUpon>T_5_9.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_5_9d.vb">
+      <DependentUpon>T_5_9d.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="T_DATUMI OBRADE.vb">
+      <DependentUpon>T_DATUMI OBRADE.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="U_CO2_600300tr_svi_DatBezKursa15_3C.vb">
+      <DependentUpon>U_CO2_600300tr_svi_DatBezKursa15_3C.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="U_CO2_600300tr_svi_DatKurs15.vb">
+      <DependentUpon>U_CO2_600300tr_svi_DatKurs15.rpt</DependentUpon>
+      <SubType>Component</SubType>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IskazRazlike_J.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>IskazRazlike_J.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="IZVESTAJ.resx">
+      <DependentUpon>IZVESTAJ.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="login.resx">
+      <DependentUpon>login.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Pogresan unos ili obradapodataka_v.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>Pogresan unos ili obradapodataka_v.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="proveraug.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>proveraug.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_1.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_1.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_1_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_1_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_7-tovarena_kola_sever_jug_parametar.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_7-tovarena_kola_sever_jug_parametar.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_8_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_8_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_9.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_9.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_1_9_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_1_9_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_10.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_10.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_11_Zbir_po saobracajima_sort5_godina2014_dd.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_11_Zbir_po saobracajima_sort5_godina2014_dd.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_5_TCL_NHM_kontenerskiN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_5_TCL_NHM_kontenerskiN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_7a.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_7a.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_7aPDV.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_7aPDV.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_7a_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_7a_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_7a_svi.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_7a_svi.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_7a_svidd.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_7a_svidd.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_8b.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_8b.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_2_9nov.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_2_9nov.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_1.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_1.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_CO2god.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_CO2god.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_CO2god_sao.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_CO2god_sao.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_Din.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_Din.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_Din_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_Din_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_Eur_svi_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_Eur_svi_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_Eur_svi_KP211UNG.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_Eur_svi_KP211UNG.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_Eur_svi_KP211UNG_n.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_Eur_svi_KP211UNG_n.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_RO2god_nov.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_RO2god_nov.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_10a_RO_nov.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_10a_RO_nov.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_11_Prodos_R_vozovi_odMakisaN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_11_Prodos_R_vozovi_odMakisaN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_12_RAD_UGOVORI_god_bezN2N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_12_RAD_UGOVORI_god_bezN2N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_13_ugovor_god_mes_v.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_13_ugovor_god_mes_v.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_14_StimulacijeSviN_v.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_14_StimulacijeSviN_v.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_15.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_15.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_16_RAD_UGOVORI_god_od_RanzirneN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_16_RAD_UGOVORI_god_od_RanzirneN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_1_d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_1_d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_1_doM.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_1_doM.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_1_d_doM.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_1_d_doM.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_1_d_Izbor.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_1_d_Izbor.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_8.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_8.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_9.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_9.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_9a.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_9a.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_3_9aaa.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_3_9aaa.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_1.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_1.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_10_CO_SpedicijeN_relacije.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_10_CO_SpedicijeN_relacije.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_10_listaB_po_tarifi_N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_10_listaB_po_tarifi_N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_10_nov.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_10_nov.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_11.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_11.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_11d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_11d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_11_CO_SpedicijeUIT.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_11_CO_SpedicijeUIT.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_12_lista_za_OKP_M1M2_N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_12_lista_za_OKP_M1M2_N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_13_listaB_N2_N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_13_listaB_N2_N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_14_ugovor_god_mesNHM.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_14_ugovor_god_mesNHM.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_15_Prodos_prosek_brvoz_bruto_neto.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_15_Prodos_prosek_brvoz_bruto_neto.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_16_god_mesNHM.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_16_god_mesNHM.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_17.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_17.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_18_Prodos_god_relacije_samoN2N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_18_Prodos_god_relacije_samoN2N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_1a_provera naknad.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_1a_provera naknad.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_1_ProveraNN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_1_ProveraNN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_2_ProveraR.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_2_ProveraR.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_5_ProveraNNmunicijaUg.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_5_ProveraNNmunicijaUg.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_6_CO_SpedicijeN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_6_CO_SpedicijeN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_7_lista_za_OKP_M1jeM2_N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_7_lista_za_OKP_M1jeM2_N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_8_listaB_N.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_8_listaB_N.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_4_9_listaB_kratkaN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_4_9_listaB_kratkaN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_10aa.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_10aa.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_10aad.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_10aad.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_10aRdo_i_od10_8_2015bb.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_10aRdo_i_od10_8_2015bb.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_11a.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_11a.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_11ad.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_11ad.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_12.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_12.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_13_PrExSh_odMakisai_relacije_zbirN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_13_PrExSh_odMakisai_relacije_zbirN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_14.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_14.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_15.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_15.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_15t.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_15t.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_16.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_16.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_17.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_17.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_18.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_18.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_19_tranzit_broj_vozova_po_relacijama_i mesecima_odMakisaView.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_19_tranzit_broj_vozova_po_relacijama_i mesecima_odMakisaView.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_1_PrExSh_doMakisa_relacije_zbirN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_1_PrExSh_doMakisa_relacije_zbirN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_2_PrExSh_direktni_relacije_zbirN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_2_PrExSh_direktni_relacije_zbirN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_3.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_3.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_3_ugovor_mesec_vozovi_relacije_zbirN.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_3_ugovor_mesec_vozovi_relacije_zbirN.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_5kon.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_5kon.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_8.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_8.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_8d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_8d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_9.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_9.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_5_9d.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_5_9d.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="T_DATUMI OBRADE.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>T_DATUMI OBRADE.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="U_CO2_600300tr_svi_DatBezKursa15_3C.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>U_CO2_600300tr_svi_DatBezKursa15_3C.vb</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="U_CO2_600300tr_svi_DatKurs15.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>U_CO2_600300tr_svi_DatKurs15.vb</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{967B4E0D-AD0C-4609-AB67-0FA40C0206D8}" />
+    <Service Include="{CF845C55-C321-4742-B673-E6212D061ED9}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="My Project\" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

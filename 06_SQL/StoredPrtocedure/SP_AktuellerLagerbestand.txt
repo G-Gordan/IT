@@ -1,0 +1,2202 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_AktuellerLagerbestand]    Script Date: 22.12.2017 10:54:43 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		DSI
+-- Create date: 19.10.2015
+-- Description:	AktuellerLagerbestand
+-- =============================================
+ALTER PROCEDURE   [dbo].[GGP_SP_AktuellerLagerbestand]
+	@Case_ varchar(255) = '',
+	@para varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(255) = '',
+	@para10 varchar(255) = '', 
+	@para11 varchar(255) = '',
+	@para12 varchar(255) = '', 
+	@para13 varchar(2000) = '',
+	@val1 numeric(10, 0) = 0,
+	@val2 numeric(10, 0) = 0,
+	@val3 numeric(10, 0) = 0,
+	@val4 numeric(10, 0) = 0,
+	@val5 numeric(10, 0) = 0,
+	@val6 numeric(10, 0) = 0,
+	@val7 numeric(10, 0) = 0,
+	@val8 numeric(10, 0) = 0,
+	@val9 numeric(10, 0) = 0,
+	@val10 numeric(10, 0) = 0,
+	@val11 numeric(10, 0) = 0,
+	@val12 numeric(10, 0) = 0,
+	@val13 numeric(10, 0) = 0,
+	@val14 numeric(10, 0) = 0,
+	@val15 numeric(10, 0) = 0,
+	@val16 numeric(10, 0) = 0,
+	@val17 numeric(10, 0) = 0,
+	@val18 numeric(10, 0) = 0,
+	@val19 numeric(10, 0) = 0,
+	@val20 numeric(10, 0) = 0,
+	@val21 numeric(10, 0) = 0,
+	@val22 numeric(10, 0) = 0,
+	@val23 numeric(10, 0) = 0,
+	@val24 numeric(10, 0) = 0,
+	@val25 numeric(10, 0) = 0,
+	@val26 numeric(10, 0) = 0,
+	@val27 numeric(10, 0) = 0,
+	@val28 numeric(10, 0) = 0,
+	@val29 numeric(10, 0) = 0,
+	@val30 numeric(10, 0) = 0,
+	@val31 numeric(10, 0) = 0,
+	@val32 numeric(10, 0) = 0,
+	@val33 numeric(10, 0) = 0,
+	@val34 numeric(10, 0) = 0,
+	@val35 numeric(10, 0) = 0,
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	
+	IF @Case_ = 'AktuellerLagerbestand'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255),
+		--	@para1 varchar(255),
+		--	@para2 varchar(255)
+		--SET @para = '%0,25%' --Artikel
+		--SET @para1 = 'Y' --ACTIVE_FLAG = 'N' oder 'Y'
+		--SET @para2 = '0' --QUAN_ON_HAND > '0' oder '-1'
+
+
+		SELECT
+			*
+			--ISNULL((
+			--		SELECT TOP 1 dbo.DATA0095.TRAN_DATE FROM dbo.DATA0095 WHERE dbo.DATA0095.RKEY = tblLB.D95_PTR
+			--), '') AS LtzTrans,
+			--ISNULL((
+			--		SELECT TOP 1 dbo.DATA0095.TRAN_TP FROM dbo.DATA0095 WHERE dbo.DATA0095.RKEY = tblLB.D95_PTR
+			--), 0) AS Trans,
+			--LtzEinlagerung
+			
+		FROM
+		(
+			SELECT   
+				D17.STOCK_PURCH AS Umrechnungsfaktor,
+				D17.ACTIVE_FLAG,
+				D17.RKEY AS D17_PTR,  
+				dbo.DATA0007.PRODUCT_GROUP_NAME, 
+				dbo.DATA0008.PRODUCT_NAME, 
+				ISNULL((
+						CASE WHEN D17.LONG_INVENTORY_PART_NUMBER<>'' THEN D17.LONG_INVENTORY_PART_NUMBER ELSE D17.INV_PART_DESCRIPTION END
+				), '') AS Bezeichnung, 
+				D17.QUAN_ON_HAND AS Verfuegbar_GGP,
+				D17.CONSIGN_ONHAND_QTY AS Verfuegbar_Konsi,
+				--ISNULL((
+				--		SELECT  TOP 1  SUM(dbo.DATA0019.QUAN_ON_HAND) AS RES
+				--		FROM         dbo.DATA0017 INNER JOIN
+				--							  dbo.DATA0019 ON dbo.DATA0017.RKEY = dbo.DATA0019.INVENTORY_PTR
+				--		GROUP BY dbo.DATA0017.RKEY
+				--		HAVING      (dbo.DATA0017.RKEY = D17.RKEY)
+				--), 0) AS Verfuegbar_Lagerplaetze,
+				dbo.DATA0002.UNIT_CODE,
+				D17.STD_COST AS VerrPreis,
+				D17.QUAN_ON_HAND/D17.STOCK_PURCH AS Verfuegbar_GGPEinkauf,
+				D17.CONSIGN_ONHAND_QTY/D17.STOCK_PURCH AS Verfuegbar_KonsiEinkauf,
+				/*
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN (D108.PRICE/dbo.DATA0107.EX_RATE) --/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																									--FROM dbo.DATA0028 
+																									--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																									--	AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH)
+																									-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN (D71.PRICE/D70.EXCHANGE_RATE)	--/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																										--FROM dbo.DATA0028 
+																										--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																										--AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH) 
+																										-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+										ELSE 0
+									END
+							END AS Res_DREPreis,
+							D95.QUANTITY As Menge,
+							D95.INVT_PTR
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 ON D95.INVT_PTR = dbo.DATA0017.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+					) AS myDPreisTbl
+					WHERE
+							INVT_PTR=D17.RKEY AND Res_DREPreis*Menge>0
+				), 0) AS FLOAT) AS DR12MonEKP,
+				*/
+				ISNULL((
+						CASE
+							WHEN
+								ISNULL((
+										SELECT     TOP (1) ISNULL(dbo.DATA0108.PRICE, 0) AS RES
+										FROM         dbo.DATA0095 AS D95 INNER JOIN
+																dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+																dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+																dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+																dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+										WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										ORDER BY D95.TRAN_DATE DESC
+								), 0)>0 THEN 
+							(
+								SELECT
+									SUM(PRICE/EX_RATE*QUANTITY)/SUM(QUANTITY) AS RES
+								FROM
+								(
+									SELECT     dbo.DATA0108.PRICE, dbo.DATA0108.QUANTITY, dbo.DATA0107.EX_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+															dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+							ELSE
+							(
+								SELECT   											
+									SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+								FROM
+								(
+									SELECT     D71.PRICE, D71.QUAN_RECD, D71.QUAN_RETN, D70.EXCHANGE_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+						END
+				), 0) AS DR12MonEKP, --DPreis nach JHA
+				ISNULL((
+					CASE
+						WHEN
+						ISNULL(
+						(SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						), 0)>0 THEN 
+						(
+							SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						)
+						ELSE
+						(
+							SELECT     TOP 1 ISNULL(D71.PRICE/D70.EXCHANGE_RATE, 0) AS RES
+							FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+							WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY)
+							ORDER BY D95.TRAN_DATE DESC
+						)
+					END
+				), 0) AS DR12MonBEP,
+				ISNULL((
+							SELECT COUNT( DISTINCT LIVE2.dbo.MatRueck_Anlage.Anlage) AS RES
+							FROM         LIVE2.dbo.MatRueck_Transaktion INNER JOIN
+												  LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+												  dbo.DATA0017 ON LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR = dbo.DATA0017.RKEY
+							WHERE     (dbo.DATA0017.RKEY = D17.RKEY)
+				), 0) AS Anz_Anlagen,
+				ISNULL((
+						SELECT TOP 1 LIVE2.dbo.MatRueck_Anlage.Anlage
+						FROM  LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+								LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+						WHERE
+							LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = D17.RKEY
+				), '') AS Anlage,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '01.01.1900') AS LtzTrans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_TP 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), 0) AS Trans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP = 7
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '') AS LtzEinlagerung
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+								  dbo.DATA0017 AS D17 ON dbo.DATA0008.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+								  dbo.DATA0002 ON D17.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0002 AS DATA0002_1 ON D17.PURCH_UNIT_PTR = DATA0002_1.RKEY
+			WHERE    
+					(
+						dbo.DATA0007.PR_GRP_CODE COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para9 --@para1
+						OR
+						dbo.DATA0007.RKEY IN (@val1, @val2, @val3, @val4, @val5, @val6, @val7, @val8, @val9, @val10, @val11, @val12, @val13, @val14, @val15, @val16, @val17, @val18, @val19, @val20, @val21, @val22, @val23, @val24, @val25, @val26, @val27, @val28, @val29, @val30, @val31, @val32, @val33, @val34, @val35)
+					)
+					AND dbo.DATA0008.PRODUCT_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para2 
+					AND D17.ACTIVE_FLAG = CAST(@para3 AS VARCHAR(1)) --IN (CAST(@para3 AS VARCHAR(1)), 'Y') --'Y'
+					AND (D17.QUAN_ON_HAND > CAST(@para4 AS INT) OR D17.CONSIGN_ONHAND_QTY > CAST(@para4 AS INT))--0
+					--AND D17.CONSIGN_ONHAND_QTY > CAST(@para10 AS INT)
+					AND D17.TTYPE IN (CAST(@para5 AS VARCHAR(1)), CAST(@para6 AS VARCHAR(1)))
+					--AND dbo.DATA0008.PRODUCT_NAME NOT IN (@para6, @para7) --'Handel-Leiterplatten', 'MASSLAM'   
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN (@para8, @para9) --'Basismaterial', 'Externe-Dienstleistung'
+					--AND D17.INV_PART_DESCRIPTION LIKE CASE WHEN @para<>'' THEN @para ELSE '%' END --(D17.INV_PART_DESCRIPTION LIKE @para) -- 'Schwermetallfäller') @para1
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial' -- LIKE CASE WHEN @para1<>'' THEN @para1 ELSE '%' END
+					--AND dbo.DATA0008.PRODUCT_NAME LIKE CASE WHEN @para2<>'' THEN @para2 ELSE '%' END
+		) AS tblLB
+		WHERE 
+			Bezeichnung COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para
+			AND
+			Anlage COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para7
+			AND
+			LtzTrans <= CONVERT(DATETIME, @para8, 103)
+		ORDER BY
+			PRODUCT_GROUP_NAME, PRODUCT_NAME, Bezeichnung
+	END
+
+	IF @Case_ = 'AktuellerLagerbestandLP'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255),
+		--	@para1 varchar(255),
+		--	@para2 varchar(255)
+		--SET @para = '%0,25%' --Artikel
+		--SET @para1 = 'Y' --ACTIVE_FLAG = 'N' oder 'Y'
+		--SET @para2 = '0' --QUAN_ON_HAND > '0' oder '-1'
+
+
+		SELECT
+			*
+			--ISNULL((
+			--		SELECT TOP 1 dbo.DATA0095.TRAN_DATE FROM dbo.DATA0095 WHERE dbo.DATA0095.RKEY = tblLB.D95_PTR
+			--), '') AS LtzTrans,
+			--ISNULL((
+			--		SELECT TOP 1 dbo.DATA0095.TRAN_TP FROM dbo.DATA0095 WHERE dbo.DATA0095.RKEY = tblLB.D95_PTR
+			--), 0) AS Trans,
+			--LtzEinlagerung
+
+		FROM
+		(
+			SELECT   
+				D17.STOCK_PURCH AS Umrechnungsfaktor,
+				D17.ACTIVE_FLAG,
+				D17.RKEY AS D17_PTR,  
+				dbo.DATA0007.PRODUCT_GROUP_NAME, 
+				dbo.DATA0008.PRODUCT_NAME, 
+				ISNULL((
+						CASE WHEN D17.LONG_INVENTORY_PART_NUMBER<>'' THEN D17.LONG_INVENTORY_PART_NUMBER ELSE D17.INV_PART_DESCRIPTION END
+				), '') AS Bezeichnung, 
+				--D17.QUAN_ON_HAND AS Verfuegbar_GGP,
+				dbo.DATA0019.QUAN_ON_HAND AS Verfuegbar_GGP,
+				D17.CONSIGN_ONHAND_QTY AS Verfuegbar_Konsi,
+				dbo.DATA0019.QUAN_ON_HAND/D17.STOCK_PURCH AS Verfuegbar_GGPEinkauf,
+				D17.CONSIGN_ONHAND_QTY/D17.STOCK_PURCH AS Verfuegbar_KonsiEinkauf,
+				--ISNULL((
+				--		SELECT  TOP 1  SUM(dbo.DATA0019.QUAN_ON_HAND) AS RES
+				--		FROM         dbo.DATA0017 INNER JOIN
+				--							  dbo.DATA0019 ON dbo.DATA0017.RKEY = dbo.DATA0019.INVENTORY_PTR
+				--		GROUP BY dbo.DATA0017.RKEY
+				--		HAVING      (dbo.DATA0017.RKEY = D17.RKEY)
+				--), 0) AS Verfuegbar_Lagerplaetze,
+				dbo.DATA0002.UNIT_CODE,
+				D17.STD_COST AS VerrPreis,
+				/*
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN (D108.PRICE/dbo.DATA0107.EX_RATE)	--/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																									--FROM dbo.DATA0028 
+																									--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																									--	AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH)
+																									-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN (D71.PRICE/D70.EXCHANGE_RATE)	--/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																										--FROM dbo.DATA0028 
+																										--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																										--AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH) 
+																										-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+										ELSE 0
+									END
+							END AS Res_DREPreis,
+							D95.QUANTITY As Menge,
+							D95.INVT_PTR
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 ON D95.INVT_PTR = dbo.DATA0017.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+					) AS myDPreisTbl
+					WHERE
+							INVT_PTR=D17.RKEY AND Res_DREPreis*Menge>0
+				), 0) AS FLOAT) AS DR12MonEKP,
+				*/
+				ISNULL((
+						CASE
+							WHEN
+								ISNULL((
+										SELECT     TOP (1) ISNULL(dbo.DATA0108.PRICE, 0) AS RES
+										FROM         dbo.DATA0095 AS D95 INNER JOIN
+																dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+																dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+																dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+																dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+										WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										ORDER BY D95.TRAN_DATE DESC
+								), 0)>0 THEN 
+							(
+								SELECT
+									SUM(PRICE/EX_RATE*QUANTITY)/SUM(QUANTITY) AS RES
+								FROM
+								(
+									SELECT     dbo.DATA0108.PRICE, dbo.DATA0108.QUANTITY, dbo.DATA0107.EX_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+															dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+							ELSE
+							(
+								SELECT   											
+									SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+								FROM
+								(
+									SELECT     D71.PRICE, D71.QUAN_RECD, D71.QUAN_RETN, D70.EXCHANGE_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+						END
+				), 0) AS DR12MonEKP, --DPreis nach JHA
+				ISNULL((
+					CASE
+						WHEN
+						ISNULL(
+						(SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						), 0)>0 THEN 
+						(
+							SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						)
+						ELSE
+						(
+							SELECT     TOP 1 ISNULL(D71.PRICE/D70.EXCHANGE_RATE, 0) AS RES
+							FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+							WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY)
+							ORDER BY D95.TRAN_DATE DESC
+						)
+					END
+				), 0) AS DR12MonBEP,
+				ISNULL((
+							SELECT COUNT( DISTINCT LIVE2.dbo.MatRueck_Anlage.Anlage) AS RES
+							FROM         LIVE2.dbo.MatRueck_Transaktion INNER JOIN
+												  LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+												  dbo.DATA0017 ON LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR = dbo.DATA0017.RKEY
+							WHERE     (dbo.DATA0017.RKEY = D17.RKEY)
+				), 0) AS Anz_Anlagen,
+				ISNULL((
+						SELECT TOP 1 LIVE2.dbo.MatRueck_Anlage.Anlage
+						FROM  LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+								LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+						WHERE
+							LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = D17.RKEY
+				), '') AS Anlage,
+				dbo.DATA0016.CODE AS LP,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '01.01.1900') AS LtzTrans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_TP 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), 0) AS Trans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP = 7
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '') AS LtzEinlagerung
+
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+								  dbo.DATA0017 AS D17 ON dbo.DATA0008.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+								  dbo.DATA0002 ON D17.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0002 AS DATA0002_1 ON D17.PURCH_UNIT_PTR = DATA0002_1.RKEY INNER JOIN
+								  dbo.DATA0019 ON D17.RKEY = dbo.DATA0019.INVENTORY_PTR INNER JOIN
+								  dbo.DATA0016 ON dbo.DATA0019.LOCATION_PTR = dbo.DATA0016.RKEY
+			WHERE    
+					(
+						dbo.DATA0007.PR_GRP_CODE COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para9 --@para1
+						OR
+						dbo.DATA0007.RKEY IN (@val1, @val2, @val3, @val4, @val5, @val6, @val7, @val8, @val9, @val10, @val11, @val12, @val13, @val14, @val15, @val16, @val17, @val18, @val19, @val20, @val21, @val22, @val23, @val24, @val25, @val26, @val27, @val28, @val29, @val30, @val31, @val32, @val33, @val34, @val35)
+					)
+					AND dbo.DATA0008.PRODUCT_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para2 
+					AND D17.ACTIVE_FLAG = CAST(@para3 AS VARCHAR(1)) --IN (CAST(@para3 AS VARCHAR(1)), 'Y') --'Y'
+					AND dbo.DATA0019.QUAN_ON_HAND > CAST(@para4 AS INT) --OR D17.CONSIGN_ONHAND_QTY > CAST(@para4 AS INT))--0) --0
+					AND D17.TTYPE IN (CAST(@para5 AS VARCHAR(1)), CAST(@para6 AS VARCHAR(1)))
+					--AND dbo.DATA0008.PRODUCT_NAME NOT IN (@para6, @para7) --'Handel-Leiterplatten', 'MASSLAM'   
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN (@para8, @para9) --'Basismaterial', 'Externe-Dienstleistung'
+					--AND D17.INV_PART_DESCRIPTION LIKE CASE WHEN @para<>'' THEN @para ELSE '%' END --(D17.INV_PART_DESCRIPTION LIKE @para) -- 'Schwermetallfäller') @para1
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial' -- LIKE CASE WHEN @para1<>'' THEN @para1 ELSE '%' END
+					--AND dbo.DATA0008.PRODUCT_NAME LIKE CASE WHEN @para2<>'' THEN @para2 ELSE '%' END
+		) AS tblLB
+		WHERE 
+			Bezeichnung COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para
+			AND
+			Anlage COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para7
+			AND
+			LtzTrans <= CONVERT(DATETIME, @para8, 103)
+		ORDER BY
+			PRODUCT_GROUP_NAME, PRODUCT_NAME, Bezeichnung
+	END
+
+	IF @Case_ = 'AktuelleWG'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255),
+		--	@para1 varchar(255),
+		--	@para2 varchar(255)
+		--SET @para = '%0,25%' --Artikel
+		--SET @para1 = 'Y' --ACTIVE_FLAG = 'N' oder 'Y'
+		--SET @para2 = '0' --QUAN_ON_HAND > '0' oder '-1'
+
+
+		SELECT
+			WarengruppeCode,
+			WarengruppeBez,
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_GGP / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonEKP > 0 THEN 
+									Verfuegbar_GGP / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_GGP * VerrPreis
+							END
+					END
+			), 0)) AS LBWert,
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_Konsi / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonEKP > 0 THEN 
+									Verfuegbar_Konsi / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_Konsi * VerrPreis
+							END
+					END
+			), 0)) AS LBWertKonsi
+			
+		FROM
+		(
+			SELECT   
+				D17.STOCK_PURCH AS Umrechnungsfaktor,
+				D17.ACTIVE_FLAG,
+				D17.RKEY AS D17_PTR,  
+				dbo.DATA0007.PRODUCT_GROUP_NAME AS WarengruppeBez, 
+				dbo.DATA0007.PR_GRP_CODE AS WarengruppeCode, 
+				ISNULL((
+						CASE WHEN D17.LONG_INVENTORY_PART_NUMBER<>'' THEN D17.LONG_INVENTORY_PART_NUMBER ELSE D17.INV_PART_DESCRIPTION END
+				), '') AS Bezeichnung, 
+				D17.QUAN_ON_HAND AS Verfuegbar_GGP,
+				D17.CONSIGN_ONHAND_QTY AS Verfuegbar_Konsi,
+				--ISNULL((
+				--		SELECT  TOP 1  SUM(dbo.DATA0019.QUAN_ON_HAND) AS RES
+				--		FROM         dbo.DATA0017 INNER JOIN
+				--							  dbo.DATA0019 ON dbo.DATA0017.RKEY = dbo.DATA0019.INVENTORY_PTR
+				--		GROUP BY dbo.DATA0017.RKEY
+				--		HAVING      (dbo.DATA0017.RKEY = D17.RKEY)
+				--), 0) AS Verfuegbar_Lagerplaetze,
+				dbo.DATA0002.UNIT_CODE,
+				D17.STD_COST AS VerrPreis,
+				D17.QUAN_ON_HAND/D17.STOCK_PURCH AS Verfuegbar_GGPEinkauf,
+				D17.CONSIGN_ONHAND_QTY/D17.STOCK_PURCH AS Verfuegbar_KonsiEinkauf,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN (D108.PRICE/dbo.DATA0107.EX_RATE) --/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																									--FROM dbo.DATA0028 
+																									--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																									--	AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH)
+																									-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN (D71.PRICE/D70.EXCHANGE_RATE)	--/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																										--FROM dbo.DATA0028 
+																										--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																										--AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH) 
+																										-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+										ELSE 0
+									END
+							END AS Res_DREPreis,
+							D95.QUANTITY As Menge,
+							D95.INVT_PTR
+						FROM         dbo.DATA0107 INNER JOIN
+											  dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+											  dbo.DATA0095 AS D95 INNER JOIN
+											  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+											  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+											  dbo.DATA0017 ON D95.INVT_PTR = dbo.DATA0017.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+					) AS myDPreisTbl
+					WHERE
+							INVT_PTR=D17.RKEY AND Res_DREPreis*Menge>0
+				), 0) AS FLOAT) AS DR12MonEKP,
+				ISNULL((
+					CASE
+						WHEN
+						ISNULL(
+						(SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						), 0)>0 THEN 
+						(
+							SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						)
+						ELSE
+						(
+							SELECT     TOP 1 ISNULL(D71.PRICE/D70.EXCHANGE_RATE, 0) AS RES
+							FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+							WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY)
+							ORDER BY D95.TRAN_DATE DESC
+						)
+					END
+				), 0) AS DR12MonBEP,
+				ISNULL((
+							SELECT COUNT( DISTINCT LIVE2.dbo.MatRueck_Anlage.Anlage) AS RES
+							FROM         LIVE2.dbo.MatRueck_Transaktion INNER JOIN
+												  LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+												  dbo.DATA0017 ON LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR = dbo.DATA0017.RKEY
+							WHERE     (dbo.DATA0017.RKEY = D17.RKEY)
+				), 0) AS Anz_Anlagen,
+				ISNULL((
+						SELECT TOP 1 LIVE2.dbo.MatRueck_Anlage.Anlage
+						FROM  LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+								LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+						WHERE
+							LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = D17.RKEY
+				), '') AS Anlage,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '01.01.1900') AS LtzTrans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_TP 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), 0) AS Trans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP = 7
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '') AS LtzEinlagerung
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+								  dbo.DATA0017 AS D17 ON dbo.DATA0008.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+								  dbo.DATA0002 ON D17.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0002 AS DATA0002_1 ON D17.PURCH_UNIT_PTR = DATA0002_1.RKEY
+			WHERE    
+					(
+						dbo.DATA0007.PR_GRP_CODE COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para9 --@para1
+						OR
+						dbo.DATA0007.RKEY IN (@val1, @val2, @val3, @val4, @val5, @val6, @val7, @val8, @val9, @val10, @val11, @val12, @val13, @val14, @val15, @val16, @val17, @val18, @val19, @val20, @val21, @val22, @val23, @val24, @val25, @val26, @val27, @val28, @val29, @val30, @val31, @val32, @val33, @val34, @val35)
+					)
+					AND dbo.DATA0008.PRODUCT_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para2 
+					AND D17.ACTIVE_FLAG = CAST(@para3 AS VARCHAR(1)) --IN (CAST(@para3 AS VARCHAR(1)), 'Y') --'Y'
+					AND D17.QUAN_ON_HAND > CAST(@para4 AS INT) -- OR D17.CONSIGN_ONHAND_QTY > CAST(@para4 AS INT))--0
+					--AND D17.CONSIGN_ONHAND_QTY > CAST(@para10 AS INT)
+					AND D17.TTYPE IN (CAST(@para5 AS VARCHAR(1)), CAST(@para6 AS VARCHAR(1)))
+					--AND dbo.DATA0008.PRODUCT_NAME NOT IN (@para6, @para7) --'Handel-Leiterplatten', 'MASSLAM'   
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN (@para8, @para9) --'Basismaterial', 'Externe-Dienstleistung'
+					--AND D17.INV_PART_DESCRIPTION LIKE CASE WHEN @para<>'' THEN @para ELSE '%' END --(D17.INV_PART_DESCRIPTION LIKE @para) -- 'Schwermetallfäller') @para1
+					--AND dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial' -- LIKE CASE WHEN @para1<>'' THEN @para1 ELSE '%' END
+					--AND dbo.DATA0008.PRODUCT_NAME LIKE CASE WHEN @para2<>'' THEN @para2 ELSE '%' END
+		) AS tblLB
+		WHERE 
+			Bezeichnung COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para
+			AND
+			Anlage COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para7
+			AND
+			LtzTrans <= CONVERT(DATETIME, @para8, 103)
+		GROUP BY		
+			WarengruppeCode,
+			WarengruppeBez
+		ORDER BY
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_GGP / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonEKP > 0 THEN 
+									Verfuegbar_GGP / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_GGP * VerrPreis
+							END
+					END
+			), 0)) DESC
+	END
+
+
+	IF @Case_ = 'AktuellerLagerbestand_Alles'
+	BEGIN
+		SELECT
+			*
+		FROM
+		(
+			SELECT   
+				D17.STOCK_PURCH AS Umrechnungsfaktor,
+				D17.ACTIVE_FLAG,
+				D17.RKEY AS D17_PTR,  
+				dbo.DATA0007.PRODUCT_GROUP_NAME, 
+				dbo.DATA0008.PRODUCT_NAME, 
+				ISNULL((
+						CASE WHEN D17.LONG_INVENTORY_PART_NUMBER<>'' THEN D17.LONG_INVENTORY_PART_NUMBER ELSE D17.INV_PART_DESCRIPTION END
+				), '') AS Bezeichnung, 
+				D17.QUAN_ON_HAND AS Verfuegbar_GGP,
+				D17.CONSIGN_ONHAND_QTY AS Verfuegbar_Konsi,
+				dbo.DATA0002.UNIT_CODE,
+				D17.STD_COST AS VerrPreis,
+				D17.QUAN_ON_HAND/D17.STOCK_PURCH AS Verfuegbar_GGPEinkauf,
+				D17.CONSIGN_ONHAND_QTY/D17.STOCK_PURCH AS Verfuegbar_KonsiEinkauf,
+				ISNULL((
+						CASE
+							WHEN
+								ISNULL((
+										SELECT     TOP (1) ISNULL(dbo.DATA0108.PRICE, 0) AS RES
+										FROM         dbo.DATA0095 AS D95 INNER JOIN
+																dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+																dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+																dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+																dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+										WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										ORDER BY D95.TRAN_DATE DESC
+								), 0)>0 THEN 
+							(
+								SELECT
+									SUM(PRICE/EX_RATE*QUANTITY)/SUM(QUANTITY) AS RES
+								FROM
+								(
+									SELECT     dbo.DATA0108.PRICE, dbo.DATA0108.QUANTITY, dbo.DATA0107.EX_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+															dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+							ELSE
+							(
+								SELECT   											
+									SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+								FROM
+								(
+									SELECT     D71.PRICE, D71.QUAN_RECD, D71.QUAN_RETN, D70.EXCHANGE_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+						END
+				), 0) AS DR12MonEKP, --DPreis nach JHA
+				ISNULL((
+					CASE
+						WHEN
+						ISNULL(
+						(SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						), 0)>0 THEN 
+						(
+							SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						)
+						ELSE
+						(
+							SELECT     TOP 1 ISNULL(D71.PRICE/D70.EXCHANGE_RATE, 0) AS RES
+							FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+							WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY)
+							ORDER BY D95.TRAN_DATE DESC
+						)
+					END
+				), 0) AS DR12MonBEP,
+				ISNULL((
+							SELECT COUNT( DISTINCT LIVE2.dbo.MatRueck_Anlage.Anlage) AS RES
+							FROM         LIVE2.dbo.MatRueck_Transaktion INNER JOIN
+												  LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+												  dbo.DATA0017 ON LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR = dbo.DATA0017.RKEY
+							WHERE     (dbo.DATA0017.RKEY = D17.RKEY)
+				), 0) AS Anz_Anlagen,
+				ISNULL((
+						SELECT TOP 1 LIVE2.dbo.MatRueck_Anlage.Anlage
+						FROM  LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+								LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+						WHERE
+							LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = D17.RKEY
+				), '') AS Anlage,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '01.01.1900') AS LtzTrans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_TP 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), 0) AS Trans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP = 7
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '') AS LtzEinlagerung
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+								  dbo.DATA0017 AS D17 ON dbo.DATA0008.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+								  dbo.DATA0002 ON D17.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+								  dbo.DATA0002 AS DATA0002_1 ON D17.PURCH_UNIT_PTR = DATA0002_1.RKEY
+			WHERE    
+					D17.ACTIVE_FLAG = CAST(@para3 AS VARCHAR(1)) 
+					AND (D17.QUAN_ON_HAND > CAST(@para4 AS INT) OR D17.CONSIGN_ONHAND_QTY > CAST(@para4 AS INT))
+					AND D17.TTYPE IN ('R', 'M')
+					--AND D17.TTYPE IN (CAST(@para5 AS VARCHAR(1)), CAST(@para6 AS VARCHAR(1)))
+					AND dbo.DATA0007.PR_GRP_CODE NOT IN ('E-EXT', 'V-F', 'R-REC')
+		) AS tblLB
+		WHERE 
+			LtzTrans <= CONVERT(DATETIME, @para8, 103)
+		ORDER BY
+			PRODUCT_GROUP_NAME, PRODUCT_NAME, Bezeichnung
+	END
+
+	IF @Case_ = 'AktuelleWG_Alles'
+	BEGIN
+		SELECT
+			WarengruppeCode,
+			WarengruppeBez,
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_GGP / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonBEP > 0 THEN 
+									Verfuegbar_GGP / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_GGP * VerrPreis
+							END
+					END
+			), 0)) AS LBWert,
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_Konsi / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonBEP > 0 THEN 
+									Verfuegbar_Konsi / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_Konsi * VerrPreis
+							END
+					END
+			), 0)) AS LBWertKonsi
+			
+		FROM
+		(
+			SELECT   
+				D17.STOCK_PURCH AS Umrechnungsfaktor,
+				D17.ACTIVE_FLAG,
+				D17.RKEY AS D17_PTR,  
+				dbo.DATA0007.PRODUCT_GROUP_NAME AS WarengruppeBez, 
+				dbo.DATA0007.PR_GRP_CODE AS WarengruppeCode, 
+				ISNULL((
+						CASE WHEN D17.LONG_INVENTORY_PART_NUMBER<>'' THEN D17.LONG_INVENTORY_PART_NUMBER ELSE D17.INV_PART_DESCRIPTION END
+				), '') AS Bezeichnung, 
+				D17.QUAN_ON_HAND AS Verfuegbar_GGP,
+				D17.CONSIGN_ONHAND_QTY AS Verfuegbar_Konsi,
+				dbo.DATA0002.UNIT_CODE,
+				D17.STD_COST AS VerrPreis,
+				D17.QUAN_ON_HAND/D17.STOCK_PURCH AS Verfuegbar_GGPEinkauf,
+				D17.CONSIGN_ONHAND_QTY/D17.STOCK_PURCH AS Verfuegbar_KonsiEinkauf,
+				/*
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(Res_DREPreis*Menge)/SUM(Menge) AS DPreis_12Mon
+					FROM
+					(
+						SELECT     
+							CASE 
+								WHEN ISNULL(D108.PRICE, 0)>0 THEN (D108.PRICE/dbo.DATA0107.EX_RATE) --/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																									--FROM dbo.DATA0028 
+																									--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																									--	AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH)
+																									-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+								ELSE
+									CASE WHEN ISNULL(D71.PRICE, 0)>0 THEN (D71.PRICE/D70.EXCHANGE_RATE)	--/ISNULL((SELECT TOP 1 CONVERSION_FACTOR 
+																										--FROM dbo.DATA0028 
+																										--WHERE dbo.DATA0028.SUPPLIER_PTR=D70.SUPPLIER_POINTER
+																										--AND dbo.DATA0028.INVENTORY_PTR=D17.RKEY), D17.STOCK_PURCH) 
+																										-- Weil Einlagerungsmenge in der Einkaufseinheit ist 08.09.16/Dsi
+										ELSE 0
+									END
+							END AS Res_DREPreis,
+							D95.QUANTITY As Menge,
+							D95.INVT_PTR
+						FROM         dbo.DATA0107 INNER JOIN
+												dbo.DATA0108 AS D108 ON dbo.DATA0107.RKEY = D108.DATA0107_PTR RIGHT OUTER JOIN
+												dbo.DATA0095 AS D95 INNER JOIN
+												dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+												dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY INNER JOIN
+												dbo.DATA0017 ON D95.INVT_PTR = dbo.DATA0017.RKEY ON D108.DATA0071_PTR = D71.RKEY
+						WHERE     
+							(D95.TRAN_TP = 5) 
+							AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+					) AS myDPreisTbl
+					WHERE
+							INVT_PTR=D17.RKEY AND Res_DREPreis*Menge>0
+				), 0) AS FLOAT) AS DR12MonEKP,
+				*/
+				ISNULL((
+						CASE
+							WHEN
+								ISNULL((
+										SELECT     TOP (1) ISNULL(dbo.DATA0108.PRICE, 0) AS RES
+										FROM         dbo.DATA0095 AS D95 INNER JOIN
+																dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+																dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+																dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+																dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+										WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										ORDER BY D95.TRAN_DATE DESC
+								), 0)>0 THEN 
+							(
+								SELECT
+									SUM(PRICE/EX_RATE*QUANTITY)/SUM(QUANTITY) AS RES
+								FROM
+								(
+									SELECT     dbo.DATA0108.PRICE, dbo.DATA0108.QUANTITY, dbo.DATA0107.EX_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0108 ON D71.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+															dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+							ELSE
+							(
+								SELECT   											
+									SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+								FROM
+								(
+									SELECT     D71.PRICE, D71.QUAN_RECD, D71.QUAN_RETN, D70.EXCHANGE_RATE
+									FROM         dbo.DATA0095 AS D95 INNER JOIN
+															dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+															dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+															dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+									WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+											AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+											AND (ISNULL(D71.PRICE, 0) > 0)
+											AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+								) As myTbl12Mon
+							)
+						END
+				), 0) AS DR12MonEKP, --DPreis nach JHA
+				ISNULL((
+					CASE
+						WHEN
+						ISNULL(
+						(SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						), 0)>0 THEN 
+						(
+							SELECT
+							SUM(PRICE/EXCHANGE_RATE*(QUAN_RECD - QUAN_RETN))/SUM(QUAN_RECD - QUAN_RETN) AS RES
+							FROM
+							(
+								SELECT     PRICE, QUAN_RECD, QUAN_RETN, EXCHANGE_RATE
+								FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY) 
+										AND (D95.TRAN_DATE > DATEADD(mm, - 12, GETDATE())) 
+										AND (ISNULL(D71.PRICE, 0) > 0)
+										AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+							) As myTbl12Mon
+						)
+						ELSE
+						(
+							SELECT     TOP 1 ISNULL(D71.PRICE/D70.EXCHANGE_RATE, 0) AS RES
+							FROM         dbo.DATA0095 AS D95 INNER JOIN
+														dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+														dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY INNER JOIN
+														dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+							WHERE     (D95.TRAN_TP = 5) AND (D95.INVT_PTR = D17.RKEY)
+							ORDER BY D95.TRAN_DATE DESC
+						)
+					END
+				), 0) AS DR12MonBEP,
+				ISNULL((
+							SELECT COUNT( DISTINCT LIVE2.dbo.MatRueck_Anlage.Anlage) AS RES
+							FROM         LIVE2.dbo.MatRueck_Transaktion INNER JOIN
+													LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID INNER JOIN
+													dbo.DATA0017 ON LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR = dbo.DATA0017.RKEY
+							WHERE     (dbo.DATA0017.RKEY = D17.RKEY)
+				), 0) AS Anz_Anlagen,
+				ISNULL((
+						SELECT TOP 1 LIVE2.dbo.MatRueck_Anlage.Anlage
+						FROM  LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+								LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+						WHERE
+							LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = D17.RKEY
+				), '') AS Anlage,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '01.01.1900') AS LtzTrans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_TP 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP IN (7, 8, 13, 14, 15, 16, 20)
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), 0) AS Trans,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0095.TRAN_DATE 
+						FROM dbo.DATA0095 
+						WHERE dbo.DATA0095.INVT_PTR = D17.RKEY AND dbo.DATA0095.TRAN_TP = 7
+						ORDER BY dbo.DATA0095.TRAN_DATE DESC 
+				), '') AS LtzEinlagerung
+			FROM         dbo.DATA0008 INNER JOIN
+									dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+									dbo.DATA0017 AS D17 ON dbo.DATA0008.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+									dbo.DATA0002 ON D17.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+									dbo.DATA0002 AS DATA0002_1 ON D17.PURCH_UNIT_PTR = DATA0002_1.RKEY
+			WHERE    
+					D17.ACTIVE_FLAG = CAST(@para3 AS VARCHAR(1)) 
+					AND D17.QUAN_ON_HAND > CAST(@para4 AS INT) 
+					AND D17.TTYPE IN ('R', 'M')
+					--AND D17.TTYPE IN (CAST(@para5 AS VARCHAR(1)), CAST(@para6 AS VARCHAR(1)))
+					AND dbo.DATA0007.PR_GRP_CODE NOT IN ('E-EXT', 'V-F', 'R-REC')
+		) AS tblLB
+		WHERE 
+			LtzTrans <= CONVERT(DATETIME, @para8, 103)
+		GROUP BY		
+			WarengruppeCode,
+			WarengruppeBez
+		ORDER BY
+			SUM(ISNULL((CASE 
+						WHEN DR12MonEKP > 0 THEN 
+							Verfuegbar_GGP / Umrechnungsfaktor * DR12MonEKP
+						ELSE
+							CASE 
+								WHEN DR12MonEKP > 0 THEN 
+									Verfuegbar_GGP / Umrechnungsfaktor * DR12MonBEP
+								ELSE
+									Verfuegbar_GGP * VerrPreis
+							END
+					END
+			), 0)) DESC
+	END
+	-----------------------------------------------------------------------------------------------
+
+	IF @Case_ = 'RHB_Warengruppen'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para = '2016' --Jahr
+
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				D7.PR_GRP_CODE AS WarengruppeCode,
+				D7.PRODUCT_GROUP_NAME AS WarengruppeBez,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(STR((CAST(@para AS INT)-1)))) + '.12') AS Dez_Vorjahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.01') AS Jan_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.02') AS Feb_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.03') AS Mrz_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.04') AS Apr_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.05') AS Mai_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.06') AS Jun_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.07') AS Jul_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.08') AS Aug_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.09') AS Sep_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.10') AS Okt_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.11') AS Nov_aktJahr,
+				dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.12') AS Dez_aktJahr
+			FROM
+				dbo.DATA0007 AS D7
+			WHERE
+				D7.PR_GRP_CODE LIKE  'E-%'
+		) AS tblGrp
+		ORDER BY
+			(Dez_Vorjahr+Jan_aktJahr+Feb_aktJahr+Mrz_aktJahr+Apr_aktJahr+Mai_aktJahr+Jun_aktJahr+Jul_aktJahr+Aug_aktJahr+Sep_aktJahr+Okt_aktJahr+Nov_aktJahr+Dez_aktJahr)/13 DESC
+	END
+
+	IF @Case_ = 'RHB_WarengruppenKonsi'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para = '2016' --Jahr
+
+		SELECT
+			*
+		FROM
+		(
+			SELECT
+				D7.PR_GRP_CODE AS WarengruppeCode,
+				D7.PRODUCT_GROUP_NAME AS WarengruppeBez,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(STR((CAST(@para AS INT)-1)))) + '.12') AS Dez_Vorjahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.01') AS Jan_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.02') AS Feb_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.03') AS Mrz_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.04') AS Apr_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.05') AS Mai_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.06') AS Jun_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.07') AS Jul_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.08') AS Aug_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.09') AS Sep_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.10') AS Okt_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.11') AS Nov_aktJahr,
+				dbo.F_dsi_KONSIVolMonat_PR_GRP_CODE(D7.PR_GRP_CODE, LTRIM(RTRIM(@para)) + '.12') AS Dez_aktJahr
+			FROM
+				dbo.DATA0007 AS D7
+			WHERE
+				D7.PR_GRP_CODE LIKE  'E-%'
+		) AS tblGrp
+		ORDER BY
+			(Dez_Vorjahr+Jan_aktJahr+Feb_aktJahr+Mrz_aktJahr+Apr_aktJahr+Mai_aktJahr+Jun_aktJahr+Jul_aktJahr+Aug_aktJahr+Sep_aktJahr+Okt_aktJahr+Nov_aktJahr+Dez_aktJahr)/13 DESC
+	END
+
+	IF @Case_ = 'RHB_WarengruppenCode'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para1 = 'E-BM' --Jahr
+
+		SELECT
+			D7.PR_GRP_CODE AS WarengruppeCode,
+			D7.PRODUCT_GROUP_NAME AS WarengruppeBez,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(STR((CAST(@para AS INT)-1)))) + '.12') AS Dez_Vorjahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.01') AS Jan_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.02') AS Feb_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.03') AS Mrz_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.04') AS Apr_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.05') AS Mai_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.06') AS Jun_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.07') AS Jul_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.08') AS Aug_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.09') AS Sep_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.10') AS Okt_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.11') AS Nov_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PR_GRP_CODE(@para1, LTRIM(RTRIM(@para)) + '.12') AS Dez_aktJahr
+		FROM
+			dbo.DATA0007 AS D7
+		WHERE
+			D7.PR_GRP_CODE = @para1
+	END
+
+	IF @Case_ = 'RHB_zumAnschliff'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para = '2016' --Jahr
+
+		SELECT
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(STR((CAST(@para AS INT)-1)))) + '.12' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Dez_Vorjahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.01' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Jan_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.02' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Feb_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.03' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Mrz_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.04' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Apr_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.05' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Mai_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.06' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Jun_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.07' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Jul_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.08' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Aug_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.09' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Sep_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.10' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Okt_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.11' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Nov_aktJahr,
+			ISNULL((
+					SELECT
+						SUM(ISNULL(LgMg, 0) * CASE WHEN ISNULL(PreisGewDurch12Mon_JHA, 0)>0 THEN
+						PreisGewDurch12Mon_JHA / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE CASE WHEN ISNULL(PreisGewDurch12MonRech, 0)>0 THEN PreisGewDurch12MonRech / CASE WHEN ISNULL(Umrechnungsfaktor_Stamm, 0)>0 THEN Umrechnungsfaktor_Stamm ELSE 1 END
+						ELSE StdCost END END) AS RES
+					FROM LIVE2.dbo.PEX_Inventurbestaende_RHB WHERE JahrMonat = LTRIM(RTRIM(@para)) + '.12' AND INV_PART_DESCRIPTION LIKE '%zum Anschliff%'  
+			), 0) AS Dez_aktJahr
+	END
+
+	IF @Case_ = 'RHB_Produktname'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para1 = 'E-BM' --Jahr
+
+		SELECT
+			dbo.DATA0008.PRODUCT_NAME AS Produktname,
+			dbo.DATA0007.PRODUCT_GROUP_NAME AS WarengruppeBez,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(STR((CAST(@para AS INT)-1)))) + '.12') AS Dez_Vorjahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.01') AS Jan_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.02') AS Feb_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.03') AS Mrz_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.04') AS Apr_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.05') AS Mai_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.06') AS Jun_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.07') AS Jul_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.08') AS Aug_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.09') AS Sep_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.10') AS Okt_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.11') AS Nov_aktJahr,
+			dbo.F_dsi_RHBVolMonat_PRODUCT_NAME(@para1, LTRIM(RTRIM(@para)) + '.12') AS Dez_aktJahr
+		FROM         dbo.DATA0007 INNER JOIN
+                      dbo.DATA0008 ON dbo.DATA0007.RKEY = dbo.DATA0008.PR_GRP_POINTER
+		WHERE
+			dbo.DATA0008.PRODUCT_NAME = @para1
+	END
+
+	IF @Case_ = 'RHB_Details'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @@para = '2016.08' --JahrMonat
+
+		DECLARE
+			@tmpJahrMonat varchar(7)
+		SET  @tmpJahrMonat = (SELECT TOP 1 MAX(JahrMonat) AS RES FROM LIVE2.dbo.PEX_Inventurbestaende_RHB)
+		SELECT
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0008.PRODUCT_NAME,
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0007.PR_GRP_CODE,
+			dbo.DATA0017.INV_PART_DESCRIPTION, 
+			CASE WHEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER<>'' THEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER ELSE dbo.DATA0017.INV_PART_DESCRIPTION END AS Artikel, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LagerEH,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm AS LgMg_Einkauf,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi,
+			ISNULL((
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Bewertungspreis,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Wert,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS WertKonsi
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY
+		WHERE     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat = @tmpJahrMonat
+			AND LEFT(dbo.DATA0007.PR_GRP_CODE, 1) = 'E'
+		ORDER BY 
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'RHB_DetailsBohren'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @@para = '2016.12' --JahrMonat
+
+		DECLARE
+			@tmpJahrMonatBohren varchar(7)
+		SET  @tmpJahrMonatBohren = (SELECT TOP 1 MAX(JahrMonat) AS RES FROM LIVE2.dbo.PEX_Inventurbestaende_RHB)
+		SELECT
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0008.PRODUCT_NAME,
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0007.PR_GRP_CODE,
+			dbo.DATA0017.INV_PART_DESCRIPTION, 
+			CASE WHEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER<>'' THEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER ELSE dbo.DATA0017.INV_PART_DESCRIPTION END AS Artikel, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LagerEH,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm AS LgMg_Einkauf,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi,
+			ISNULL((
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Bewertungspreis,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Wert,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS WertKonsi
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY
+		WHERE     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat = @tmpJahrMonatBohren
+			--AND LEFT(dbo.DATA0007.PR_GRP_CODE, 1) = 'E'
+			AND dbo.DATA0007.PR_GRP_CODE = 'E-WZF'
+			AND dbo.DATA0017.INV_PART_DESCRIPTION NOT LIKE '%zum Anschliff%'
+		ORDER BY 
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'RHB_DetailsBohrerAnschliff'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @@para = '2016.12' --JahrMonat
+
+		DECLARE
+			@tmpJahrMonatBohrenAnsch varchar(7)
+		SET  @tmpJahrMonatBohrenAnsch = (SELECT TOP 1 MAX(JahrMonat) AS RES FROM LIVE2.dbo.PEX_Inventurbestaende_RHB)
+		SELECT
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0008.PRODUCT_NAME,
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0007.PR_GRP_CODE,
+			dbo.DATA0017.INV_PART_DESCRIPTION, 
+			CASE WHEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER<>'' THEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER ELSE dbo.DATA0017.INV_PART_DESCRIPTION END AS Artikel, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LagerEH,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm AS LgMg_Einkauf,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi,
+			ISNULL((
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Bewertungspreis,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Wert,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS WertKonsi
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY
+		WHERE     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat = @tmpJahrMonatBohrenAnsch
+			--AND LEFT(dbo.DATA0007.PR_GRP_CODE, 1) = 'E'
+			AND dbo.DATA0007.PR_GRP_CODE = 'E-WZF'
+			AND dbo.DATA0017.INV_PART_DESCRIPTION LIKE '%zum Anschliff%'
+		ORDER BY 
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'RHB_DPreis12Mon'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para = '41' --D17_PTR
+
+		SELECT
+			DPreis_JDezVJ,
+			CASE WHEN MONTH(GETDATE())>=1 THEN DPreis_Jan ELSE 0 END DPreis_Jan,
+			CASE WHEN MONTH(GETDATE())>=2 THEN DPreis_Feb ELSE 0 END DPreis_Feb,
+			CASE WHEN MONTH(GETDATE())>=3 THEN DPreis_Mrz ELSE 0 END DPreis_Mrz,
+			CASE WHEN MONTH(GETDATE())>=4 THEN DPreis_Apr ELSE 0 END DPreis_Apr,
+			CASE WHEN MONTH(GETDATE())>=5 THEN DPreis_Mai ELSE 0 END DPreis_Mai,
+			CASE WHEN MONTH(GETDATE())>=6 THEN DPreis_Jun ELSE 0 END DPreis_Jun,
+			CASE WHEN MONTH(GETDATE())>=7 THEN DPreis_Jul ELSE 0 END DPreis_Jul,
+			CASE WHEN MONTH(GETDATE())>=8 THEN DPreis_Aug ELSE 0 END DPreis_Aug,
+			CASE WHEN MONTH(GETDATE())>=9 THEN DPreis_Sep ELSE 0 END DPreis_Sep,
+			CASE WHEN MONTH(GETDATE())>=10 THEN DPreis_Okt ELSE 0 END DPreis_Okt,
+			CASE WHEN MONTH(GETDATE())>=11 THEN DPreis_Nov ELSE 0 END DPreis_Nov,
+			CASE WHEN MONTH(GETDATE())>=12 THEN DPreis_Dez ELSE 0 END DPreis_Dez
+		FROM
+		(
+			SELECT
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.12.' + STR(LTRIM(YEAR(GETDATE())-1), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.12.' + STR(LTRIM(YEAR(GETDATE())-1), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_JDezVJ,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.01.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.01.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Jan,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '28.02.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '28.02.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Feb,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.03.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.03.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Mrz,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '30.04.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '30.04.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Apr,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.05.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.05.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Mai,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '30.06.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '30.06.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Jun,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.07.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.07.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Jul,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.08.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.08.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Aug,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '30.09.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '30.09.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Sep,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.10.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.10.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Okt,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '30.11.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '30.11.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Nov,
+				ISNULL((
+						SELECT TOP 1
+							CASE WHEN SUM(RPreis)>0 THEN SUM(RPreis/RWK*RMenge)/SUM(RMenge) ELSE SUM(BPreis/BWK*(BErhalten - BRetourn))/SUM(BErhalten - BRetourn) END AS Res
+						FROM
+						(
+							SELECT     ISNULL(D108.PRICE, 0) AS RPreis, D108.QUANTITY AS RMenge, D107.EX_RATE AS RWK,
+										D71.PRICE AS BPreis, D71.QUAN_RECD AS BErhalten, D71.QUAN_RETN AS BRetourn, D70.EXCHANGE_RATE AS BWK
+							FROM         dbo.DATA0070 AS D70 INNER JOIN
+												  dbo.DATA0095 AS D95 INNER JOIN
+												  dbo.DATA0022 AS D22 ON D95.SRCE_PTR = D22.RKEY INNER JOIN
+												  dbo.DATA0071 AS D71 ON D22.SOURCE_PTR = D71.RKEY ON D70.RKEY = D71.PO_PTR LEFT OUTER JOIN
+												  dbo.DATA0107 AS D107 INNER JOIN
+												  dbo.DATA0108 AS D108 ON D107.RKEY = D108.DATA0107_PTR ON D71.RKEY = D108.DATA0071_PTR
+							WHERE     
+									D95.TRAN_TP = 5
+									AND D95.INVT_PTR = CAST(@para AS INT)
+									AND D95.TRAN_DATE > DATEADD(mm, - 12, CONVERT(DATETIME, '31.12.' + STR(LTRIM(YEAR(GETDATE())), 103)))
+									AND D95.TRAN_DATE <= CONVERT(DATETIME, '31.12.' + STR(LTRIM(YEAR(GETDATE())), 103))
+									AND ISNULL(D71.PRICE, 0) > 0
+									AND ISNULL(D71.QUAN_RECD, 0) - ISNULL(D71.QUAN_RETN, 0) > 0
+						) AS tblDPreis
+				), 0) AS DPreis_Dez
+		) AS tblDPreisMon
+	END
+	IF @Case_ = 'RHB_nachLagerplatz'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @@para = '2016.08' --JahrMonat
+
+		--DECLARE
+		--	@tmpJahrMonat varchar(7)
+		SET  @tmpJahrMonat = (SELECT TOP 1 MAX(JahrMonat) AS RES FROM LIVE2.dbo.PEX_Inventurbestaende_RHB)
+		SELECT
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LOCATION,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LOCATION_CODE,
+			dbo.DATA0008.PROD_CODE, 
+			dbo.DATA0008.PRODUCT_NAME,
+			dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			dbo.DATA0007.PR_GRP_CODE,
+			dbo.DATA0017.INV_PART_DESCRIPTION, 
+			CASE WHEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER<>'' THEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER ELSE dbo.DATA0017.INV_PART_DESCRIPTION END AS Artikel, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LagerEH,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi,
+			ISNULL((
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost
+							END
+					END
+			), 0) AS Bewertungspreis,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS Wert,
+			ISNULL((
+					LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+					*
+					CASE 
+						WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+							LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+						ELSE
+							CASE 
+								WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+								ELSE
+									LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+							END
+					END
+			), 0) AS WertKonsi
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY
+		WHERE     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat = @tmpJahrMonat
+			AND LEFT(dbo.DATA0007.PR_GRP_CODE, 1) = 'E'
+		ORDER BY 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LOCATION
+			--dbo.DATA0008.PROD_CODE, 
+			--dbo.DATA0007.PRODUCT_GROUP_NAME, 
+			--dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'RHB_nachLagerplatzGrp'
+	BEGIN
+		--DECLARE
+		--	@para varchar(255)
+		--SET @para = '2016.09' --JahrMonat
+
+		--DECLARE
+		--	@tmpJahrMonat varchar(7)
+		SET  @tmpJahrMonat = (SELECT TOP 1 MAX(JahrMonat) AS RES FROM LIVE2.dbo.PEX_Inventurbestaende_RHB)
+
+		SELECT
+			ISNULL(LOCATION, '') AS LOCATION,
+			LOCATION_CODE,
+			SUM(WertVerrPreis) AS Wert_VerrPreis,
+			SUM(WertMSE) AS Wert_MSE,
+			SUM(WertJHA) AS Wert_JHA
+		FROM
+		(
+			SELECT
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.LOCATION,
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.LOCATION_CODE,
+				dbo.DATA0008.PROD_CODE, 
+				dbo.DATA0008.PRODUCT_NAME,
+				dbo.DATA0007.PRODUCT_GROUP_NAME, 
+				dbo.DATA0007.PR_GRP_CODE,
+				dbo.DATA0017.INV_PART_DESCRIPTION, 
+				CASE WHEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER<>'' THEN dbo.DATA0017.LONG_INVENTORY_PART_NUMBER ELSE dbo.DATA0017.INV_PART_DESCRIPTION END AS Artikel, 
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost, 
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech, 
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA, 
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat,
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum,
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi,
+				ISNULL((
+						CASE 
+							WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+							ELSE
+								CASE 
+									WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+									ELSE
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost
+								END
+						END
+				), 0) AS Bewertungspreis,
+				ISNULL((
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+						*
+						CASE 
+							WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+							ELSE
+								CASE 
+									WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+									ELSE
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+								END
+						END
+				), 0) AS Wert,
+				ISNULL((
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+						*
+						CASE 
+							WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+							ELSE
+								CASE 
+									WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+									ELSE
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+								END
+						END
+				), 0) AS WertKonsi,
+				ISNULL((LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg*LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost), 0) AS WertVerrPreis,
+				ISNULL((
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+						*
+						CASE 
+							WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+							ELSE
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+						END
+				), 0) AS WertMSE,
+				ISNULL((
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg/LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+						*
+						CASE 
+							WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA > 0 THEN
+								LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12Mon_JHA
+							ELSE
+								CASE 
+									WHEN LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech > 0 THEN
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.PreisGewDurch12MonRech
+									ELSE
+										LIVE2.dbo.PEX_Inventurbestaende_RHB.StdCost*LIVE2.dbo.PEX_Inventurbestaende_RHB.Umrechnungsfaktor_Stamm
+								END
+						END
+				), 0) AS WertJHA
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+								  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+								  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY
+			WHERE     
+				LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat = @tmpJahrMonat
+				AND LEFT(dbo.DATA0007.PR_GRP_CODE, 1) = 'E'
+		) AS tblLPGrp
+		GROUP BY
+			LOCATION,
+			LOCATION_CODE
+		ORDER BY 
+			LOCATION_CODE
+	END
+END

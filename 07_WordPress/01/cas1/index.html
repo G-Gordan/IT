@@ -1,0 +1,162 @@
+<html>
+	<head>
+	
+		<title>ovo je tekst</title>
+		<script>
+	
+			
+			var mesec;
+			var godina;
+			
+			mesec = 2;
+			godina = 2016;
+			
+			
+			switch (mesec)
+			{
+				case 1: case 3: case 5: case 7: case 8: case 10: case 12:
+					console.log ("31 dan");
+					break;
+				
+				case 4: case 6: case 9: case 11:
+					console.log ("30 dana");
+					break;
+					
+				case 2: 
+					if(godina%4 == 0)
+					{
+						console.log("29 dana");
+						break;
+					}else{
+						console.log("28 dana");
+						break;
+					}
+				default: 
+					console.log("greska");
+					break
+			}
+			
+	
+			var ocene = [] ;
+			ocene [0] = 10;
+			ocene [3] = 8;
+			ocene [7] = "Jelena";
+			
+			console.log(ocene.length);
+			
+			var ucenici = ["Goran", "Jelena", "Milica", "Aca", "Milos", "Mina", "Danijela"]
+			
+			var matrica = [ [1,6,8],[7,98,[6,99]],[65,88,44]]
+			
+			console.log(matrica [1][2][1]);
+			
+			
+			function zbir (a,b)
+			{
+				var z;
+				
+				z = a+b;
+				
+				console.log (z);
+			}
+			
+			var c;
+			
+			c = zbir(56,4);
+			
+			//console.log(a);
+			
+			
+			var milos = {};
+			
+			milos.ime = "milos";
+			milos.prezime = "ristic";
+			milos.visina = 185; 
+			milos.tezina = 85;
+			milos.prijava = function () {
+				console.log ("prijavio se "+this.ime);
+			}
+			
+			milos.prijava();
+			
+			console.log(milos);
+			
+			var acacar = {
+			
+				ime: "Acacar",
+				prezime: "Carina",
+				punoime: function () {
+					console.log (this.ime+" "+this.prezime);
+				},
+				odjava: function () {
+					console.log (this.ime+" "+this.prezime+" se odjavio.");
+				},
+				
+				promeniime: function(drugoime){
+				
+					return this.ime = drugoime;
+				}
+					
+			}
+			acacar.punoime ();
+			acacar.odjava ();
+			acacar.promeniime ("aleksandar");
+			console.log(acacar.ime);
+			
+			//milos.promeniime("miketa");
+			//console.log(miketa.ime);
+			
+			console.log (window);
+			
+			 window.onload = function(){
+			 
+				document.getElementById("text").innerHTML = document.title;
+				
+				
+			 }
+			 function removeElement()
+				{
+					var x;
+					x = document.getElementById("select");
+					console.log (x);
+					x.remove(x.selectedIndex);
+					
+					//console.log("x");
+				}
+				
+				
+				var a = [[2,3,4],[5,6],7];
+				var b = [8,[9,10],[6,3,1]];
+				var c = [[5,7,9],8,[4,6]];
+				
+				var d = a[0][2] + b[2][1] - c[0][1];
+				
+				console.log(d);
+			 
+			var fruits = ["banan", "orange", "apple", "mango"];
+			fruits.push("lemon");
+		</script>
+	</head>
+	
+	<body>
+		<p id="opis">aaaaaaaaaaaa</p>
+		<input type="submit" id="prikazi" value="prikazi" onclick="document.getElementById('opis').style.visibility='visible'"/>
+		<input type="submit" id="sakrij" value="sakrij" onclick="document.getElementById('opis').style.visibility='hidden'"/>
+		
+		<p id="text"></p>
+		
+		<form>
+			<select id="select">
+				<option>jabuka</option>
+				<option>kruska</option>
+				<option>banana</option>
+				<option>visnja</option>
+			</select>
+			
+			<input  type="button" value="ukloni" onclick="removeElement()"/>
+		</form>
+	</body>
+	<script>
+		 
+	</script>
+</html>

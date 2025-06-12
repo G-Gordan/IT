@@ -1,0 +1,17 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB9-8B4A-11D0-8D11-00A0C91BC942}") = "Stanice.exe", "Stanice.exe", "{B2645325-80F3-472B-ADCB-E0C417B1E2F1}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{B2645325-80F3-472B-ADCB-E0C417B1E2F1}.Debug.ActiveCfg = Debug
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

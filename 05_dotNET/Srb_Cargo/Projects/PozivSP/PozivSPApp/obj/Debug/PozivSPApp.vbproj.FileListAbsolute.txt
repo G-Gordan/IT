@@ -1,0 +1,9 @@
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\PozivSPApp.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\PozivSPApp.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\bin\PozivSPApp.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\bin\PozivSPApp.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\bin\PozivSPApp.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\PozivSPApp.Form1.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\PozivSPApp.vbproj.GenerateResource.Cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\PozivSP\PozivSPApp\obj\Debug\PozivSPApp.xml

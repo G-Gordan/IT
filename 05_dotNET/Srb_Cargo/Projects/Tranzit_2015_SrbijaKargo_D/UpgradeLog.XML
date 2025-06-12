@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Stanice">
+</Property><Property Name="Solution File" Value="C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\Tranzit_2015_SrbijaKargo_Djaja\Stanice.sln">
+</Property><Property Name="Date" Value="10. mart 2017">
+</Property><Property Name="Time" Value="10:23">
+</Property></Properties><Event ErrorLevel="0" Project="Stanice" Source="Stanice.vbproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Stanice" Source="Stanice.vbproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Stanice.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="Stanice.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Stanice" Source="Stanice.vbproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

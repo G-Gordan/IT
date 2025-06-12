@@ -1,0 +1,17 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{296C4793-9EE2-420C-A457-3C65B12267DB}"
+	ProjectSection(SolutionItems) = preProject
+		a.rpt = a.rpt
+		Izvoz2011.U_CO2_600300tr_svi_DatKurs15mb_stav (2).rpt = Izvoz2011.U_CO2_600300tr_svi_DatKurs15mb_stav (2).rpt
+		Izvoz2011.U_CO2_600300tr_svi_DatKurs15mb_stav.rpt = Izvoz2011.U_CO2_600300tr_svi_DatKurs15mb_stav.rpt
+		Stanice.T_2_8b.rpt = Stanice.T_2_8b.rpt
+		U_CO2_600300tr_svi_DatKurs15_3CNem.rpt = U_CO2_600300tr_svi_DatKurs15_3CNem.rpt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

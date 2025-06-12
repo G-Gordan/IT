@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Korekci">
+</Property><Property Name="Solution File" Value="D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Korekci.sln">
+</Property><Property Name="User Options File" Value="D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Korekci.suo">
+</Property><Property Name="Date" Value="Friday, December 28, 2012">
+</Property><Property Name="Time" Value="14:38 PM">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="Korekci.sln" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Korekci.sln">
+</Event><Event ErrorLevel="0" Project="" Source="Korekci.suo" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Korekci.suo">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Korekci.vbproj" Description="Project file successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Korekci.vbproj">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Korekci.vbproj.user" Description="Project user file successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Korekci.vbproj.user">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="AssemblyInfo.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\AssemblyInfo.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Form1.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Form1.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Form2.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Form2.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\kcizv.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\kcizv.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\korekcizv.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\korekcizv.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\RekIzv.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\RekIzv.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="login.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\login.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Moduli\DbKonekcija.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Moduli\DbKonekcija.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Moduli\InitVar.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Moduli\InitVar.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Moduli\Util.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Moduli\Util.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Pregled.vb" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Pregled.vb">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Form1.resx" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Form1.resx">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Form2.resx" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Form2.resx">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\kcizv.rpt" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\kcizv.rpt">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\korekcizv.rpt" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\korekcizv.rpt">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Izvestaji\RekIzv.rpt" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Izvestaji\RekIzv.rpt">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="login.resx" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\login.resx">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Pregled.resx" Description="File successfully backed up as D:\.net\Gotovi projekti\KacaKor on 10.0.80.148\Backup\Pregled.resx">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Korekci.vbproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="Korekci" Source="Korekci.vbproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Korekci.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="Korekci.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="Korekci" Source="Korekci.vbproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

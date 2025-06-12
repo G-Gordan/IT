@@ -1,0 +1,37 @@
+#1 <Document>
+
+Ako u najavi voza postoji podatak o broju fakture, posle ovog dela :
+
+<Document>
+<Type>720</Type><!-- ostaje -->
+<Reference>04904</Reference><!-- broj CIM -->
+</Document>
+
+Dodaje se sledece:
+
+<Document>
+<Type>380</Type>
+<Reference>12345</Reference><!-- 12345 = broj fakture -->
+</Document>
+
+
+
+#2 <TransportModeInland>
+
+Uvek je : <TransportModeInland>20</TransportModeInland>
+
+
+
+
+#3 <TotalGrossMass>
+
+ukupna Neto masa po CIM-u:
+Ako nije kontejnerski voz: ukupno Neto po CIM-u
+Ako je kontejnerski voz:   ukupno Neto-TaraUTI po CIM-u
+<TotalGrossMass>8800</TotalGrossMass>
+
+
+
+#4 <Packages>
+
+<Kind> 
