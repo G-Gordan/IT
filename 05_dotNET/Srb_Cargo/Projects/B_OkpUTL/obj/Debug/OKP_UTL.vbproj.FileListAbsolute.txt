@@ -1,3 +1,0 @@
-C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\bin\OKP_UTL.exe.config
-C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\obj\Debug\OKP_UTL.exe
-C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\BataOkpUTL\obj\Debug\OKP_UTL.pdb

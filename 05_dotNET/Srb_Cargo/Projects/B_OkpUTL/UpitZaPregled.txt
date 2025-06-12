@@ -1,8 +1,0 @@
-SELECT     SlogKalk.RecID, SlogKalk.OtpStanica, SlogKalk.OtpBroj, SlogKalk.Ugovor, SlogKalk.Najava, SlogKalk.tlPrevFr, SlogKalk.tlSumaFr, 
-                      SlogKalk.tlPrevFrDin, SlogKalk.tlSumaFrDin, SlogKalk.tlNakCo82, SlogKalk.BrojVoza, SlogRoba.KolaStavka, SlogRoba.RobaStavka, SlogRoba.SMasa, 
-                      SlogRoba.RMasa, SlogRoba.VozStav, SlogKalkPDV.PDV1, SlogKalkPDV.PDV2, SlogKalk.ObrMesec, SlogKalk.ObrGodina, SlogKalk.ObrMesec2, 
-                      SlogKalk.ObrGodina2
-FROM         SlogKalk INNER JOIN
-                      SlogRoba ON SlogKalk.RecID = SlogRoba.RecID INNER JOIN
-                      SlogKalkPDV ON SlogKalk.RecID = SlogKalkPDV.RecID
-WHERE     (SlogKalk.Najava = 'ra-040/17')

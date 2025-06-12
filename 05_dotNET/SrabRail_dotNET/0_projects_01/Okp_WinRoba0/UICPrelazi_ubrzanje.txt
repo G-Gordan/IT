@@ -1,4 +1,0 @@
-SELECT     Uprava1 AS Expr1, Uprava2 AS Expr2, SifraPrelaza
-FROM         UicPrelazi
-WHERE     (LEFT(SifraPrelaza, 1) = '0') AND (Uprava1 <> '00') AND (Uprava2 <> '00')
-GROUP BY Uprava1, Uprava2, SifraPrelaza

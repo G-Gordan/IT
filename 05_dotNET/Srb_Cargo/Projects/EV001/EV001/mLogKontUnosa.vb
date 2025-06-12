@@ -1,3 +1,0 @@
-﻿Module mLogKontUnosa
-
-End Module

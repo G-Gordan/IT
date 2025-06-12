@@ -1,8 +1,0 @@
-SELECT     dbo.SlogKalk.RecID, dbo.SlogKalk.OtpStanica, dbo.SlogKalk.OtpBroj, dbo.SlogKalk.Ugovor, dbo.SlogKalk.Najava, dbo.SlogKalk.tlPrevFr, 
-                      dbo.SlogKalk.tlSumaFr, dbo.SlogKalk.tlPrevFrDin, dbo.SlogKalk.tlSumaFrDin, dbo.SlogKalk.tlNakCo82, dbo.SlogKalk.BrojVoza, 
-                      dbo.SlogKalk.ProcenatUg, dbo.SlogKalkPDV.PDV1, dbo.SlogKalkPDV.PDV2, dbo.SlogKalk.ObrMesec, dbo.SlogKalk.ObrGodina, 
-                      dbo.SlogKalk.ObrMesec2, dbo.SlogKalk.ObrGodina2, dbo.SlogKalk.UkupnoKola, dbo.SlogKalk.PrStanica, dbo.SlogKalk.PrBroj
-FROM         dbo.SlogKalk FULL OUTER JOIN
-                      dbo.SlogKalkPDV ON dbo.SlogKalk.RecID = dbo.SlogKalkPDV.RecID
-WHERE     (dbo.SlogKalk.Najava = 'ra-046/17') AND (dbo.SlogKalk.Ugovor = '028602')
-ORDER BY dbo.SlogKalk.OtpBroj

@@ -1,7 +1,0 @@
-﻿Uninstalling assembly 'd:\.net\winservice\mynewservice\bin\mynewservice.exe'.
-Affected parameters are:
-   assemblypath = d:\.net\winservice\mynewservice\bin\mynewservice.exe
-   logfile = d:\.net\winservice\mynewservice\bin\mynewservice.InstallLog
-Removing EventLog source MyNewService.
-Service MyNewService is being removed from the system...
-Service MyNewService was successfully removed from the system.

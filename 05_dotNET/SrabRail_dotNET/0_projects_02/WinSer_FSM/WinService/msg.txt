@@ -1,3 +1,0 @@
-czimmerman@freevbcode.com####charles.zimmerman@umusic.com####Hello There####This is a test message
-
-It has line feeds, carriage returns and everything.

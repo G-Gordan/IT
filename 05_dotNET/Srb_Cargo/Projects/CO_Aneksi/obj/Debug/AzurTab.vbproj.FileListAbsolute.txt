@@ -1,2 +1,0 @@
-C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\CO_Aneksi\obj\Debug\AzurTab.exe
-C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\CO_Aneksi\obj\Debug\AzurTab.pdb
