@@ -1,9 +1,0 @@
-#
-# $Id: olesrv2.hbp 18638 2012-11-22 15:57:32Z vszakats $
-#
-
--hbdynvm
-
-hbolesrv.hbc
-
-olesrv2.prg

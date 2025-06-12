@@ -1,9 +1,0 @@
-#
-# $Id: hbvpdf.hbc 18711 2012-11-30 16:31:51Z vszakats $
-#
-
-incpaths=.
-headers=${hb_name}.ch
-libpaths=lib/${hb_plat}/${hb_comp}
-
-libs=${hb_name}

@@ -1,9 +1,0 @@
-#
-# $Id: hbmk.hbm 18702 2012-11-29 12:50:01Z vszakats $
-#
-
-hbfbird.hbc
-
--w3 -es2
-
--u+simpleio.ch
