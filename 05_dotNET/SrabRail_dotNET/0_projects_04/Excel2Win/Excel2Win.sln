@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Excel2Win", "Excel2Win.vbproj", "{AA5302ED-2740-49ED-8E6F-7C86E66F733E}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{AA5302ED-2740-49ED-8E6F-7C86E66F733E}.Debug.ActiveCfg = Debug|.NET
+		{AA5302ED-2740-49ED-8E6F-7C86E66F733E}.Debug.Build.0 = Debug|.NET
+		{AA5302ED-2740-49ED-8E6F-7C86E66F733E}.Release.ActiveCfg = Release|.NET
+		{AA5302ED-2740-49ED-8E6F-7C86E66F733E}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

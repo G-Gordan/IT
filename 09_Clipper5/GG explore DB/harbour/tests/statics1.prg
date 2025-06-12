@@ -1,0 +1,31 @@
+/*
+ * $Id: statics1.prg 18197 2012-10-02 11:59:22Z vszakats $
+ */
+
+// Statics overlapped!
+//
+// Compile statics1.prg, statics2.prg and link both files
+
+STATIC uOne, uTwo
+
+PROCEDURE Main()
+
+   ? "Statics overlapped!"
+   ? "==================="
+   ?
+   ? "INSIDE statics1.prg"
+   ? "   static uOne, uTwo"
+   ?
+   ? "   uOne, uTwo =>", uOne, ",", uTwo
+   uOne := 1
+   uTwo := 2
+   ? "   uOne := 1"
+   ? "   uOne := 2"
+   ? "   uOne, uTwo =>", uOne, ",", uTwo
+   ?
+   Test()
+   ? "INSIDE statics1.prg"
+   ? "   uOne, uTwo =>", uOne, ",", uTwo
+   ?
+
+   RETURN

@@ -1,0 +1,14 @@
+#
+# $Id: hbmagic.hbc 18696 2012-11-29 00:04:11Z vszakats $
+#
+
+description=libmagic wrapper (file identification)
+
+incpaths=.
+
+headers=${hb_name}.ch
+
+libs=${_HB_DYNPREF}${hb_name}${_HB_DYNSUFF}
+
+{unix}libs=magic
+{darwin}libpaths=/opt/local/lib

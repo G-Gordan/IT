@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="SrbRailFolderMonitor">
+</Property><Property Name="Solution File" Value="D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\SrbRailFolderMonitor.sln">
+</Property><Property Name="User Options File" Value="D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\SrbRailFolderMonitor.suo">
+</Property><Property Name="Date" Value="17. jun 2009">
+</Property><Property Name="Time" Value="8:30">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="SrbRailFolderMonitor.sln" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\SrbRailFolderMonitor.sln">
+</Event><Event ErrorLevel="0" Project="" Source="SrbRailFolderMonitor.suo" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\SrbRailFolderMonitor.suo">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="SrbRailFolderMonitor.csproj" Description="Project file successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\SrbRailFolderMonitor.csproj">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="SrbRailFolderMonitor.csproj.user" Description="Project user file successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\SrbRailFolderMonitor.csproj.user">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="CDB_SQL.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\CDB_SQL.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="CFS.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\CFS.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="CLog.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\CLog.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="CXmlReader.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\CXmlReader.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="XmlFilesLoader.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\XmlFilesLoader.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="ProjectInstaller.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\ProjectInstaller.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="ProjectInstaller.Designer.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\ProjectInstaller.Designer.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="RijndaelCryptography.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\RijndaelCryptography.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="Service1.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\Service1.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="Service1.Designer.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\Service1.Designer.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="Program.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\Program.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="Properties\AssemblyInfo.cs" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\Properties\AssemblyInfo.cs">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="App.config" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\App.config">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="ProjectInstaller.resx" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\ProjectInstaller.resx">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="Service1.resx" Description="File successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\Service1.resx">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="SrbRailFolderMonitor.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="SrbRailFolderMonitor" Source="SrbRailFolderMonitor.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitorSetup.vdproj" Source="SrbRailFolderMonitorSetup\SrbRailFolderMonitorSetup.vdproj" Description="Project file successfully backed up as D:\.NET\Source\TL_Stanica\SrbRailFolderMonitor\Backup\SrbRailFolderMonitorSetup\SrbRailFolderMonitorSetup.vdproj">
+</Event><Event ErrorLevel="0" Project="" Source="SrbRailFolderMonitor.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="SrbRailFolderMonitor.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="SrbRailFolderMonitor" Source="SrbRailFolderMonitor.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

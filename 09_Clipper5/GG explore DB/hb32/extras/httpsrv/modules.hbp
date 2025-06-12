@@ -1,0 +1,4 @@
+
+-gh -w3
+-ohome/cgi-bin/
+modules/*.prg

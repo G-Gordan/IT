@@ -1,0 +1,18 @@
+#
+# $Id: gfspell.hbp 18511 2012-11-11 11:52:20Z vszakats $
+#
+
+-hblib
+-inc
+
+-olib/${hb_plat}/${hb_comp}/${hb_name}
+
+-w1 -es2
+
+spell.prg
+spellc.c
+
+-hbx=${hb_name}.hbx
+${hb_name}.hbx
+$hb_pkg_dynlib.hbm
+$hb_pkg_install.hbm

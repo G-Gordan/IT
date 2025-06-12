@@ -1,0 +1,16 @@
+#
+# $Id: hbziparc.hbp 18678 2012-11-27 16:14:13Z vszakats $
+#
+
+-hblib
+-inc
+
+-o${hb_name}
+
+-w3 -es2
+
+${hb_name}.hbx
+
+ziparc.prg
+
+hbmzip.hbc

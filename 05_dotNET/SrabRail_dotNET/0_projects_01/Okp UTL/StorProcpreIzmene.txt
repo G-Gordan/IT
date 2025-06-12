@@ -1,0 +1,88 @@
+CREATE PROCEDURE  k1b72NadjiSveKomPovl
+
+(
+		@inBrojUgovora 	AS Char(6) ,
+		@outAneks		As Integer  OUTPUT,
+		@inSaobracaj	      	AS Char(6) ,
+		@inVlasnistvoKola	As Char(3),
+		@inKolaZemlja   	As Char(2),
+		@inBrojOsovina      	AS Char(1) ,
+                           @inStatus 		As Char(1),
+		@inOdStanica 		As Char(5),
+		@inDoStanica 		As Char(5),
+		@outNacinObrade 	As Integer OUTPUT,	
+		@inDatumTarifiranja 	As datetime,
+		@inPrimenjenaTarifa 	As Integer,
+	  	@inSifraValute 		As Integer,
+    		@outMinPrevozninaIznos As Decimal(9,2) OUTPUT,
+        	        	@inUprava 		As char(2),
+        		@in_mNHM 		As char(4),
+		@outPojedinacna 	As decimal(9,2)   OUTPUT,
+        		@outGrupa 		As decimal(9,2) OUTPUT,
+        		@outVoz 		As decimal(9,2)   OUTPUT,
+		@outBMasaUti1 	As decimal(5,1) OUTPUT,
+		@outBMasaUti2  	As decimal(5,1) OUTPUT,
+		@outTipUTI  		As Char(6) OUTPUT,
+		@inSpecijalnaKola	As Char(1),
+		@outPovVred 		As VarChar(50) OUTPUT
+ )
+
+AS
+
+Set      @outPovVred = ' '
+Select @outAneks= null
+Select @outNacinObrade= null
+Select @outMinPrevozninaIznos = null
+Select @outPojedinacna = null
+Select @outGrupa = null
+Select @outVoz = null
+Select @outVoz = null
+Select @outBMasaUti1 =  null
+Select @outBMasaUti2 =  null	
+Select @outTipUTI =  null
+
+  
+Select		@outAneks = dbo.UgKp_Tip5.Aneks,  
+		@outPojedinacna = dbo.UgKp_Tip5.Pojedinacna,  
+		@outGrupa=dbo.UgKp_Tip5.Grupa,
+		@outVoz=dbo.UgKp_Tip5.Voz,
+		@outNacinObrade = dbo.UgKp_Tip5.NacinObrade,													
+		@outMinPrevozninaIznos=dbo.Cena_UgovorKP.MinPrevozninaIznos,
+		@outBMasaUti1 =  dbo.UgKp_Tip5.BMasaUti1,	
+		@outBMasaUti2 =  dbo.UgKp_Tip5.BMasaUti2,	
+		@outTipUTI =  dbo.UgKp_Tip5.TipUTI
+		
+		
+
+From		dbo.UgKp_Tip5 INNER JOIN dbo.Cena_UgovorKP ON dbo.UgKp_Tip5.BrojUgovora = dbo.Cena_UgovorKP.BrojUgovora AND 
+		dbo.UgKp_Tip5.Aneks = dbo.Cena_UgovorKP.Aneks INNER JOIN dbo.UgKp_Nhm ON dbo.Cena_UgovorKP.BrojUgovora = dbo.UgKp_Nhm.BrojUgovora AND 
+		dbo.Cena_UgovorKP.Aneks = dbo.UgKp_Nhm.Aneks 
+Where  		dbo.UgKp_Tip5.BrojUgovora = @inBrojUgovora and dbo.UgKp_Tip5.OdStanice = @inOdStanica and dbo.UgKp_Tip5.DoStanice = @inDoStanica and  
+                           (LEFT(dbo.UgKp_Nhm.NhmSifra, 4) = @in_mNHM)    and (dbo.UgKp_Tip5.VlasnistvoKola=@inVlasnistvoKola or dbo.UgKp_Tip5.VlasnistvoKola='ZP') and
+		dbo.UgKp_Tip5.Status = @inStatus and (dbo.Cena_UgovorKP.VaziOd <=@inDatumTarifiranja and dbo.Cena_UgovorKP.VaziDo>= @inDatumTarifiranja) and
+		((dbo.UgKP_Tip5.KolaZemlja=@inKolaZemlja) Or (dbo.UgKP_Tip5.KolaZemlja="00")) and (dbo.UgKp_Tip5.SpecijalnaKola=@inSpecijalnaKola or @inStatus= 'P' 	)  
+ 
+
+ if  @outPojedinacna = null
+set  @outPojedinacna=0
+ if  @outGrupa = null
+set  @outGrupa=0
+ if  @outVoz = null
+set  @outVoz=0
+ if  @outMinPrevozninaIznos = null
+set  @outMinPrevozninaIznos=0
+ if @outAneks= null
+set @outAneks = 0
+ if @outNacinObrade= null
+set @outNacinObrade = 0
+ if @outBMasaUti1= null
+set @outBMasaUti1 = 0
+ if @outBMasaUti2= null
+set @outBMasaUti2 = 0
+ if @outTipUTI= null
+set @outTipUTI = 0
+
+                              
+If @@RowCount < 1
+	Set @outPovVred = 'Neuspesan upit'
+GO

@@ -1,0 +1,12 @@
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.exe
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.pdb
+D:\.net\Gotovi projekti\Korekc\bin\Korekcija.exe
+D:\.net\Gotovi projekti\Korekc\bin\Korekcija.pdb
+D:\.net\Gotovi projekti\Korekc\bin\Korekcija.xml
+D:\.net\Gotovi projekti\Korekc\obj\Debug\ResolveAssemblyReference.cache
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.Form1.resources
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.Form2.resources
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.login.resources
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.Pregled.resources
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.vbproj.GenerateResource.Cache
+D:\.net\Gotovi projekti\Korekc\obj\Debug\Korekcija.xml

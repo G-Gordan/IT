@@ -1,0 +1,15 @@
+#
+# $Id: uhttpd.hbp 18714 2012-12-01 20:44:23Z vszakats $
+#
+
+-w3 -es2
+
+-mt -gui
+
+uhttpd.prg
+cgifunc.prg
+cookie.prg
+session.prg
+
+hbwin.hbc
+hbnf.hbc

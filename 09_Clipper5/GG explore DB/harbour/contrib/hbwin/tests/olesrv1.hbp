@@ -1,0 +1,11 @@
+#
+# $Id: olesrv1.hbp 18638 2012-11-22 15:57:32Z vszakats $
+#
+
+-hbdynvm
+
+hbolesrv.hbc
+
+olesrv1.prg
+
+hbnetio.hbc

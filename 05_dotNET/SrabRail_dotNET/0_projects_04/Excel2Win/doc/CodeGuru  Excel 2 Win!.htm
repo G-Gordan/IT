@@ -1,0 +1,1444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml2/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"><head><title>CodeGuru: Excel 2 Win!</title>
+
+<meta name="description" content="This tutorial demonstrates how to copy Excel data into a Windows DataGrid Control from the Clipboard. By Sids.">
+<meta name="Author" content="Sids">
+<meta name="keywords" content="">
+<meta name="date" content="20040310">
+<meta name="MS.LOCALE" content="en-US">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+
+<meta name="Search.TopicType" content="kbArticle">
+<meta name="Search.PublishDate" content="Wed, 10 Mar 2004 00:00:00 -0500">
+<meta name="Search.ReviseDate" content="Wed, 10 Mar 2004 00:00:00 -0500">
+<meta name="Search.UserRating" content="100">
+
+<link rel="stylesheet" media="all" type="text/css" href="CodeGuru%20%20Excel%202%20Win%21_files/flyout.css"><!--[if lte IE 6]>
+<link rel="stylesheet" media="all" type="text/css" href="/css/flyout_ie.css" />
+<![endif]-->
+
+
+
+<link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/newstyle.css" type="text/css">
+<script language="JavaScript" type="text/javascript">
+<!--
+
+function show(object) {
+if (document.getElementById) {
+document.getElementById(object).style.visibility = 'visible';
+}
+else if (document.layers && document.layers[object]) {
+document.layers[object].visibility = 'visible';
+}
+else if (document.all) {
+document.all[object].style.visibility = 'visible';
+}
+}
+
+function hide(object) {
+if (document.getElementById) {
+document.getElementById(object).style.visibility = 'hidden';
+}
+else if (document.layers && document.layers[object]) {
+document.layers[object].visibility = 'hidden';
+}
+else if (document.all) {
+document.all[object].style.visibility = 'hidden';
+}
+}
+
+//-->
+</script><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/headermenu.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/epfs.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/security.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/security.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/security.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/security.css" type="text/css"><link rel="stylesheet" href="CodeGuru%20%20Excel%202%20Win%21_files/security.css" type="text/css"></head>
+
+<body leftmargin="0" topmargin="4" bgcolor="#ffffff" marginheight="4" marginwidth="0">
+<script language="JavaScript1.2" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_Loader.js" type="text/javascript"></script><script language="JavaScript1.2" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_ArraysCG.js" type="text/javascript"></script><script language="JavaScript1.2" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_ScriptDOM.js" type="text/javascript"></script>
+<center>
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1471432303/house_ribbon/OasDefault/HP_Integrity_GEMS_1q/hp_guide_ribbon.gif/39333562303132333436316538393730" target="_top"><img src="CodeGuru%20%20Excel%202%20Win%21_files/hp_guide_ribbon.gif" alt="" border="0"></a><img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_011.gif" border="0" height="1" width="1"><p><iframe src="CodeGuru%20%20Excel%202%20Win%21_files/search.htm" marginheight="0" marginwidth="0" frameborder="0" height="100" scrolling="no" width="750"></iframe>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_021.gif" height="1" width="1"></p><p>
+</p></center>
+
+<!--Top Navigation-->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td>
+<script src="CodeGuru%20%20Excel%202%20Win%21_files/headermenu.js"></script>
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuit(0)" onmouseover="showMenuit(1)" id="menuit" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; left: 5px; width: 475px; visibility: hidden; opacity: 0.95;"> 
+<a href="http://itmanagement.earthweb.com/" class="menulink"><b>IT MANAGEMENT</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+<td width="20%">
+<a href="http://www.cioupdate.com/" class="menulink">CIO Update</a><br>
+<a href="http://itmanagement.earthweb.com/" class="menulink">Datamation</a></td>
+<td width="20%">
+<a href="http://www.ecrmguide.com/" class="menulink">eCRMGuide</a><br>
+<a href="http://www.drmwatch.com/" class="menulink">DRM Watch</a></td>
+<td width="20%">
+<a href="http://www.esecurityplanet.com/" class="menulink">eSecurity Planet</a><br>
+<a href="http://www.itsmwatch.com/" class="menulink">ITSMWatch</a></td>
+<td width="20%">
+<a href="http://www.intranetjournal.com/" class="menulink">Intranet Journal</a><br>
+<a href="http://www.insideid.com/" class="menulink">Inside ID</a></td>
+<td width="20%">
+<a href="http://www.gridcomputingplanet.com/" class="menulink">Grid Computing Planet</a><br>
+<a href="http://www.bitaplanet.com/" class="menulink">bITa Planet</a>
+</td>
+<td width="20%">
+<a href="http://www.itcareerplanet.com/" class="menulink">IT Career Planet Planet</a>
+</td>
+</tr></tbody></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenunc(0)" onmouseover="showMenunc(1)" id="menunc" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; width: 400px; left: 113px; visibility: hidden; opacity: 0.95;"> 
+<a href="http://networking.earthweb.com/" class="menulink"><b>NETWORKING</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+<td>
+<a href="http://www.enterprisenetworkingplanet.com/" class="menulink">EnterpriseNetworkingPlanet</a><br>
+<a href="http://www.instantmessagingplanet.com/" class="menulink">InstantMessagingPlanet</a></td>
+<td>
+<a href="http://www.enterprisestorageforum.com/" class="menulink">EnterpriseStorageForum</a><br>
+<a href="http://www.opennetworkstoday.com/" class="menulink">OpenNetworksToday</a></td>
+<td valign="top">
+<a href="http://www.opticallynetworked.com/" class="menulink">OpticallyNetworked</a><br>
+<a href="http://www.practicallynetworked.com/" class="menulink">PracticallyNetworked</a></td>
+</tr></tbody></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuweb(0)" onmouseover="showMenuweb(1)" id="menuweb" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; width: 200px; left: 204px; visibility: hidden; opacity: 0.95;"> 
+<a href="http://webdeveloper.earthweb.com/" class="menulink"><b>WEB DEVELOPMENT</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+<td width="50%">
+<a href="http://www.htmlgoodies.com/" class="menulink">HTML Goodies</a><br></td>
+<td valign="top" width="50%">
+<a href="http://webdeveloper.earthweb.com/webjs/" class="menulink">Javascripts.com</a><br>
+</td></tr></tbody></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuhw(0)" onmouseover="showMenuhw(1)" id="menuhw" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; width: 215px; left: 324px; opacity: 0.95; visibility: hidden;"> 
+<a href="http://hardware.earthweb.com/" class="menulink"><b>HARDWARE &amp; SYSTEMS</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td width="50%">
+<a href="http://earthwebhardware.com/" class="menulink">EarthWeb Hardware </a><br>
+<a href="http://www.sysopt.com/" class="menulink">SysOpt</a></td>
+<td width="50%">
+<a href="http://www.virtualdr.com/" class="menulink">Virtual Dr.</a><br>
+<a href="http://www.workstationplanet.com/" class="menulink">WorkstationPlanet</a></td></tr></tbody></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenusw(0)" onmouseover="showMenusw(1)" id="menusw" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; width: 215px; left: 466px; visibility: hidden; opacity: 0.95;"> 
+<a href="http://softwaredev.earthweb.com/" class="menulink"><b>SOFTWARE DEVELOPMENT</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+<td>
+<a href="http://www.codeguru.com/" class="menulink">CodeGuru</a><br>
+<a href="http://www.developer.com/" class="menulink">Developer</a></td>
+<td>
+<a href="http://www.jguru.com/" class="menulink"> jGuru.com</a><br>
+<a href="http://www.jars.com/" class="menulink"> JARS</a></td>
+<td valign="top">
+<a href="http://www.gamelan.com/" class="menulink">Gamelan</a><br></td>
+</tr></tbody></table>
+</div>
+</div>
+
+<div style="position: relative; top: 16px; left: 0px; text-align: left;">
+<div onmouseout="showMenuitnews(0)" onmouseover="showMenuitnews(1)" id="menuitnews" style="border: 1px solid rgb(0, 0, 0); padding: 3px; background-color: rgb(255, 255, 204); position: absolute; width: 460px; left: 225px; visibility: hidden; opacity: 0.95;"> 
+<a href="http://news.earthweb.com/" class="menulink"><b>EARTHWEBNEWS.COM</b></a>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr>
+<td width="20%">
+<a href="http://news.earthweb.com/bus-news/" class="menulink">Business</a><br>
+<a href="http://news.earthweb.com/dev-news/" class="menulink">Developer</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/ec-news/" class="menulink">Ecommerce</a><br>
+<a href="http://news.earthweb.com/ent-news/" class="menulink">Enterprise</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/infra/" class="menulink">Networking</a><br>
+<a href="http://news.earthweb.com/security/" class="menulink">Security</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/special/" class="menulink">Special Reports</a><br>
+<a href="http://news.earthweb.com/storage/" class="menulink">Storage</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/commentary/" class="menulink">Commentary</a><br>
+<a href="http://news.earthweb.com/wireless/" class="menulink">Wireless</a></td>
+<td width="20%">
+<a href="http://news.earthweb.com/xsp/" class="menulink">xSP</a><br>
+<a href="http://news.earthweb.com/stats/" class="menulink">Stats</a></td>
+</tr></tbody></table>
+</div>
+</div>
+<table border="0" cellpadding="0" cellspacing="0" width="100%"><tbody><tr><td>
+<div id="cgheader" style="width: 750px;">
+    <ul>
+      <li onmouseover="showMenuit(1)" onmouseout="showMenuit(0)"><a href="http://itmanagement.earthweb.com/">IT MANAGEMENT</a></li>
+      <li onmouseover="showMenunc(1)" onmouseout="showMenunc(0)"><a href="http://networking.earthweb.com/">NETWORKING</a></li>
+      <li onmouseover="showMenuweb(1)" onmouseout="showMenuweb(0)"><a href="http://webdeveloper.earthweb.com/">WEB DEVELOPMENT</a></li>
+      <li onmouseover="showMenuhw(1)" onmouseout="showMenuhw(0)"><a href="http://hardware.earthweb.com/">HARDWARE &amp; SYSTEMS</a></li>
+      <li onmouseover="showMenusw(1)" onmouseout="showMenusw(0)"><a href="http://softwaredev.earthweb.com/">SOFTWARE DEVELOPMENT</a></li>
+	  <li onmouseover="showMenuitnews(1)" onmouseout="showMenuitnews(0)"><a href="http://news.earthweb.com/">IT NEWS</a></li></ul>
+</div>
+</td></tr></tbody></table>
+</td>
+  </tr>
+</tbody></table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td background="CodeGuru%20%20Excel%202%20Win!_files/top-bg.gif">
+      <table border="0" cellpadding="0" cellspacing="0" width="780">
+        <tbody><tr>
+          <td width="272"><a href="http://www.codeguru.com/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/logo.gif" alt="CodeGuru" border="0" height="82" hspace="0" vspace="0" width="272"></a></td>
+          <td background="CodeGuru%20%20Excel%202%20Win!_files/top-bg-2.gif">
+            <table background="" border="0" cellpadding="0" cellspacing="0" width="508">
+               <tbody><tr>
+                 <td colspan="2" width="508"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="1" hspace="0" vspace="0" width="508"></td>
+               </tr>
+               <tr><form method="post" name="myform" action="http://search.internet.com/www.codeguru.com"></form>
+                 <td width="1"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="54" hspace="0" vspace="0" width="1"></td>
+                 <td><a href="http://www.earthweb.com/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/eweb.gif" alt="Earthweb" align="right" border="0" height="20" width="135"></a>
+                 <input name="starget" value="" type="hidden">
+              	 <input name="IC_QueryDatabase" value="" type="hidden">
+              	 <img src="CodeGuru%20%20Excel%202%20Win%21_files/search.gif" alt="Search" align="middle" border="0" height="23" width="50">
+              	 <select name="searchsite" style="color: rgb(0, 0, 0); font-family: verdana,arial,sans-serif; font-weight: normal; font-size: 9pt; background-color: rgb(255, 255, 255);"><option value="CodeGuru" selected="selected">CodeGuru.com</option><option value="CodeGuru-Articles">---Articles</option><option value="CodeGuru-Comments">---Comments</option><option value="CodeGuru-Forums">---Forums</option><option value="Earthweb">Earthweb</option></select>
+              <input name="IC_QueryText" size="10" type="text">
+              <input name="submit" value="Go!" src="CodeGuru%20%20Excel%202%20Win%21_files/go.gif" alt="Go" align="center" border="0" height="23" type="image" width="40">
+                 </td>
+               </tr>
+               <tr>
+                 <td width="1"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="27" hspace="0" vspace="0" width="1"></td>
+                 <td align="center"> 
+                 <img src="CodeGuru%20%20Excel%202%20Win%21_files/eweb-nav.gif" usemap="#eweb_nav_Map" border="0" height="14" hspace="0" vspace="0" width="330">
+					<map name="eweb_nav_Map"><area shape="rect" alt="Forums" coords="253,0,330,14" href="http://www.codeguru.com/forum"><area shape="rect" alt="Wireless" coords="185,0,244,14" href="http://www.developer.com/ws/"><area shape="rect" alt="Jars" coords="145,0,176,14" href="http://www.jars.com/"><area shape="rect" alt="Gamelan" coords="77,0,136,14" href="http://www.developer.com/java/"><area shape="rect" alt="Developer.com" coords="0,0,69,14" href="http://www.developer.com/"></map>
+                </td>
+              </tr>
+            </tbody></table>
+          </td>
+        </tr>
+      </tbody></table>
+    </td>
+  </tr>
+</tbody></table>
+
+<!--End Top-->
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td background="CodeGuru%20%20Excel%202%20Win!_files/leftnav-bg.gif" valign="top" width="1%">
+    <!--Left Navigation-->
+   <!--Left Navigation-->
+
+
+<table bgcolor="#999999" border="0" cellpadding="0" cellspacing="0" width="165">
+        <tbody><tr>
+          <td>
+          <a href="http://www.codeguru.com/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/leftnav-top.gif" alt="CodeGuru Navigation" border="0" height="30" width="165"></a></td>
+
+        </tr>
+
+        <tr>
+          <td>
+          	
+
+<div class="menu">
+
+<ul>
+<li><a href="http://www.codeguru.com/Cpp" class="hide"><b>Visual C++ / C++</b></a>
+
+<!--[if lte IE 6]>
+<a href="/Cpp"><B>Visual C++ / C++</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="http://www.codeguru.com/cpp/cpp">C++ <b>»</b></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/cpp">C++ <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/cpp/algorithms">Algorithms &amp; Formulas</a></li>
+<li><a href="http://www.codeguru.com/cpp/cpp/cpp_mfc">C++ &amp; MFC</a></li>
+<li><a href="http://www.codeguru.com/cpp/cpp/date_time">Date &amp; Time</a></li>
+<li><a href="http://www.codeguru.com/cpp/cpp/cpp_managed">Managed C++</a></li>
+<li><a href="http://www.codeguru.com/cpp/cpp/string">String Programming</a></li>
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/com-tech">COM-based Technologies <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/com-tech">COM-based Technologies <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/com-tech/atl">ATL &amp; WTL Programming</a></li>
+<li><a href="http://www.codeguru.com/cpp/com-tech/activex">ActiveX Programming</a></li>
+<li><a href="http://www.codeguru.com/cpp/com-tech/complus">COM+</a></li>
+<li><a href="http://www.codeguru.com/cpp/com-tech/shell">Shell Programming</a></li>
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/controls">Controls <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/controls">Controls <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/controls/buttonctrl">Button Control</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/combobox">ComboBox</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/editctrl">Edit Control</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/imagelist">ImageList Control</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/controls/listbox">ListBox Control</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/listview">ListView Control</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/menu">Menu</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/controls">Other Controls</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/propertysheet">Property Sheet</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/richedit">Rich Edit Control</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/controls/staticctrl">Static Control</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/statusbar">Status Bar</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/toolbar">Toolbar</a></li>
+				<li><a href="http://www.codeguru.com/cpp/controls/treeview">Treeview Control</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/data">Data <b>»</b></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/data">Data <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/data/mfc_database">Database</a></li>
+				<li><a href="http://www.codeguru.com/cpp/data/data-misc">Miscellaneous</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/frameworks">Frameworks <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/frameworks">Frameworks <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/frameworks/advancedui">UI &amp; Printing Frameworks</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/g-m">Graphics &amp; Multimedia <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/g-m">Graphics & Multimedia <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/g-m/bitmap">Bitmaps &amp; Palettes</a></li>
+				<li><a href="http://www.codeguru.com/cpp/g-m/directx">DirectX</a></li>
+				<li><a href="http://www.codeguru.com/cpp/g-m/gdi">GDI</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/g-m/multimedia">Multimedia</a></li>
+				<li><a href="http://www.codeguru.com/cpp/g-m/opengl">OpenGL</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/i-n">Internet &amp; Networking <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/i-n">Internet & Networking <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/i-n/ieprogram">IE Programming</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/i-n/isapi">ISAPI</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/i-n/internet">Internet Protocols</a></li>
+				<li><a href="http://www.codeguru.com/cpp/i-n/network">Network Protocols</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/misc">Miscellaneous <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/misc">Miscellaneous <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+
+<li><a href="http://www.codeguru.com/cpp/misc/misc">Miscellaneous</a></li>
+				<li><a href="http://www.codeguru.com/cpp/misc/samples">Samples</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="http://www.codeguru.com/cpp/security">Security</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/cpp/security">Security
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="http://www.codeguru.com/Cpp/STL">Standard Template Library</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/Cpp/STL">Standard Template Library
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide" href="http://www.codeguru.com/cpp/v-s">Visual Studio <b>»</b></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/v-s">Visual Studio <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/v-s/devstudio_macros">Add-ins &amp; Macros</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/v-s/debug">Debugging</a></li>
+				<li><a href="http://www.codeguru.com/cpp/v-s/tips">Editor Tips</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/w-d">Windows &amp; Dialogs <b>»</b></a>
+
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/w-d">Windows & Dialogs <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/w-d/console">Console</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-d/dislog">Dialog</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/w-d/doc_view">Doc/View</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-d/docking">Docking Window</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-d/splitter">Splitter</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/cpp/w-p">Windows Programming <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/cpp/w-p">Windows Programming <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/cpp/w-p/ce">CE</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/w-p/clipboard">Clipboard</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-p/dll">DLL</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-p/files">File &amp; Folder</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/w-p/help">Help Systems</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-p/printing">Printing</a></li>
+				<li><a href="http://www.codeguru.com/cpp/w-p/system">System</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/w-p/vista">Vista</a></li>
+
+				<li><a href="http://www.codeguru.com/cpp/w-p/win32">Win32</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide2" href="http://www.codeguru.com/cpp/sample_chapter">Sample Chapter</a>
+
+<!--[if lte IE 6]>
+<a class="sub2" href="/cpp/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+
+<ul>
+<li><a class="hide" href="http://www.codeguru.com/Csharp"><b>.NET / C#</b></a>
+
+<!--[if lte IE 6]>
+<a href="/Csharp"><B>.NET / C#</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="http://www.codeguru.com/csharp/.net">.NET <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/csharp/.net">.NET <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+<li><a href="http://www.codeguru.com/csharp/.net/net_data">Data &amp; Databases</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/net_debugging">Debugging</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/net_framework">Framework</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/.net/net_general">General</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/net_asp">General ASP.NET</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/jscript">JScript .NET</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/.net/cpp_managed">Managed C++</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/net_security">Net Security</a></li>
+				<li><a href="http://www.codeguru.com/csharp/.net/net_vs_addins">VS Add-Ins</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/csharp/csharp">C# <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/csharp/csharp">C# <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/csharp/csharp/cs_syntax">Basic Syntax</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_collections">Collections</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_controls">Controls</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_data">Data &amp; I/O</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_date_time">Date &amp; Time</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_delegates">Delegates</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_graphics">Graphics &amp; Multimedia</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_internet">Internet</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_misc">Miscellaneous</a></li>
+
+				<li><a href="http://www.codeguru.com/csharp/csharp/net30">.NET 3.0</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_network">Network &amp; Systems</a></li>
+				<li><a href="http://www.codeguru.com/csharp/csharp/cs_webservices">Web Services</a></li>
+
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="http://www.codeguru.com/csharp/sample_chapter">Sample Chapter</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/csharp/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+
+
+<ul>
+<li><a class="hide" href="http://www.codeguru.com/vb"><b>Visual Basic</b></a>
+
+<!--[if lte IE 6]>
+<a href="/vb"><B>Visual Basic</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+
+<li><a class="hide" href="http://www.codeguru.com/vb/gen">General <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/gen" >General <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/vb/gen/vb_database">Database</a></li>			
+
+<li><a href="http://www.codeguru.com/vb/gen/vb_forms">Forms &amp; Controls</a></li>			
+<li><a href="http://www.codeguru.com/vb/gen/vb_general">IDE &amp; Language</a></li>			
+<li><a href="http://www.codeguru.com/vb/gen/vb_misc">Misc</a></li>			
+<li><a href="http://www.codeguru.com/vb/gen/vb_system">System</a></li>			
+
+<li><a href="http://www.codeguru.com/vb/gen/vb_graphics">VB Graphics</a></li>			
+<li><a href="http://www.codeguru.com/vb/gen/vb_multimedia">VB Multimedia</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide" href="http://www.codeguru.com/vb/vb_internet">Internet <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/vb_internet" >Internet <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/vb/vb_internet/aspnet">ASP .NET</a></li>			
+<li><a href="http://www.codeguru.com/vb/vb_internet/database">Database</a></li>			
+<li><a href="http://www.codeguru.com/vb/vb_internet/html">HTML</a></li>			
+
+<li><a href="http://www.codeguru.com/vb/vb_internet/indexing">Indexing</a></li>			
+<li><a href="http://www.codeguru.com/vb/vb_internet/smtpemail">SMTP / eMail</a></li>			
+<li><a href="http://www.codeguru.com/vb/vb_internet/webservices">Web Services</a></li>
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+<li><a class="hide" href="http://www.codeguru.com/vb/mobile">Mobile/Wireless <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/mobile" >Mobile/Wireless <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+<ul>
+<li><a href="http://www.codeguru.com/vb/mobile/mobileinternettoolkit">Mobile Internet<br>Toolkit</a></li>		
+
+<li><a href="http://www.codeguru.com/vb/mobile/pocketpc">Pocket PC</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+<li><a class="hide2" href="http://www.codeguru.com/vb/vbnet30">.NET 3.0</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/vb/vbnet30">.NET 3.0
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+<li><a class="hide" href="http://www.codeguru.com/vb/controls">VB Controls <b>»</b></a>
+<!--[if lte IE 6]>
+<a class="sub" href="/vb/controls" >VB Controls <B>&raquo;</B>
+<table><tr><td>
+<![endif]-->
+
+<ul>
+<li><a href="http://www.codeguru.com/vb/controls/vbnet_controls">.NET Controls</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_activex">VB ActiveX</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_combobox">VB ComboBox</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_file">VB Files</a></li>			
+
+<li><a href="http://www.codeguru.com/vb/controls/vb_listbox">VB ListBox</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_listview">VB ListView</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_othctrl">VB Other Controls</a></li>			
+<li><a href="http://www.codeguru.com/vb/controls/vb_shell">VB Shell</a></li>
+</ul>
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+<li><a class="hide2" href="http://www.codeguru.com/vb/sample_chapter">Sample Chapter</a>
+<!--[if lte IE 6]>
+<a class="sub2" href="/vb/sample_chapter">Sample Chapter
+<table><tr><td>
+<![endif]-->
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+</li>
+
+
+</ul>
+
+<!--[if lte IE 6]>
+</td></tr></table>
+</a>
+<![endif]-->
+
+</li>
+
+</ul>
+
+</div>
+
+<div class="menu2">
+
+<ul>
+		<li><a href="http://www.codeguru.com/video"><b>Videos</b></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.codeguru.com/edit-article.php"><b>Submit an Article</b></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.codeguru.com/forum"><b>Discussion Forums</b></a></li>
+
+	</ul>
+
+		<ul>
+		<li><a href="http://www.codeguru.com/resources"><b>Resource Directory</b></a></li>
+	</ul>
+
+		<ul>
+		<li><a href="http://www.codeguru.com/announcements"><b>Announcements</b></a></li>
+	</ul>
+		<ul>
+
+		<li><a href="http://extra.codeguru.com/bookList/booklist.asp"><b>Book List</b></a></li>
+	</ul>
+		<ul>
+
+		<li><a href="http://extra.codeguru.com/default.asp"><b>Book Reviews</b></a></li>
+	</ul>
+		<ul>
+		<li><a href="http://www.codeguru.com/gurus.php"><b>List of Gurus</b></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.theguestbook.com/read.php/608196"><b>Guest Book</b></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.justtechjobs.com/Jobseekers.asp"><b>Technology Jobs</b></a></li>
+
+	</ul>
+		<ul>
+		<li><a href="http://www.codeguru.com/about.php"><b>About Us</b></a></li>
+	</ul>
+
+		<ul>
+
+		<li><a href="http://www.codeguru.com/faq.php"><b>FAQs</b></a></li>
+	</ul>
+
+		<ul>
+		<li><a href="http://www.codeguru.com/sitemap.php"><b>Site Map</b></a></li>
+	</ul>
+
+</div>
+
+ </td>
+</tr>
+</tbody></table><input name="action" value="login" type="hidden">
+  <input value="/vb/gen/vb_misc/samples/article.php/c6393/" name="url" type="hidden">
+    <table bgcolor="#053061" border="0" cellpadding="3" cellspacing="0" width="165">
+  <tbody><tr><form action="/login.php" method="post"></form>
+  <td colspan="2" align="center">
+            	  <img src="CodeGuru%20%20Excel%202%20Win%21_files/member-top.gif" alt="Member Sign In" border="0" height="13" vspace="5" width="113">
+          		</td>
+        	  </tr>
+        	  <tr>
+          		<td align="right"><span class="bodycopy"><font color="#ffffff">User ID:</font></span></td>
+          		<td><input size="7" style="width: 60px;" name="username" type="text"></td>
+        	  </tr>
+        	  <tr>
+          		<td align="right"><span class="bodycopy"><font color="#ffffff">Password:</font></span></td>
+          		<td><input size="7" style="width: 60px;" name="password" type="password"></td>
+        	  </tr>
+                  <tr>
+          		<td colspan="2" align="center"><span class="bodycopy"><font color="#ffffff">Remember Me:</font></span> <input name="perm" value="1" type="checkbox"></td>
+        	  </tr>
+
+        	  <tr>
+          		<td colspan="2" align="center"><input name="member" src="CodeGuru%20%20Excel%202%20Win%21_files/signin-blue.gif" align="center" border="0" height="23" type="image" width="73"></td>
+        	  </tr>
+						<tr>
+        	    <td colspan="2" align="center"><a href="http://www.codeguru.com/forgotpw.php" class="moreinfo">Forgot Password?</a></td>
+        	  </tr>
+        	  <tr>
+        	    <td colspan="2" align="center"><a href="http://www.codeguru.com/register.php" class="moreinfo">Not a member?<br>Click here for more information and to register.</a></td>
+        	  </tr>
+        	</tbody></table>
+
+<table bgcolor="#999999" border="0" cellpadding="0" cellspacing="0" width="165">
+        <tbody><tr>
+          <td bgcolor="#000000"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="1" width="1"></td>
+        </tr>
+        <tr>
+          <td bgcolor="#999999"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="1" width="1"></td>
+        </tr>
+
+      </tbody></table>
+      <img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="10" width="151">
+      <table border="0" cellpadding="0" cellspacing="0" width="165">
+        <tbody><tr>
+          <td align="center">
+          <a href="http://shopping.yahoo.com/;_ylc=X3oDMTE4ZGdjbWNsBFNfAzk2NjI4MzE3BHNfAzIyNzA4MjI4BHNlYwNqdXAEc2xrA2xpbms-"><img src="CodeGuru%20%20Excel%202%20Win%21_files/yahoo-shopping_120x120.gif" border="0" height="120" width="120"></a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_024.gif" height="1" width="1">
+          <p>
+          <a href="http://www.jobs.internet.com/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/jobs.gif" alt="jobs.internet.com" border="0" height="35" width="120"></a>
+          </p><p>
+
+            </p><table background="" border="0" cellpadding="3" cellspacing="0" width="100%">
+              <tbody><tr>
+                <td class="bodycopy" align="center" bgcolor="#000000"><font color="#ffffff"><b>internet.commerce</b></font></td>
+              </tr>
+              <tr>
+                <td class="bodycopy" align="left" bgcolor="#cccccc"><a href="http://www.internet.com/partners/">Partners &amp; Affiliates</a><br>
+<a href="http://www.air-conditioner-home.com/" target="new">Air Conditioners AC</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_004.gif" height="1" width="1"><br><a href="http://www.goemerchant.com/?source=JM">Merchant Accounts</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_009.gif" border="0" height="1" width="1"><br><a href="http://www.motivators.com/">Promos and Premiums</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_005.gif" border="0" height="1" width="1"><br><a href="http://www.logoyes.com/">Logo Design</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_023.gif" border="0" height="1" width="1"><br><a href="https://www.gotomeeting.com/s/021907/jupitermedia/cpl">Online Meetings</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_010.gif" border="0" height="1" width="1"><br><a href="http://www.memoryx.net/">Memory</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_020.gif" border="0" height="1" width="1"><br><a href="http://www.condocompany.com/">Condos For Sale</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_019.gif" border="0" height="1" width="1"><br><a href="http://shopping.yahoo.com/b:Desktops:22483485">Desktop Computers</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_017.gif" height="1" width="1"><br><a href="http://www.onestoppromos.com/">Marketing Products</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_014.gif" border="0" height="1" width="1"><br><a href="http://mortgage.alloptions.com/">Mortgage Refinance</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_022.gif" border="0" height="1" width="1"><br><a href="http://www.epromos.com/">Corporate Gifts</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_012.gif" border="0" height="1" width="1"><br><a href="http://www.bizrate.com/buy/browse__cat_id--11210000.html">GPS</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_026.gif" border="0" height="1" width="1"><br><a href="http://www.mydomain.com/">Domain Registration</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_008.gif" border="0" height="1" width="1"><br><a href="http://www.4imprint.com/">Promotional Pens</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_015.gif" border="0" height="1" width="1"><br>
+</td>
+              </tr>
+            </tbody></table>                
+          </td>
+        </tr>
+      </tbody></table>     
+<br>
+<br>
+<table bgcolor="#053061" cellpadding="4" width="165">
+<tbody><tr>
+<td>
+<font color="#cccc66"><b>RSS Feeds</b></font><p>
+
+<a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/xml_002.gif" alt="RSS" align="middle" border="0" height="14" hspace="5" width="36"><font color="#ffffff">All</font></a>
+<br><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="2" width="1"><br>
+<a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-cpp.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/xml_002.gif" alt="RSS" align="middle" border="0" height="14" hspace="5" width="36"><font color="#ffffff">VC++/C++</font></a>
+<br><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="2" width="1"><br>
+<a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-csharp.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/xml_002.gif" alt="RSS" align="middle" border="0" height="14" hspace="5" width="36"><font color="#ffffff">.NET/C#</font></a>
+<br><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="2" width="1"><br>
+<a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-vb.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/xml_002.gif" alt="RSS" align="middle" border="0" height="14" hspace="5" width="36"><font color="#ffffff">VB</font></a>
+<br><br>
+<a href="http://www.jupiterweb.com/rss/earthweb.html"><font color="#ffffff">See more EarthWeb Network feeds</font></a>
+
+</p></td>
+</tr>
+
+</tbody></table>    </td>
+
+    <td background="" bgcolor="#ffffff" valign="top" width="99%">
+    <img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="1" width="629">
+
+    <table border="0" cellpadding="4" cellspacing="0" width="100%">
+      <tbody><tr>
+	<td>
+
+
+
+
+<span class="bodycopy"><b><a href="http://www.codeguru.com/">Home</a></b> &gt;&gt; <b><a href="http://www.codeguru.com/vb/">Visual Basic</a></b> &gt;&gt; <b><a href="http://www.codeguru.com/vb/gen/">General</a></b> &gt;&gt; <b><a href="http://www.codeguru.com/vb/gen/vb_misc/">Misc</a></b> &gt;&gt; <b><a href="http://www.codeguru.com/vb/gen/vb_misc/samples/">Samples</a></b><br><br>
+
+
+<!--content_start-->
+<table bgcolor="#000000" border="0" cellpadding="1" cellspacing="0">
+        <tbody><tr>
+          <td>
+            <table bgcolor="#cccccc" border="0" cellpadding="1" cellspacing="0">
+              <tbody><tr> 
+                <td><font face="Verdana, Arial, Helvetica, sans-serif" size="-2"><a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/2136698422/ciu/OasDefault/Microsoft_Linux_SC_GEMS_3ca/CIU_RunningFaster.html/39333562303132333436316538393730">
+<b>Running Faster Apps with Windows or Linux Case Study: Advanced Micro Devices.</b> In a key benchmark test, the Oracle application ran 58 percent faster on Windows Server 2003 than on Linux. Learn more here.
+</a>
+
+</font></td>
+              </tr>
+            </tbody></table>
+          </td>
+        </tr>
+      </tbody></table><img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_007.gif" height="1" width="1"><br>
+<font class="sectionhead">Excel 2 Win!</font><br>
+<b>Rating:</b> <font color="#990000"><img src="CodeGuru%20%20Excel%202%20Win%21_files/star.gif" height="12" width="13"><img src="CodeGuru%20%20Excel%202%20Win%21_files/star.gif" height="12" width="13"><img src="CodeGuru%20%20Excel%202%20Win%21_files/star.gif" height="12" width="13"><img src="CodeGuru%20%20Excel%202%20Win%21_files/star.gif" height="12" width="13"><img src="CodeGuru%20%20Excel%202%20Win%21_files/star.gif" height="12" width="13"></font><br>
+<br>
+
+<table border="0" cellpadding="5" cellspacing="0">
+  <tbody><tr>
+    <td align="right">
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/get_avatar.gif" alt="" border="0">
+    </td>
+    <td class="bodycopy">
+    <b>Sids</b> (<a href="http://www.codeguru.com/member.php/136507/">view profile</a>)<br>
+    March 10, 2004    </td>
+  </tr>
+</tbody></table>	 
+
+  <p><b>Environment:</b>&nbsp;
+  .NET 1.1, VB.NET
+
+</p><p>
+<span class="bodycopy">
+
+<p></p><p>Many times in life one has to Excel 2 Win!</p>
+
+<br><a href="#more">(continued)</a><p></p><center><script language="JavaScript1.1">
+<!--
+var TFSMFlash_VERSION=6;
+var TFSMFlash_WMODE="window";
+var TFSMFlash_OASCLICK="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/869534140/flex/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.html/39333562303132333436316538393730";
+var TFSMFlash_SWFCLICKVARIABLE="?clickTAG=http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/869534140/flex/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.html/39333562303132333436316538393730?";
+var TFSMFlash_SWFFILE="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.swf"+TFSMFlash_SWFCLICKVARIABLE;
+var TFSMFlash_IMAGEALTERNATE="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Microsoft_Protocols_FY07Q4_1f/MS_Protocols_336x280.gif";
+var TFSMFlash_OASALTTEXT="Click Here";
+var TFSMFlash_OASTARGET="_blank";
+var TFSMFlash_OASPROTOCOL="http://";
+var TFSMFlash_OASDIM="WIDTH='336' HEIGHT='280'";
+var TFSMFlash_OASADID="ad_banner";
+
+document.write('<scr'+'ipt src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Microsoft_Protocols_FY07Q4_1f/TFSMFlashWrapper201.js"></scr'+'ipt>');
+-->
+</script><script src="CodeGuru%20%20Excel%202%20Win%21_files/TFSMFlashWrapper201.js"></script>
+
+<noscript>
+<a
+href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/869534140/flex/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.html/39333562303132333436316538393730?"
+target="_blank"><img
+src="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Microsoft_Protocols_FY07Q4_1f/MS_Protocols_336x280.gif"
+width=336 height=280 alt="Click Here" border=0></a>
+</noscript><img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_018.gif" height="1" width="1"><br><br><table style="background-color: rgb(255, 255, 255);" border="0" cellpadding="0" cellspacing="0" width="356">
+	<tbody><tr>
+		<td><a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/Door34520.gif/39333562303132333436316538393730?HPSC/Door/34520" target="_blank"><img src="CodeGuru%20%20Excel%202%20Win%21_files/19185.gif" border="0"></a></td>
+	</tr><tr>
+		<td style="border-left: 1px solid rgb(0, 0, 0); border-right: 1px solid rgb(0, 0, 0); padding: 5px;"><span style="font-family: Arial,Helvetica,sans-serif; font-size: 11px; line-height: 14px;">
+<div style="line-height: 6px;">&nbsp;</div>
+<script>
+function popWin(url){
+	spawn = window.open(url,'newWin','width=800,height=600,top=0,left=0,location=yes,toolbar=yes,status=true,scrollbars=yes,resizable=yes,fullscreen=no,menubar=no,directories=no');
+	spawn.focus();
+}
+</script><object classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=6,0,0,0" id="ad_banner" align="" height="280" width="336"><param name="movie" value="http://www.codeguru.com/RealMedia/ads/Creatives/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.swf?clickTAG=http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/869534140/flex/OasDefault/Microsoft_Protocols_FY07Q4_1f/protocols_banner_value_ms_support3b.html/39333562303132333436316538393730?"><param name="quality" value="high"><param name="wmode" value="window"><embed src="CodeGuru%20%20Excel%202%20Win%21_files/protocols_banner_value_ms_support3b.swf" quality="high" wmode="window" swliveconnect="FALSE" name="ad_banner" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" align="" height="280" width="336"></object>
+
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_value.gif/39333562303132333436316538393730?index.php/3691_value" style="color: rgb(153, 0, 0); font-size: 12px;"><b>Whitepaper: The Value Proposition of HP Integrity Systems</b></a><br>HP
+Integrity systems can provide a flexible, reliable, simple, and
+cost-effective solution. The newest line of serversand the integrated
+software that powers them—are designed with one key goal in mind:
+helping users accomplish their business goals while getting a higher
+return on their IT investment. <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_value.gif/39333562303132333436316538393730?index.php/3691_value" style="color: rgb(0, 0, 0); text-decoration: none; font-size: 11px; font-weight: bold;">&gt;</a>
+
+<div style="line-height: 6px;">&nbsp;</div>
+
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_virtual.gif/39333562303132333436316538393730?index.php/3691_virtual" style="color: rgb(153, 0, 0); font-size: 12px;"><b>Whitepaper: Optimize Server Utilization the HP Virtual Server Environment </b></a><br>
+Enterprises provision more servers and storage than they need, to
+handle the forecasted peak workload for each application. As a result,
+these servers are largely underutilized, and millions of dollars in
+server resources lie idle most of the time. By virtualizing your IT
+resources, you can make more effective use of them by pooling and
+sharing IT resources so IT supply can automatically meet business
+demand.
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_virtual.gif/39333562303132333436316538393730?index.php/3691_virtual" style="color: rgb(0, 0, 0); text-decoration: none; font-size: 11px; font-weight: bold;">&gt;</a>
+
+<div style="line-height: 6px;">&nbsp;</div>
+
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_integritywp.gif/39333562303132333436316538393730?index.php/3691_integritywp" style="color: rgb(153, 0, 0); font-size: 12px;"><b>Whitepaper: Improve ROI with the HP Blade System</b></a><br>The
+HP Integrity BL860c Server Blade family offers unprecedented value for
+customers looking to deploy enterprise-class UNIX® in the blades
+environment. Learn more. <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_integritywp.gif/39333562303132333436316538393730?index.php/3691_integritywp" style="color: rgb(0, 0, 0); text-decoration: none; font-size: 11px; font-weight: bold;">&gt;</a>
+
+<div style="line-height: 6px;">&nbsp;</div>
+
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_guide.gif/39333562303132333436316538393730?index.php/3691_guide" style="color: rgb(153, 0, 0); font-size: 12px;"><b>Whitepaper: Guide to the HP Integrity Server Family</b></a><br>
+HP Integrity servers offer a flexible, reliable, simple, and
+cost-effective solution. Designed to help you accomplish your business
+goals and earn a higher return on your IT investment, the Integrity
+family of servers delivers flexible capacity, secured availability, and
+simplified management. <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/3691_guide.gif/39333562303132333436316538393730?index.php/3691_guide" style="color: rgb(0, 0, 0); text-decoration: none; font-size: 11px; font-weight: bold;">&gt;</a>
+
+
+<div style="line-height: 6px;">&nbsp;</div>
+
+ <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/Door34520.gif/39333562303132333436316538393730?HPSC/Door/34520" style="color: rgb(153, 0, 0); font-size: 12px;"><b>Data Sheet: HP Integrity BL860c Server Blade</b></a><br>
+The Integrity BL860c Server Blade is ideal for organizations seeking to
+deploy or enhance HP-UX 11i applications in an HP BladeSystem c-Class
+architecture. In addition to the robust HP-UX 11i operating
+environment, customers can choose from Red Hat and Novell SUSE Linux,
+followed in 2H2007 by Microsoft Windows Server 2003 Enterprise Edition
+and OpenVMS. Get the specs here. <a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/Door34520.gif/39333562303132333436316538393730?HPSC/Door/34520" style="color: rgb(0, 0, 0); text-decoration: none; font-size: 11px; font-weight: bold;">&gt;</a>
+
+<div style="line-height: 6px;">&nbsp;</div>
+
+
+</span></td>
+	</tr><tr>
+		<td><a href="http://www.codeguru.com/RealMedia/ads/click_lx.ads/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1980409234/accessunit/OasDefault/HP_Integrity_GEMS_1gf/Door34520.gif/39333562303132333436316538393730?HPSC/Door/34520" target="_blank"><img src="CodeGuru%20%20Excel%202%20Win%21_files/19186.gif" border="0"></a></td>
+	</tr>
+</tbody></table><img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_006.gif" height="1" width="1">
+</center><a name="more"></a><p><a name="more">This tutorial presents a
+simple sample demonstrating how to get access to data copied from a
+Microsoft Excel Sheet and present the same in a DataGrid control within
+a Windows Form Application.</a></p>
+
+<p><a name="more">This is increasingly becoming quite a popular request
+amongst users because many have traditionally used Microsoft Excel as
+their primitive data store. Any automation effort will face requests
+from users to optionally allow them to copy the Excel data directly
+into the application using the neat old copy/paste sequence that they
+are so used to!</a></p>
+
+<p><a name="more">The sample is intended to serve as a good starting point to customize it to one's requirements.</a></p>
+
+<p><a name="more">To jump straight into action, here is a list of the
+typical sequence of action that needs to be carried out within the
+Windows Application, assuming the copied Excel data is being held in
+the Clipboard:</a></p>
+
+<ul>
+<li><a name="more">Access &amp; extract the Clipboard data</a></li>
+<li><a name="more">Format the data into a DataGrid control bindable form</a></li>
+<li><a name="more">Bind the data to the DataGrid control</a></li>
+</ul>
+
+<p><a name="more"><img src="CodeGuru%20%20Excel%202%20Win%21_files/get_image.jpg" height="356" width="500"><br>(</a><a href="http://www.codeguru.com/dbfiles/get_image.php?id=6393&amp;lbl=EXCELDATA_JPG&amp;ds=20040310" target="_blank">Full Size Image</a>)</p>
+<p><b>Figure 1:</b> Sample Data in an Excel Sheet</p>
+
+<p>Simple, right?</p>
+
+<p>Well, there is still some work that needs to be done, but the good part is the effort is not more than 15 minutes of your time!</p><p>
+
+</p><p>First, here is some information on the important .NET Framework Classes that we would befriend during the course of this sample:</p>
+
+<ul>
+<li><b>Clipboard:</b> Nothing can be easier that this. .NET provides access to the Clipboard by using a Class, not surprisingly, called <i>Clipboard</i>. We would use the Clipboard Class to extract the data contained within it.</li>
+<li><b>IDataObject:</b> This interface provides a format-independent
+mechanism for transferring data. We would use this interface to extract
+and store the Clipboard Excel data.</li>
+<li><b>DataFormats:</b> This one provides light in the dark. The Class
+is composed of certain pre-defined format names of data that the
+Clipboard can hold, such as Comma Separated Values, Html, Bitmap, and
+so forth. We would use the Class to identify Excel data extracted in an
+IDataObject.</li>
+</ul>
+
+<p>With friendly Classes in the pocket, let us start looking at the meaty part now.</p>
+
+<p><img src="CodeGuru%20%20Excel%202%20Win%21_files/get_image_002.jpg" height="326" width="500"><br>(<a href="http://www.codeguru.com/dbfiles/get_image.php?id=6393&amp;lbl=EXCEL2WIN_APPLICATION_JPG&amp;ds=20040310" target="_blank">Full Size Image</a>)</p>
+
+<p><b>Figure 2:</b> The Sample Application User Interface</p>
+
+<h3>Access &amp; Extract the Clipboard Data</h3>
+
+<p>Firstly, we need to peek into the Clipboard and extract its content into a container object. For this, we use the <i>GetDataObject</i> method of the Clipboard Class and contain it as an <i>IDataObject</i>.</p>
+
+<pre><span class="codeKeyword">Dim</span> objPresumablyExcel <span class="codeKeyword">As</span> IDataObject = Clipboard.GetDataObject()</pre>
+
+<p>Next, we need to make a quick check whether the data is indeed Excel
+data. Excel data is represented as Comma Seperated Values in the
+Clipboard, with line breaks between two rows of data. Hence, we make
+use of the <i>GetDataPresent</i> method of the IDataObject by passing it the predefined format name <i>CommaSeperatedValue</i> of the DataFormats Class to do the verification.</p>
+
+<pre><span class="codeKeyword">If</span> (objPresumablyExcel.GetDataPresent(DataFormats. _
+   CommaSeparatedValue)) <span class="codeKeyword">Then</span>
+   ...
+   ...
+   ...
+<span class="codeKeyword">End</span> <span class="codeKeyword">If</span>
+</pre>
+
+<h3>Format the Data into a DataGrid Control Bindable Form</h3>
+
+<p>The data is raw and we need to format it into a form or object that
+can be bound to a DataGrid control. The sample uses the DataTable
+object to bind to the DataGrid control.</p>
+
+<pre><span class="codeKeyword">Dim</span> tblExcel2WinData <span class="codeKeyword">As</span> <span class="codeKeyword">New</span> DataTable</pre>
+
+<p>Now, there are many ways in which you can treat and format the data.
+For the purpose of the sample, we would first convert and cast the
+contents of the IDataObject into a Stream of data that will be
+contained in an object of the StreamReader Class.</p>
+
+<pre><span class="codeKeyword">Dim</span> srReadExcel <span class="codeKeyword">As</span> <span class="codeKeyword">New</span> StreamReader(<span class="codeKeyword">CType</span>(objPresumablyExcel. _
+    GetData(DataFormats.CommaSeparatedValue), Stream))
+</pre>
+
+<p>The next task would be to read this stream of data one line at a time. A loop is the order of the day.</p>
+
+<pre><span class="codeKeyword">While</span> (srReadExcel.Peek() &gt; 0)
+   ...
+   ...
+   ...
+<span class="codeKeyword">End</span> <span class="codeKeyword">While</span>
+</pre>
+
+<p>Within the loop, we need to start replicating the contents of the
+StreamReader object in a DataTable object. To achieve this, we first
+extract a row of data in the Stream Reader object into a String
+variable.</p>
+
+<pre><span class="codeKeyword">Dim</span> sFormattedData <span class="codeKeyword">As</span> <span class="codeKeyword">String</span>
+
+sFormattedData = srReadExcel.ReadLine()
+</pre>
+
+<p>The String variable will now contain the column values for a row of
+Excel data separated by comma. We split this String variable into an
+array.</p>
+
+<pre><span class="codeKeyword">Dim</span> arrSplitData <span class="codeKeyword">As</span> <span class="codeKeyword">Array</span>
+
+arrSplitData = sFormattedData.Split("")
+</pre>
+
+<p>The number of Array items is equivalent to the number of columns of
+data copied from the Excel Sheet. We prepare the DataTable to reflect
+the same number of columns.</p>
+
+<pre><span class="codeKeyword">If</span> tblExcel2WinData.Columns.Count &lt;= 0 <span class="codeKeyword">Then</span>
+   <span class="codeKeyword">For</span> iLoopCounter = 0 <span class="codeKeyword">To</span> arrSplitData.GetUpperBound(0)
+      tblExcel2WinData.Columns.Add()
+   <span class="codeKeyword">Next</span>
+<span class="codeKeyword">End</span> <span class="codeKeyword">If</span>
+</pre>
+
+<p>Finally, we loop the array to add the contents of individual columns into a DataTable Row and add the Row to the DataTable.</p>
+
+<pre><span class="codeKeyword">Dim</span> iLoopCounter <span class="codeKeyword">As</span> <span class="codeKeyword">Integer</span>
+<span class="codeKeyword">Dim</span> rowNew <span class="codeKeyword">As</span> DataRow
+
+rowNew = tblExcel2WinData.NewRow()
+
+<span class="codeKeyword">For</span> iLoopCounter = 0 <span class="codeKeyword">To</span> arrSplitData.GetUpperBound(0)
+   rowNew(iLoopCounter) = arrSplitData.GetValue(iLoopCounter)
+<span class="codeKeyword">Next</span>
+
+tblExcel2WinData.Rows.Add(rowNew)
+</pre>
+
+<h3>Bind the Data to the DataGrid Control</h3>
+
+<p>The copied Excel Sheet data is successfully replicated and contained
+in the DataTable object. All that remains to be done now is to bind the
+DataTable object to the DataGrid control.</p>
+
+<pre>dgrExcelContents.DataSource = tblExcel2WinData.DefaultView()</pre>
+
+<p><img src="CodeGuru%20%20Excel%202%20Win%21_files/get_image_003.jpg" height="326" width="500"><br>(<a href="http://www.codeguru.com/dbfiles/get_image.php?id=6393&amp;lbl=COPIEDINTODATAGRID_JPG&amp;ds=20040310" target="_blank">Full Size Image</a>)</p>
+<p><b>Figure 3:</b> The Excel Sheet data in the DataGrid Control</p>
+
+<p>And hey, presto, the Excel Sheet data magically appears in the DataGrid control!</p>
+<p>
+  <b>About the Author</b><br>
+  </p><p>Sids is the new kid on the
+block at Tata Consultancy Services (TCS). Sids is engaged in doing some
+fireworks with the TCS .NET Centre of Excellence which has a
+firecracker of a team in place.</p>
+<p>
+While not working, Sids is completing his MBA (MMM-Marketing) from NMIMS, Mumbai.</p>
+<p>
+And while he is not doing his MBA you can find Sids hanging around with
+his friends or trekking the mountains all panting and puffing!</p>
+
+U can reach Sids at <a href="mailto:siddharth.u@tcs.com">siddharth.u@tcs.com</a> <p>
+
+
+  <b>Downloads</b><br>
+    </p><li><a href="http://www.codeguru.com/dbfiles/get_file/Excel2Win_src.zip?id=6393&amp;lbl=EXCEL2WIN_SRC_ZIP&amp;ds=20040310">Excel2Win_src.zip</a> - The sample source code for the Excel 2 Win! article<br>
+    <p>
+
+
+</p></li></span>
+<!--content_stop-->
+<!-- print box -->
+
+</p><table border="0" cellpadding="0" cellspacing="7">
+<tbody><tr><td>
+    <div id="tools_inews">
+
+		<b>Tools:</b>
+		<a href="http://www.codeguru.com/vb/gen/vb_misc/samples/email.php/c6393"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_email.gif" alt="" align="middle" border="0" height="17" hspace="2" vspace="2" width="71"></a>
+		<a href="http://www.codeguru.com/vb/gen/vb_misc/samples/print.php/c6393"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_print.gif" alt="" align="middle" border="0" height="17" hspace="2" vspace="2" width="71"></a>
+
+		<a href="http://digg.com/submit?phase=2&amp;url=www.codeguru.com/vb/gen/vb_misc/samples/article.php/c6393/&amp;title=&amp;bodytext=&amp;topic=" onclick="window.open('http://digg.com/submit?phase=2&url=www.codeguru.com/vb/gen/vb_misc/samples/article.php/c6393/&title=&bodytext=&topic=','digg','toolbar=no,width=900,height=600,scrollbars=yes'); return false;"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_digg.gif" alt="" align="middle" border="0" height="17" hspace="2" vspace="2" width="91"></a>
+
+		<a href="http://del.icio.us/post" onclick="window.open('http://del.icio.us/post?v=4&noui&jump=close&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'delicious','toolbar=no,width=700,height=400'); return false;"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_delicious.gif" alt="" align="middle" border="0" height="17" hspace="2" vspace="2" width="91"></a>    </div>
+</td></tr>
+
+<tr><td>
+    <div id="tools_inews">
+<!-- search box -->
+<script type="text/javascript">
+function addFireFox() {
+	if ((typeof window.sidebar == "object") && (typeof window.sidebar.addSearchEngine == "function")) {
+		window.sidebar.addSearchEngine('http://www.codeguru.com/search/ffsearch.src', 'http://www.codeguru.com/search/ffsearch.png', 'CodeGuru', 'CodeGuru');
+	}
+	else {
+		alert(' x ');
+	}
+}
+
+function addIE() {
+	window.external.AddSearchProvider('/search/iesearch.xml');
+}
+</script>
+		<b>Add www.codeguru.com</b> to your favorites<br>
+
+		<a href="http://add.my.yahoo.com/rss?url=http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_myyahoo.gif" alt="" border="0" height="17" hspace="2" vspace="2" width="91"></a>
+
+		<a href="javascript:window.external.AddFavorite('http://www.codeguru.com', 'www.codeguru.com')"><img src="CodeGuru%20%20Excel%202%20Win%21_files/badge_windowsfav.gif" alt="" border="0" height="17" hspace="2" vspace="2" width="118"></a>
+		<div class="dotrule"></div>
+		<b>Add www.codeguru.com</b> to your browser search box<br>
+		<a href="javascript:addIE();"><img src="CodeGuru%20%20Excel%202%20Win%21_files/ie_icon.gif" alt="" align="middle" border="0" hspace="2" vspace="2">IE 7</a> | <a href="javascript:addFireFox();"><img src="CodeGuru%20%20Excel%202%20Win%21_files/ff_icon.gif" alt="" align="middle" border="0" hspace="2" vspace="2">Firefox 2.0</a> | <a href="javascript:addFireFox();"><img src="CodeGuru%20%20Excel%202%20Win%21_files/ff_icon.gif" alt="" align="middle" border="0" hspace="2" vspace="2">Firefox 1.5.x</a> 
+<!-- search box -->
+<div class="dotrule"></div>
+		<b>Receive news</b> via our XML/RSS <a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml">feed</a> <a href="http://www.codeguru.com/icom_includes/feeds/codeguru/rss-all.xml"><img src="CodeGuru%20%20Excel%202%20Win%21_files/xml.gif" alt="" align="middle" border="0" height="14" hspace="0" width="36"><img src="CodeGuru%20%20Excel%202%20Win%21_files/rss.png" alt="" align="middle" border="0" height="14" hspace="0" width="36"></a>    </div>
+</td></tr>
+</tbody></table>
+<p>
+<!-- end print box -->
+
+
+</p><p><img src="CodeGuru%20%20Excel%202%20Win%21_files/jw_devsol.gif"></p>
+<p>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/arrow_005.gif" align="bottom"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1060394304/fl1/OasDefault/Quest_Toad_Q2_Oracle_1b/questtoadoracleq2b.html/39333562303132333436316538393730" class="ss">Tech Brief: Implementing Database Development Best Practices.</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_002.gif" height="1" width="1"><br>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/arrow_003.gif" align="bottom"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/70580018/fl2/OasDefault/InterSystems_39234_Jun07_1g/InterSysetmsJuneTextLink.html/39333562303132333436316538393730" class="ss">Cach�, the world�s fastest object database, does away with mapping. Free download.</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_003.gif" height="1" width="1"><br>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/arrow_004.gif" align="bottom"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1679474595/fl3/OasDefault/IronSpeed_VS_GEMS_5d/FeaturedLink_GenerateComplete.html/39333562303132333436316538393730" class="ss">Generate Complete .NET Web Apps in Minutes . Download Iron Speed Designer today. 
+</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_025.gif" height="1" width="1"><br>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/arrow_002.gif" align="bottom"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/634474359/fl4/OasDefault/Intel_GoParallel_GEMS_3d/FeaturedLink_Isittime.html/39333562303132333436316538393730" class="ss">Is it time to make your move to the multi-threaded and parallel processing world? Find out! 
+</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730.gif" height="1" width="1"><br>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/arrow.gif" align="bottom"> 
+<a href="http://www.codeguru.com/RealMedia/ads/click_lx.cgi/ew/ewsoftware/www.codeguru.com/vb/gen/vb_misc/samples/article/c6393/i/1591069508/fl5/OasDefault/Avaya_07_Portal_GEMS_1o/FeaturedLink_DevelopingIntelligent.html/39333562303132333436316538393730" class="ss">Developing Intelligent Communications? Visit the Avaya Developer Connection Center on DevX. 
+</a>
+<img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_016.gif" height="1" width="1"></p>
+
+<table border="0" cellpadding="3" width="100%">
+  <tbody><tr> 
+    <td align="left" valign="top"> <br>
+<a href="http://www.codeguru.com/vb/gen/vb_misc/samples/email.php/c6393/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/emailicon.gif" border="0"></a>
+
+<a href="http://www.codeguru.com/vb/gen/vb_misc/samples/print.php/c6393/"><img src="CodeGuru%20%20Excel%202%20Win%21_files/printicon.gif" border="0"></a>           
+
+    </td>
+  </tr>
+</tbody></table>
+
+
+        </span></td>
+      </tr>
+
+      <tr>
+        <td>
+<a name="rating"></a>
+<input name="url" value="/vb/gen/vb_misc/samples/article.php/c6393/" type="hidden">
+    <table bgcolor="#cccccc" border="1" cellpadding="4" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td class="bodycopy">
+    <font color="#cc0000"><b>RATE THIS ARTICLE:</b></font>&nbsp;&nbsp;
+<input value="5" name="vote" type="radio">Excellent&nbsp;&nbsp;<input value="4" name="vote" type="radio">Very Good&nbsp;&nbsp;<input value="3" name="vote" type="radio">Average&nbsp;&nbsp;<input value="2" name="vote" type="radio">Below Average&nbsp;&nbsp;<input value="1" name="vote" type="radio">Poor&nbsp;&nbsp;<input src="CodeGuru%20%20Excel%202%20Win%21_files/rate.gif" align="center" border="0" height="23" type="image" width="73">
+
+<br><br><b>(You must be signed in to rank an article. Not a member? <a href="http://www.codeguru.com/register.php?url=/vb/gen/vb_misc/samples/article.php/c6393/">Click here</a> to register)</b>
+    </td>
+  </tr>
+
+</tbody></table>
+
+
+
+<br>
+
+
+  <!--COMMENTS-->  
+<table bgcolor="#cccccc" border="0" cellpadding="4" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td class="bodycopy" colspan="2"><font class="title">Latest Comments: </font></td>
+  </tr>
+  <tr>
+    <td class="bodycopy">
+• <a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/?thread=12487">run in web application</a> - pilip (05/10/2007)<br>
+• <a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/?thread=10249">so easy and works fine</a> - rasim (06/01/2006)<br>
+• <a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/?thread=9241">I liked ur work .</a> - Syed Kazmi (02/07/2006)<br>
+• <a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/?thread=3773">VB.net to Excel</a> - John Coneyworth (10/12/2004)<br>
+• <a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/?thread=3707">I like this!</a> - Lee Cathy (10/06/2004)<br>
+ 
+<br><a href="http://www.codeguru.com/vb/gen/vb_misc/samples/comments.php/c6393/"><b>View All Comments</b></a>
+    <hr>
+    </td>
+  </tr> 
+  <tr>
+    <td class="bodycopy" colspan="2"><font class="title">Add a Comment: </font></td>
+  </tr>
+  <tr>
+    <td class="bodycopy">
+		    <input name="action" value="add" type="hidden">
+    <center>
+    <table class="bodycopy">
+      <tbody><tr valign="top">
+        <td class="bodycopy" align="right"><strong>Title: </strong></td>
+        <td><input name="title" size="60" maxlength="256" type="text"></td>
+      </tr>
+      <tr valign="top">
+        <td class="bodycopy" align="right"><strong>Comment: </strong></td>
+        <td><textarea name="subject" rows="5" cols="60" wrap="physical"></textarea></td>
+      </tr>
+      <tr valign="top">
+        <td class="bodycopy" align="right"><strong>Pre-Formatted: </strong></td>
+        <td><input name="preformatted" value="on" type="checkbox">Check this if you want the text to display with the formatting as typed (good for source code)</td>
+      </tr>
+    </tbody></table>
+    <br>
+    <input src="CodeGuru%20%20Excel%202%20Win%21_files/submit.gif" name="AddComment" value="Add Comment" border="0" height="23" type="image" width="73">
+    </center>
+		<br><br><b>(You must be signed in to comment on an article. Not a member? <a href="http://www.codeguru.com/register.php?url=/vb/gen/vb_misc/samples/article.php/c6393/">Click here</a> to register)</b>
+       </td>
+ 
+  </tr>
+</tbody></table>
+
+
+        </td>
+      </tr>
+
+    </tbody></table>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" bgcolor="#666666"><img src="CodeGuru%20%20Excel%202%20Win%21_files/sp.gif" alt="" border="0" height="2" width="1"></td>
+  </tr>
+</tbody></table>
+
+<table bgcolor="#ffffff" border="0" cellpadding="10" cellspacing="0" width="100%">
+  <tbody><tr>
+    <td align="center"><iframe src="CodeGuru%20%20Excel%202%20Win%21_files/B2108748.htm" marginwidth="0" marginheight="0" hspace="0" vspace="0" bordercolor="#000000" frameborder="0" height="90" scrolling="no" width="728">
+&lt;script&gt;
+&lt;/script&gt;
+&lt;NOSCRIPT&gt;
+&lt;A
+HREF="http://ad.doubleclick.net/jump/N3691.Jupiter_Media/B2108748;abr=!ie4;abr=!ie5;sz=728x90;ord=904994537?"&gt;
+&lt;IMG
+SRC="http://ad.doubleclick.net/ad/N3691.Jupiter_Media/B2108748;abr=!ie4;abr=!ie5;sz=728x90;ord=904994537?"
+BORDER=0 WIDTH=728 HEIGHT=90 ALT="Click Here"&gt;&lt;/A&gt;
+&lt;/NOSCRIPT&gt;
+</iframe><img src="CodeGuru%20%20Excel%202%20Win%21_files/39333562303132333436316538393730_013.gif" height="1" width="1"></td>
+  </tr>
+  <tr>
+    <td class="bodycopy" align="center">
+      <center>
+
+<br clear="all"><center><table border="0" cellpadding="5" cellspacing="0">
+                <tbody><tr> 
+                  <form method="post" action="http://search.internet.com/www.jupiterweb.com" target="_top"></form>
+                    <td align="center"><font face="verdana, arial, helvetica" size="-2"><b>Jupiter Online Media:</b></font> 
+                      <p align="center"> 
+</p><table class="mgfoot" border="0">
+  <tbody><tr><td class="foot_alt" align="center">
+<a href="http://www.internet.com/" class="foot" target="_top"><img src="CodeGuru%20%20Excel%202%20Win%21_files/icom_foot.gif" alt="internet.com" align="middle" border="0" height="15" hspace="0" width="97"></a><img src="CodeGuru%20%20Excel%202%20Win%21_files/ruledivide_foot.gif" alt="" align="middle" border="0" height="25" hspace="10" width="1"><a href="http://www.earthweb.com/" target="_top"><img src="CodeGuru%20%20Excel%202%20Win%21_files/earthweb_foot2.gif" alt="earthweb.com" align="middle" border="0" height="12" hspace="5" width="93"></a><img src="CodeGuru%20%20Excel%202%20Win%21_files/ruledivide_foot.gif" alt="" align="middle" border="0" height="25" hspace="10" width="1"><a href="http://www.devx.com/" target="_top"><img src="CodeGuru%20%20Excel%202%20Win%21_files/devx_foot2.gif" alt="Devx.com" align="middle" border="0" height="30" hspace="0" width="35"></a><img src="CodeGuru%20%20Excel%202%20Win%21_files/ruledivide_foot.gif" alt="" align="middle" border="0" height="25" hspace="10" width="1"><a href="http://www.graphics.com/" target="_top"><img src="CodeGuru%20%20Excel%202%20Win%21_files/grcom_foot.gif" alt="Graphics.com" align="middle" border="0" height="18" hspace="0" width="97"></a></td></tr></tbody></table>
+                      <p> 
+                      <font face="verdana, arial, helvetica" size="-2"><b>Search:</b> 
+                      <input name="IC_Summary" value="1" type="hidden">
+                      <input name="IC_StartNumber" value="0" type="hidden">
+                      <input name="IC_BatchSize" value="10" type="hidden">
+                      <input name="IC_RelevanceThreshold" value="50" type="hidden">
+                      <input name="IC_QueryDatabase" value="all" type="hidden">
+                      <input name="IC_QueryText" size="45" type="text">
+                      <input value="Find" name="SUBMIT" src="CodeGuru%20%20Excel%202%20Win%21_files/but_find.gif" align="center" border="0" height="20" type="image" width="41">
+                      </font>
+                      </p><p>
+                      <font face="verdana, arial, helvetica" size="-2">
+                     <a href="http://www.jupitermedia.com/" class="foot"> Jupitermedia Corporation</a> has two divisions: <a href="http://www.jupiterimages.com/" class="foot">Jupiterimages</a> and <a href="http://www.jupitermedia.com/onlinemedia.html" class="foot">Jupiter Online Media</a></font></p><p><font face="verdana, arial, helvetica" size="-2"> <font face="verdana, arial, helvetica" size="-2"><a href="http://www.jupitermedia.com/corporate/" class="foot" target="_top">Jupitermedia Corporate Info</a>                      </font></font></p><p>
+<font face="verdana, arial, helvetica" size="-2"><font face="verdana, arial, helvetica" size="-2">                      </font></font></p><div class="foot"><!--Copyright 2005-2006-->
+
+<font face="verdana, arial, helvetica" size="-2"><font face="verdana, arial, helvetica" size="-2"><script type="text/javascript">
+document.write(' Copyright ');
+var now = new Date();
+document.write(  + now.getFullYear());
+document.write(' Jupitermedia Corporation All Rights Reserved.');
+</script> Copyright 2007 Jupitermedia Corporation All Rights Reserved.
+<noscript> Copyright 2007 Jupitermedia Corporation All Rights Reserved.</noscript>
+<br>
+                        <a href="http://www.jupitermedia.com/corporate/legal.html" class="foot" target="_top">Legal 
+                        Notices</a>, <a href="http://www.jupitermedia.com/corporate/reprints.html#Licensing1" class="foot" target="_top">Licensing</a>, 
+                        <a href="http://www.jupitermedia.com/corporate/reprints.html#Reprints1" class="foot" target="_top">Reprints</a>, 
+                        &amp; <a href="http://www.jupitermedia.com/corporate/reprints.html#Permissions" class="foot" target="_top">Permissions</a>, 
+                        <a href="http://www.jupitermedia.com/corporate/privacy/privacypolicy.html" class="foot" target="_top">Privacy 
+                        Policy</a>. </font>
+                      </font><p><font face="verdana, arial, helvetica" size="-2"> <font face="verdana, arial, helvetica" size="-2"><a href="http://www.webhost.thelist.com/" class="foot" target="_top">Web Hosting</a> | <a href="http://e-newsletters.internet.com/" class="foot">Newsletters</a> 
+                       | <a href="http://jobs.internet.com/" class="foot" target="_top">Tech 
+                        Jobs</a> | <a href="http://www.internetshopper.com/" class="foot" target="_top">Shopping</a> | <a href="http://e-newsletters.internet.com/cgi-bin/al-manage/subscribe.cgi?brand=icom" class="foot" target="_top">E-mail 
+                        Offers</a></font></font></p></div>
+
+<font face="verdana, arial, helvetica" size="-2">                    </font></td>
+                  
+                </tr>
+              </tbody></table></center>
+
+</center>
+
+    </td>
+  </tr>
+  
+</tbody></table>     <div style="border: 1px solid black; position: absolute; visibility: hidden; left: -500px; top: -2000px; width: 108px; overflow: hidden; cursor: default; height: 280px;" id="HM_Menu1"><div style="position: absolute; top: 0px; left: 0px; width: 108px; height: 280px;"><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 0px;" id="HM_Item1_1"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">C++</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 18px;" id="HM_Item1_2"><img style="position: absolute; left: 101px; top: 10px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">COM-based Technologies</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 49px;" id="HM_Item1_3"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Controls</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 67px;" id="HM_Item1_4"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Data</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 85px;" id="HM_Item1_5"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Frameworks</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 103px;" id="HM_Item1_6"><img style="position: absolute; left: 101px; top: 10px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Graphics &amp; Multimedia</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 134px;" id="HM_Item1_7"><img style="position: absolute; left: 101px; top: 10px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Internet &amp; Networking</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 165px;" id="HM_Item1_8"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Miscellaneous</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 183px;" id="HM_Item1_9"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Visual Studio</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 201px;" id="HM_Item1_10"><img style="position: absolute; left: 101px; top: 10px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Windows Programming</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 232px;" id="HM_Item1_11"><img style="position: absolute; left: 101px; top: 10px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Windows &amp; Dialogs</div><div style="padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 263px;" id="HM_Item1_12">Sample Chapter</div></div></div><div style="border: 1px solid black; position: absolute; visibility: hidden; left: -500px; top: -2000px; width: 108px; overflow: hidden; cursor: default; height: 35px;" id="HM_Menu2"><div style="position: absolute; top: 0px; left: 0px; width: 108px; height: 35px;"><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 0px;" id="HM_Item2_1"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">C#</div><div style="padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 18px;" id="HM_Item2_2"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">.NET</div></div></div><div style="border: 1px solid black; position: absolute; visibility: hidden; left: -500px; top: -2000px; width: 108px; overflow: hidden; cursor: default; height: 89px;" id="HM_Menu3"><div style="position: absolute; top: 0px; left: 0px; width: 108px; height: 89px;"><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 0px;" id="HM_Item3_1"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">Controls</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 18px;" id="HM_Item3_2"><img style="position: absolute; left: 101px; top: 4px;" src="CodeGuru%20%20Excel%202%20Win%21_files/HM_More_white_right.gif" height="9" hspace="0" vspace="0" width="5">General</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 36px;" id="HM_Item3_3">Internet</div><div style="border-bottom: 1px solid black; padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 54px;" id="HM_Item3_4">Mobile/Wireless</div><div style="padding: 2px 9px 2px 2px; position: absolute; visibility: inherit; cursor: pointer; background-color: rgb(121, 123, 88); color: rgb(255, 255, 255); font-family: Verdana,sans-serif; font-variant: normal; font-weight: normal; font-size: 8pt; line-height: normal; font-size-adjust: none; font-stretch: normal; font-style: normal; left: 0px; width: 97px; top: 72px;" id="HM_Item3_5">Sample Chapter</div></div></div></body></html>

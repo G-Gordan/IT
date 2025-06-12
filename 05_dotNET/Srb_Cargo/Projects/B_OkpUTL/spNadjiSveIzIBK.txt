@@ -1,0 +1,139 @@
+CREATE PROCEDURE  spNadjiSveIzIBK
+(
+	@inIBK 			as char(12), 	
+	@outSkrUprava 	as char (6) 		OUTPUT,
+	@outVlasnistvo   	as char(1) 		OUTPUT,
+	@outRIV		as char(1)		OUTPUT,
+	@outSerija 		as char(11) 		OUTPUT,
+	@outBrojOsovina 	as int 			OUTPUT,
+	@outVrsta 		as char(1) 		OUTPUT,
+	@outKontrBroj 		as int 			OUTPUT,
+	@outKontrBrojOK 	as char(1) 		OUTPUT,
+	@outKolaICFIzuzeta 	as char(1) 		OUTPUT,
+	@outPovratnaVrednost 	as nvarchar(100) 	OUTPUT
+)
+
+AS
+
+Declare		@xIBK		AS char(12)
+Declare 	@br		AS int
+DECLARE 	@xSifRezima 	AS CHAR(2)
+DECLARE 	@xSifUprave 	AS CHAR(2)
+DECLARE 	@xBrojSerije	AS CHAR(4)
+Declare		@KontrolniBroj	As Int
+Declare		@xKBOK	As bit
+Declare		@xICFCifre	As Char(8)
+
+
+SET @xKBOK =0
+
+SET @outSkrUprava 	= ''
+SET @outVlasnistvo   = ''
+SET @outRIV = ''
+SET @outSerija  = ''
+SET @outBrojOsovina  = 0
+SET @outVrsta 	 = ''
+SET @outKontrBroj 	 = 0
+SET @outKontrBrojOK 	= ''
+SET @outKolaICFIzuzeta 	= ''
+SET @outPovratnaVrednost 	= ''
+
+SET @xIBK = LTRIM(RTRIM(@inIBK))
+
+IF LEN(@xIBK) <> 12 
+BEGIN
+	SET @outPovratnaVrednost ='Neispravan individualni broj kola ' + ' - obavezno je 12 cifara !'
+END
+ELSE IF @xIBK IS NULL 
+BEGIN
+	SET @outPovratnaVrednost = @outPovratnaVrednost +'Neispravan individualni broj kola - NULL vrednosti nisu dozvoljene !'
+END
+ELSE IF ( SELECT ISNUMERIC(@xIBK) ) <> 1 
+BEGIN
+	SET @outPovratnaVrednost = @outPovratnaVrednost +'Neispravan individualni broj kola -  svi karkteri moraju da budu numerici!'
+END
+ELSE
+BEGIN
+
+	SET @xSifRezima = SUBSTRING(@xIBK,1,2)
+	SET @xSifUprave = SUBSTRING(@xIBK,3,2)
+	SET @xBrojSerije = SUBSTRING(@xIBK,5,4)
+	SELECT @outVlasnistvo = Vlasnistvo , @outRIV = Riv FROM ZSKolaRezimi WHERE Sifra = @xSifRezima
+	SET @br = @@RowCount
+	IF @br < 1 
+	  BEGIN
+		SET @outPovratnaVrednost = @outPovratnaVrednost +'Nepostojeæi režim kola: ' + @xSifRezima
+	  END
+	ELSE
+	  BEGIN
+
+	  	SELECT @outSkrUprava = Oznaka FROM UicUprave WHERE SifraUprave = @xSifUprave
+		SET @br = @@RowCount
+		IF @br < 1 
+		  BEGIN
+		  	SET @outPovratnaVrednost = @outPovratnaVrednost +'Nepostojeæa železnicka uprava: ' + @xSifUprave
+		  END
+		ELSE 
+		  BEGIN
+			SELECT @outSerija = Serija , @outBrojOsovina = Osovine , @outVrsta = Vrsta FROM ZSKolaSerija WHERE Sifra = @xBrojSerije
+			SET @br = @@RowCount
+			IF @br < 1 
+			  BEGIN
+				SET @outPovratnaVrednost = @outPovratnaVrednost +'Nepostojeæa serija kola: ' + @xBrojSerije
+			  END
+			ELSE 
+			 BEGIN	            
+	              SET @xICFCifre = SUBSTRING(@xIBK,1,8)
+	              SELECT @xICFCifre = Broj  FROM KolaICFIzuzeta WHERE  @xICFCifre = Broj
+				  SET @br = @@RowCount
+				  IF @br <1
+				   BEGIN
+				     SET @outKolaICFIzuzeta = 'N'
+				   END
+				  ELSE
+				   BEGIN
+				     SET @outKolaICFIzuzeta = 'D'				   
+				   END				  
+												
+						DECLARE @c		AS INTEGER
+						DECLARE @brojac	AS INTEGER
+						DECLARE @parNepar	AS BIT
+						DECLARE @suma	AS INTEGER
+	
+
+						SET @brojac = 1
+						SET @suma = 0
+						SET @parNepar = 0
+						SET @outKontrBrojok = 0
+						WHILE @brojac < LEN(@inIBK) BEGIN
+							SET @c = SUBSTRING(@inIBK,@brojac,1)
+							IF @parNepar = 1 BEGIN
+								SET @parNepar = 0
+							END
+							ELSE BEGIN
+								SET @parNepar = 1
+								SET @c = @c * 2
+								IF @c > 9 SET @c = @c / 10 + @c - @c / 10 * 10
+							END
+							SET @suma = @suma + @c
+							SET @brojac = @brojac + 1
+						END
+						SET @KontrolniBroj = (( @suma + 9 ) / 10 ) * 10 - @suma
+						IF @KontrolniBroj = SUBSTRING(@inIBK,12,1) 
+				 BEGIN		
+				  SET @outKontrBrojOK='D'
+				  SET @outKontrBroj = @KontrolniBroj
+				 END
+				ELSE
+				 BEGIN
+				  SET @outKontrBrojOK='N'
+				  SET @outPovratnaVrednost = @outPovratnaVrednost +'Pogrešan kontrolni broj !'
+				  SET @outKontrBroj = @KontrolniBroj
+				 END
+			 END
+          END
+
+	  END
+
+END
+GO

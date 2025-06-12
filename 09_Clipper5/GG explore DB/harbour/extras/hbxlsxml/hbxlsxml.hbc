@@ -1,0 +1,8 @@
+#
+# $Id: hbxlsxml.hbc 18272 2012-10-09 18:33:17Z vszakats $
+#
+
+incpaths=.
+libpaths=lib/${hb_plat}/${hb_comp}
+
+libs=${hb_name}

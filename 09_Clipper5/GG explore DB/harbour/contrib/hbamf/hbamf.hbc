@@ -1,0 +1,9 @@
+#
+# $Id: hbamf.hbc 18645 2012-11-23 11:56:36Z vszakats $
+#
+
+description=AMF file format handling
+
+incpaths=.
+
+libs=${_HB_DYNPREF}${hb_name}${_HB_DYNSUFF}

@@ -1,0 +1,74 @@
+	<html>
+	<head>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+			<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+			<link rel="stylesheet" type="text/css" href="css/style.css">
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+	</head>
+	<body>
+	<script>
+	$(function()
+	{
+	///alert(1);
+		var q=0;
+		$('#butt').click(function()
+		{
+		console.log('eeee');
+		
+				$(".www").each(function()
+				{
+					q+=parseInt($(this).val());
+				});
+				$('#7').val(''+q/6);//OVDE UBACUJEM U REZULTAT U POLJE KOJE SE PRIKAZUJE KORISNIKU
+				//console.log(q);
+		});
+		
+		$("#kont").submit(function()
+		{
+			if($(".www").val()=='')
+			{
+				$(this).css('border-color','red');
+			}
+			if($(".www").on('submit',function()
+			{
+				
+			}
+			alert($('.www'));
+		});
+		
+		$(".www").blur(function()
+		{
+			if($(this).val()=="")
+			{
+			$(this).css('border-color','red');
+			}
+		});
+		$(".www").focus(function()
+		{
+			if($(this).val()=="")
+			{
+			$(this).css('border-color','white');
+			}
+		});
+		
+	});
+	</script>
+	<div class="container">
+	<header><h1>Prosek Ocena</h1></header>
+	<div class="container">
+	<p id="tt"></p>
+	
+	Mata<input class="www"  style="display:block;" name="mat" type="number">
+	Srpski<input class="www"  style="display:block;" name="srp"  type="number">
+	Engleski<input class="www"   style="display:block;" name="eng" type="number">
+	Fizika<input class="www"   style="display:block;" name="fiz" type="number">
+	Hemija<input class="www"   style="display:block;" name="hem" type="number">
+	Fizicko<input class="www"   style="display:block;" name="fizika" type="number">
+	<button id="butt" style="display:block;">Izracunaj</button>
+	<b>Prosek: </b><textarea disabled id="7" style="display:block;"></textarea>
+	<b>Uspeh: </b><textarea disabled id="8" style="display:block;"></textarea>
+	</div>
+	</div>
+	</body>
+	</html>

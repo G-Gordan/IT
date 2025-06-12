@@ -1,0 +1,55 @@
+ul.glavni-meni,
+ul.glavni-meni ul
+ {
+	margin:0;
+	padding:0;
+	list-style-type:none;
+}
+ul.glavni-meni > li{
+	display:inline-block;
+	position:relative;
+}
+ul.glavni-meni > li > a{
+	color:white;
+	padding:10px;
+}
+ul.glavni-meni > li > a:hover{
+	background-color:grey;
+}
+
+ul.glavni-meni ul{
+	display:none;
+}
+
+ul.glavni-meni > li:hover > ul {
+	display:block;
+	position:absolute;
+	left:0px;
+	top:100%;
+	background-color:grey;
+	width:200px;
+	z-index:9999;
+}
+ul.glavni-meni > li:hover > ul > li > a{
+	padding:20px;
+	display:block;
+	color:white;
+	
+}
+
+ul.glavni-meni > li:hover > ul > li:hover{
+	background-color:black;
+} 
+ul.glavni-meni > li:hover > ul > li:hover > a{
+	color:white;
+}
+
+
+
+
+
+
+
+
+
+

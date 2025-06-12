@@ -1,0 +1,2887 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_C0113]    Script Date: 22.12.2017 11:08:47 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+-- =============================================
+-- Author:		Daniel Simic
+-- Create date: 20.11.2012
+-- Last change: 20.05.2014
+-- Description:	GGP Programmierung -> Ersatz für Modul C0113 (MaterialAusgabe/Rückgabe)
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_C0113]
+	@p_Case_ varchar(50) = '',
+	@p_para1 varchar(50) = '',
+	@p_para2 varchar(50) = '',
+	@p_para3 varchar(2000) = '',
+	@p_RKEY_D17 numeric(10, 0) = NULL,
+	--@WHOUSE_LOC_PTR_D93_ numeric(10, 0) = NULL,
+	@p_SELECTED_RKEY_D20 numeric(10, 0) = NULL,
+	@p_newQUAN_ON_HAND_D20 numeric(20, 7) = NULL, 
+	@p_SELECTED_RKEY_D19 numeric(10, 0) = NULL,
+	@p_newQUAN_ON_HAND_D17 numeric(20, 7) = NULL, 
+	@p_newQUAN_ON_HAND_D19 numeric(20, 7) = NULL, 
+	@p_newYTD_USAGE_D17_D18 numeric(20, 7) = NULL,
+	@p_RKEY_D18 numeric(10, 0) = NULL,
+	@p_COMPUTER_NAME char(50) = '',
+	@p_NETWORK_USER char(50) = '',
+	@p_TDATE datetime = NULL,
+	@p_SRCE_PTR_D95 numeric(10, 0) = NULL,
+	@p_RKEY_D05 numeric(10, 0) = NULL,
+	@p_RKEY_D73 numeric(10, 0) = NULL,
+	@p_INVT_LOC_PTR_D95 numeric(10, 0) = NULL,
+	@p_TTIME numeric(10, 0) = 0,
+	@p_AUSGABE_MENGE numeric(20, 7) = NULL,
+	@p_ERGAENZUNG_NEUANSATZ char(1) = '',
+	@p_AUSGABE char(1)='',
+	@p_rueckgabeRKEY_D95 numeric(10, 0) = NULL,
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+
+DECLARE
+	@Case_ varchar(50),
+	@para1 varchar(50),
+	@para2 varchar(50),
+	@para3 varchar(2000),
+	@RKEY_D17 numeric(10, 0),
+	@SELECTED_RKEY_D20 numeric(10, 0),
+	@newQUAN_ON_HAND_D20 numeric(20, 7), 
+	@SELECTED_RKEY_D19 numeric(10, 0),
+	@newQUAN_ON_HAND_D17 numeric(20, 7), 
+	@newQUAN_ON_HAND_D19 numeric(20, 7), 
+	@newYTD_USAGE_D17_D18 numeric(20, 7),
+	@RKEY_D18 numeric(10, 0),
+	@COMPUTER_NAME char(50),
+	@NETWORK_USER char(50),
+	@TDATE datetime,
+	@SRCE_PTR_D95 numeric(10, 0),
+	@RKEY_D05 numeric(10, 0),
+	@RKEY_D73 numeric(10, 0),
+	@INVT_LOC_PTR_D95 numeric(10, 0),
+	@TTIME numeric(10, 0),
+	@AUSGABE_MENGE numeric(20, 7),
+	@ERGAENZUNG_NEUANSATZ char(1),
+	@AUSGABE char(1),
+	@rueckgabeRKEY_D95 numeric(10, 0)
+
+	SET @Case_ = @p_Case_
+	SET @para1 = @p_para1
+	SET @para2 = @p_para2
+	SET @para3 = @p_para3
+	SET @RKEY_D17 = @p_RKEY_D17
+	SET @SELECTED_RKEY_D20 = @p_SELECTED_RKEY_D20
+	SET @newQUAN_ON_HAND_D20 = @p_newQUAN_ON_HAND_D20
+	SET @SELECTED_RKEY_D19 = @p_SELECTED_RKEY_D19
+	SET @newQUAN_ON_HAND_D17 = @p_newQUAN_ON_HAND_D17
+	SET @newQUAN_ON_HAND_D19 = @p_newQUAN_ON_HAND_D19
+	SET @newYTD_USAGE_D17_D18 = @p_newYTD_USAGE_D17_D18
+	SET @RKEY_D18 = @p_RKEY_D18
+	SET @COMPUTER_NAME = @p_COMPUTER_NAME
+	SET @NETWORK_USER = @p_NETWORK_USER
+	SET @TDATE = @p_TDATE
+	SET @SRCE_PTR_D95 = @p_SRCE_PTR_D95
+	SET @RKEY_D05 = @p_RKEY_D05
+	SET @RKEY_D73 = @p_RKEY_D73
+	SET @INVT_LOC_PTR_D95 = @p_INVT_LOC_PTR_D95
+	SET @TTIME = @p_TTIME
+	SET @AUSGABE_MENGE = @p_AUSGABE_MENGE
+	SET @ERGAENZUNG_NEUANSATZ = @p_ERGAENZUNG_NEUANSATZ
+	SET @AUSGABE = @p_AUSGABE
+	SET @rueckgabeRKEY_D95 = @p_rueckgabeRKEY_D95
+
+	--#######################################################################
+	--TEST
+	/*IF @Case_ = 'TEST0'
+	BEGIN
+		SELECT CAST(@newQUAN_ON_HAND_D17_D19 AS varchar(50)) AS Res_STR
+	END
+	IF @Case_ = 'TEST'
+	BEGIN
+		SELECT * FROM DATA0001
+		SELECT  @OUTPUT_RES = @para1
+	
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_BACKLOG AS D17_QUAN_BACKLOG
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_BACKLOG <>
+					(SELECT SUM(D18.QUAN_IN_BACKLOG) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Achtung: Vorrat-Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		ELSE
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorrat-Menge zwischen Artikel und Lagerplätzen stimmt überein!'
+			
+		END
+		SELECT  @OUTPUT_RES = 'ENDE'
+	END
+	select quan_on_hand, YTD_USAGE from data0017 where rkey=45047
+	select YTD_QUAN_USAGE from data0018 where invent_ptr=45047 and whouse_ptr=4
+	select QUAN_ON_HAND from data0019 where inv_whouse_ptr=48315
+	select top 10 * from data0095 order by rkey desc
+	select top 10 * from data0207 where transaction_ptr in 
+	(select rkey from data0095) order by rkey desc
+	*/
+	--TEST
+	--#######################################################################
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+
+	IF @Case_ = 'DURCHSATZ_ZINNBARREN_HALBF'
+	BEGIN
+		SELECT TOP 1    
+			ISNULL((SUM(
+				(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+				/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)
+				)), 0) AS RES
+		FROM         dbo.DATA0006 INNER JOIN
+					  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+					  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+					  dbo.ARTIKELDATEN ON dbo.DATA0006.CUST_PART_PTR = dbo.ARTIKELDATEN.CUST_PART_PTR
+		WHERE    
+					--dbo.DATA0048.TDATE >= CONVERT(DATETIME, @para4, 103) 
+					--AND dbo.DATA0048.TDATE <= CONVERT(DATETIME, @para5, 103) 
+					dbo.DATA0034.DEPT_CODE = 'HBF-01-01' 
+					AND dbo.UF_ToDateTime(dbo.DATA0048.TTIME, dbo.DATA0048.TDATE) > (					
+																						SELECT TOP 1 dbo.UF_ToDateTime(dbo.DATA0095.TTIME, dbo.DATA0095.TRAN_DATE) 
+																						--FROM dbo.DATA0095
+																						FROM    dbo.DATA0095 INNER JOIN
+																								LIVE2.dbo.MatRueck_Transaktion ON 
+																								dbo.DATA0095.RKEY = LIVE2.dbo.MatRueck_Transaktion.D95_PTR
+																						WHERE
+																							dbo.DATA0095.TRAN_TP = 15
+																							AND
+																							dbo.DATA0095.INVT_PTR IN (1214, 71196, 71197, 74833)
+																							AND 
+																							LIVE2.dbo.MatRueck_Transaktion.Zusatzinfo = 'HAL Austausch'
+																						--ORDER BY dbo.DATA0095.TRAN_DATE DESC
+																						ORDER BY dbo.DATA0095.TRAN_DATE DESC, dbo.DATA0095.TTIME DESC
+																					)
+	END
+
+	IF @Case_ = 'DURCHSATZ_ZINNBARREN_HALBF_Kontrolle'
+	BEGIN
+		SELECT TOP 5
+			TranDatumVon,
+			TranDatumBis,
+			ISNULL((
+					SELECT TOP 1    
+						ISNULL((SUM(
+							(dbo.ARTIKELDATEN.ZuX * dbo.ARTIKELDATEN.ZuY * CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) 
+							/ dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT) / 1000000)
+							)), 0) AS RES
+					FROM         dbo.DATA0006 INNER JOIN
+								  dbo.DATA0048 ON dbo.DATA0006.RKEY = dbo.DATA0048.WO_PTR INNER JOIN
+								  dbo.DATA0034 ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+								  dbo.ARTIKELDATEN ON dbo.DATA0006.CUST_PART_PTR = dbo.ARTIKELDATEN.CUST_PART_PTR
+					WHERE    
+								--dbo.DATA0048.TDATE >= CONVERT(DATETIME, @para4, 103) 
+								--AND dbo.DATA0048.TDATE <= CONVERT(DATETIME, @para5, 103) 
+								dbo.DATA0034.DEPT_CODE = 'HBF-01-01' 
+								AND dbo.UF_ToDateTime(dbo.DATA0048.TTIME, dbo.DATA0048.TDATE) > TranDatumVon
+								AND dbo.UF_ToDateTime(dbo.DATA0048.TTIME, dbo.DATA0048.TDATE) < TranDatumBis
+			), 0) AS Durchsatz
+		FROM
+		(
+			SELECT 
+				dbo.UF_ToDateTime(dbo.DATA0095.TTIME, dbo.DATA0095.TRAN_DATE) AS TranDatumVon,
+			(
+				SELECT TOP 1
+					dbo.UF_ToDateTime(D95.TTIME, D95.TRAN_DATE) AS RES
+				FROM    dbo.DATA0095 AS D95 INNER JOIN
+						LIVE2.dbo.MatRueck_Transaktion ON 
+						D95.RKEY = LIVE2.dbo.MatRueck_Transaktion.D95_PTR
+				WHERE
+					D95.TRAN_TP = 15
+					AND D95.INVT_PTR IN (1214, 71196, 71197, 74833)
+					AND LIVE2.dbo.MatRueck_Transaktion.Zusatzinfo = 'HAL Austausch'
+					AND dbo.UF_ToDateTime(D95.TTIME, D95.TRAN_DATE) > dbo.UF_ToDateTime(dbo.DATA0095.TTIME, dbo.DATA0095.TRAN_DATE)
+				ORDER BY 
+					D95.TRAN_DATE ASC, 
+					D95.TTIME ASC
+			) AS TranDatumBis
+			FROM    dbo.DATA0095 INNER JOIN
+					LIVE2.dbo.MatRueck_Transaktion ON 
+					dbo.DATA0095.RKEY = LIVE2.dbo.MatRueck_Transaktion.D95_PTR
+			WHERE
+				dbo.DATA0095.TRAN_TP = 15
+				AND dbo.DATA0095.INVT_PTR IN (1214, 71196, 71197, 74833)
+				AND LIVE2.dbo.MatRueck_Transaktion.Zusatzinfo = 'HAL Austausch'
+			--ORDER BY 
+			--	dbo.DATA0095.TRAN_DATE DESC, 
+			--	dbo.DATA0095.TTIME DESC
+		) AS tblHAL
+		WHERE ISNULL(TranDatumBis, '') <> ''
+		ORDER BY
+			TranDatumVon DESC
+	END
+
+	IF @Case_ = 'LTZAUS_ZINNBARREN_HALBF'
+	BEGIN  
+		--SELECT TOP 1 CONVERT(varchar(20), dbo.UF_ToDateTime(TTIME, TRAN_DATE), 113) AS RES
+		--FROM dbo.DATA0095
+		--WHERE
+		--	TRAN_TP = 15
+		--	AND
+		--	INVT_PTR = 1214
+		--ORDER BY TRAN_DATE DESC
+		SELECT TOP 1 CONVERT(DATETIME, CONVERT(varchar(20), dbo.UF_ToDateTime(TTIME, TRAN_DATE), 113), 103) AS RES
+		FROM    dbo.DATA0095 INNER JOIN
+				LIVE2.dbo.MatRueck_Transaktion ON 
+				dbo.DATA0095.RKEY = LIVE2.dbo.MatRueck_Transaktion.D95_PTR
+		WHERE
+			dbo.DATA0095.TRAN_TP = 15
+			AND
+			dbo.DATA0095.INVT_PTR IN (1214, 71196, 71197, 74833)
+			AND 
+			LIVE2.dbo.MatRueck_Transaktion.Zusatzinfo = 'HAL Austausch'
+		ORDER BY dbo.DATA0095.TRAN_DATE DESC
+	END
+
+	--In diesem Bereich wird ein Teil der Materialrückmelde Daten parallel zu Paradigm gespeichert. 
+	--Es handelt sich dabei um Anwenderbemerkung bei der Materialausgabe- Rückgabe, Abteilung/Anlage Auswahl usw.
+	IF @Case_ = 'INSERT_UPDATE_ABTEILUNG_ANLAGE_TRANSBEMERKUNG'
+	BEGIN
+		--SELECT CAST(@para1 AS numeric(10, 0)) AS Res1, CAST(@para2 AS numeric(10, 0)) AS Res2, 'AAA' As Res3
+		IF ISNUMERIC(CAST(@para1 AS numeric(10, 0)) ) > 0 AND ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+		BEGIN
+			--Existiert der Eintrag schon (z.B. wenn es eine Rückgabe ist)
+			IF Exists(SELECT * FROM  LIVE2.dbo.MatRueck_Transaktion WHERE D95_PTR = @rueckgabeRKEY_D95)
+				AND @rueckgabeRKEY_D95 <> 0
+			BEGIN --Rückgabe
+				--#######################################################################################
+				BEGIN TRANSACTION  --####################################################################
+				--#######################################################################################
+				UPDATE 
+					LIVE2.dbo.MatRueck_Transaktion 
+				SET 
+					TransBemerkung = CAST(@para3 AS varchar(500)),
+					Zusatzinfo = @COMPUTER_NAME
+				WHERE 
+					D95_PTR = @rueckgabeRKEY_D95
+				IF @@ERROR <> 0 
+				BEGIN
+					--#######################################################################################
+					ROLLBACK TRANSACTION  --#################################################################
+					--#######################################################################################
+					SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION: Update TransBemerkung'
+					RETURN @@ERROR
+				END
+				ELSE
+				BEGIN
+					SELECT  @OUTPUT_RES = 'OK'
+				END
+				--#######################################################################################
+				COMMIT TRANSACTION  --###################################################################
+				--#######################################################################################
+			END
+			ELSE 
+			BEGIN --Ausgabe
+				--#######################################################################################
+				BEGIN TRANSACTION  --####################################################################
+				--#######################################################################################
+				INSERT INTO LIVE2.dbo.MatRueck_Transaktion  
+				(
+					Abteilung_PTR,
+					Anlage_PTR,
+					D95_PTR,
+					D207_PTR,
+					D17_Art_PTR,
+					D34_Dept_PTR,
+					Benutzer,
+					Ausgabe,
+					AppMSSQLDatenbank,
+					TransBemerkung,
+					Trans_DatumZeit,
+					GoldGehalt,
+					Zusatzinfo
+				)
+				VALUES 
+				(
+					CAST(@para1 AS numeric(10, 0)),
+					CAST(@para2 AS numeric(10, 0)),
+					@rueckgabeRKEY_D95,
+					@RKEY_D18, --wird als Zeiger D207_PTR missbraucht!!!
+					@RKEY_D17, 
+					@SRCE_PTR_D95, --wird als Zeiger D34_Dept_PTR missbraucht!!!
+					@NETWORK_USER,
+					@AUSGABE,
+					db_name(),
+					CAST(@para3 AS varchar(500)),
+					@TDATE,
+					@AUSGABE_MENGE, --wird für die Goldgehalt Eingabe missbraucht!!!
+					@COMPUTER_NAME --wird für die Zusatzinfo Eingabe missbraucht!!!
+				)
+				IF @@ERROR <> 0 
+				BEGIN
+					--#######################################################################################
+					ROLLBACK TRANSACTION  --#################################################################
+					--#######################################################################################
+					SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION: Insert'
+					RETURN @@ERROR
+				END
+				ELSE
+				BEGIN
+					SELECT  @OUTPUT_RES = 'OK'
+				END
+				--#######################################################################################
+				COMMIT TRANSACTION  --###################################################################
+				--#######################################################################################
+			END
+		END
+		ELSE
+		BEGIN
+			SELECT @OUTPUT_RES = 'ABTEILUNG- ANLAGEZEIGER NICHT VORHANDEN'
+			RETURN @@ERROR
+		END
+	END
+
+	IF @Case_ = 'SELECT_ABTEILUNG_ANLAGE_TRANSBEMERKUNG'
+	BEGIN
+		IF ISNUMERIC(CAST(@para1 AS numeric(10, 0)) ) > 0
+		BEGIN
+			SELECT TOP 1 * FROM LIVE2.dbo.MatRueck_Transaktion WHERE D95_PTR = CAST(@para1 AS numeric(10, 0))
+		END
+	END
+
+	IF @Case_ = 'SELECT_ABTEILUNG_ANLAGE_TRANSZUSATZINFO'
+	BEGIN
+		IF ISNUMERIC(CAST(@para1 AS numeric(10, 0)) ) > 0
+		BEGIN
+			SELECT TOP 1 * FROM LIVE2.dbo.MatRueck_Transaktion WHERE D95_PTR = CAST(@para1 AS numeric(10, 0))
+		END
+	END
+
+	IF @Case_ = 'CHECK_nuchtBestandsgefuerteArt'
+	BEGIN
+		SELECT     dbo.DATA0005.EMPLOYEE_NAME, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0017.TTYPE
+		FROM         LIVE2.dbo.MatRueck_MaterialZuAnlage INNER JOIN
+							  dbo.DATA0017 ON LIVE2.dbo.MatRueck_MaterialZuAnlage.INV_PTR = dbo.DATA0017.RKEY INNER JOIN
+							  dbo.DATA0005 INNER JOIN
+							  dbo.DATA0034 ON dbo.DATA0005.RKEY = dbo.DATA0034.SUPERVISOR_PTR INNER JOIN
+							  LIVE2.dbo.MatRueck_AnlageAbteilung ON dbo.DATA0034.RKEY = LIVE2.dbo.MatRueck_AnlageAbteilung.D34_PTR ON 
+							  LIVE2.dbo.MatRueck_MaterialZuAnlage.Anlage_PTR = LIVE2.dbo.MatRueck_AnlageAbteilung.Anlage_PTR
+		WHERE     (dbo.DATA0005.EMPLOYEE_NAME = 'Jürgen Hagemann') AND (dbo.DATA0017.TTYPE = 'R')
+	END
+
+	IF @Case_ = 'CHECK_BATCH_TRANSACTIONS_15_16'
+	BEGIN
+		--SELECT     TOP 100 PERCENT DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.DATA0095.TRAN_DATE)) AS TRAN_DATE, dbo.DATA0017.INV_PART_NUMBER, 
+		--					  dbo.DATA0017.INV_PART_DESCRIPTION, CAST(dbo.DATA0095.QUANTITY AS NUMERIC(10, 2)) AS QUANTITY, dbo.DATA0034.DEPT_NAME, 
+		--					  dbo.DATA0005.EMPLOYEE_NAME, CASE WHEN dbo.DATA0095.QUANTITY < 0 THEN 'Rückgabe' ELSE 'Ausgabe' END AS TranTyp, 
+		--					  dbo.DATA0207.QUANTITY * dbo.DATA0207.STANDARD_COST AS Wert, dbo.DATA0095.REFERENCE_NUMBER
+		--FROM         dbo.DATA0017 INNER JOIN
+		--					  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+		--					  dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY INNER JOIN
+		--					  dbo.DATA0207 ON dbo.DATA0095.RKEY = dbo.DATA0207.TRANSACTION_PTR LEFT OUTER JOIN
+		--					  dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY
+		--WHERE     (dbo.DATA0095.TRAN_TP = 15 OR dbo.DATA0095.TRAN_TP = 16) 
+		--		AND (dbo.DATA0017.S_B_N = 'B') 
+		--		AND (dbo.DATA0095.TRAN_DATE = DATEADD(dd, - 1, DATEDIFF(dd, 0, GETDATE())))
+		--ORDER BY dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION
+		--
+		--Es werden nicht die Standardkosten sonder der Preis aus der letzten Bestellung genommen 
+		--(s. Problem vom 13.05.2014 mit Kupferfolie 35 my / 310x460, gelocht)
+
+		--SELECT     TOP 100 PERCENT DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.DATA0095.TRAN_DATE)) AS TRAN_DATE, dbo.DATA0017.INV_PART_NUMBER, 
+		--		--dbo.DATA0017.INV_PART_DESCRIPTION, 
+		--		CASE 
+		--			WHEN ISNULL(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+		--				dbo.DATA0017.LONG_INVENTORY_PART_NUMBER 
+		--			ELSE dbo.DATA0017.INV_PART_DESCRIPTION 
+		--		END  AS INV_PART_DESCRIPTION,
+		--		CAST(ISNULL(dbo.DATA0095.QUANTITY, 0)/dbo.DATA0017.STOCK_PURCH AS NUMERIC(10, 2)) AS QUANTITY, dbo.DATA0034.DEPT_NAME, 
+		--					  dbo.DATA0005.EMPLOYEE_NAME, CASE WHEN ISNULL(dbo.DATA0095.QUANTITY, 0) < 0 THEN 'Rückgabe' ELSE 'Ausgabe' END AS TranTyp, 
+		--					  --dbo.DATA0207.QUANTITY * dbo.DATA0207.STANDARD_COST AS Wert, 
+		--					ISNULL(dbo.DATA0207.QUANTITY, 0)/dbo.DATA0017.STOCK_PURCH  * ISNULL((
+		--											SELECT     TOP 1 ISNULL(D71.PRICE * D70.EXCHANGE_RATE, 0) AS Preis
+		--											FROM         dbo.DATA0071 AS D71 INNER JOIN
+		--																  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+		--											WHERE     D71.INVT_PTR = dbo.DATA0017.RKEY
+		--											ORDER BY D71.RKEY DESC), 0) AS Wert, 
+		--					dbo.DATA0095.REFERENCE_NUMBER,dbo.DATA0017.RKEY
+		--FROM         dbo.DATA0017 INNER JOIN
+		--					  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+		--					  dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY INNER JOIN
+		--					  dbo.DATA0207 ON dbo.DATA0095.RKEY = dbo.DATA0207.TRANSACTION_PTR LEFT OUTER JOIN
+		--					  dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY
+		--WHERE     (dbo.DATA0095.TRAN_TP = 15 OR dbo.DATA0095.TRAN_TP = 16) 
+		--		AND (dbo.DATA0017.S_B_N = 'B') 
+		--		AND (dbo.DATA0095.TRAN_DATE = DATEADD(dd, - 1, DATEDIFF(dd, 0, GETDATE())))
+		--		--AND (dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, '11.10.2014', 103))
+		--ORDER BY dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION
+		SELECT     TOP 100 PERCENT dbo.DATA0095.TRAN_TP, DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.DATA0095.TRAN_DATE)) AS TRAN_DATE, dbo.DATA0017.INV_PART_NUMBER, 
+				--dbo.DATA0017.INV_PART_DESCRIPTION, 
+				CASE 
+					WHEN ISNULL(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+						dbo.DATA0017.LONG_INVENTORY_PART_NUMBER 
+					ELSE ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') 
+				END  AS INV_PART_DESCRIPTION,
+				CAST(ISNULL(dbo.DATA0095.QUANTITY, 0)/dbo.DATA0017.STOCK_PURCH AS NUMERIC(10, 2)) AS QUANTITY, dbo.DATA0034.DEPT_NAME, 
+							  dbo.DATA0005.EMPLOYEE_NAME, 
+							CASE 
+								WHEN dbo.DATA0095.TRAN_TP = 15 THEN
+									'Ausgabe'
+								ELSE
+									CASE
+										WHEN dbo.DATA0095.TRAN_TP = 16 THEN
+											'Rückgabe'
+										ELSE
+											CASE
+												WHEN ISNULL(dbo.DATA0095.QUANTITY, 0) < 0 THEN
+													'Schwund'
+												ELSE
+													'Neg.-Schwund'
+											END
+									END
+							END AS TranTyp, 
+							--	WHEN ISNULL(dbo.DATA0095.QUANTITY, 0) < 0 THEN 
+							--		'Rückgabe' 
+							--	ELSE 
+							--		'Ausgabe' 
+							--END AS TranTyp, 
+							  --dbo.DATA0207.QUANTITY * dbo.DATA0207.STANDARD_COST AS Wert, 
+							ISNULL(dbo.DATA0207.QUANTITY, 0)/dbo.DATA0017.STOCK_PURCH  * ISNULL((
+													SELECT     TOP 1 ISNULL(D71.PRICE / D70.EXCHANGE_RATE, 0) AS Preis
+													FROM         dbo.DATA0071 AS D71 INNER JOIN
+																		  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+													WHERE     D71.INVT_PTR = dbo.DATA0017.RKEY
+													ORDER BY D71.RKEY DESC), dbo.DATA0017.STOCK_PURCH*dbo.DATA0017.STD_COST) AS Wert, 
+							ISNULL(ISNULL(dbo.DATA0207.QUANTITY, dbo.DATA0095.QUANTITY)/dbo.DATA0017.STOCK_PURCH*dbo.DATA0017.STD_COST, 0) AS STD_COST,
+							dbo.DATA0095.REFERENCE_NUMBER,dbo.DATA0017.RKEY, dbo.DATA0020.BATCH_NO
+		--FROM         dbo.DATA0017 INNER JOIN
+		--					  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+		--					  dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY LEFT OUTER JOIN
+		--					  dbo.DATA0207 ON dbo.DATA0095.RKEY = dbo.DATA0207.TRANSACTION_PTR LEFT OUTER JOIN
+		--					  dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY
+		FROM         dbo.DATA0017 INNER JOIN
+                      dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+                      dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY INNER JOIN
+                      dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+                      dbo.DATA0017 AS DATA0017_1 ON dbo.DATA0020.INVENTORY_POINTER = DATA0017_1.RKEY LEFT OUTER JOIN
+                      dbo.DATA0207 ON dbo.DATA0095.RKEY = dbo.DATA0207.TRANSACTION_PTR LEFT OUTER JOIN
+                      dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY
+		WHERE     dbo.DATA0095.TRAN_TP IN (15, 16, 23) 
+				AND (dbo.DATA0017.S_B_N = 'B') 
+				AND (dbo.DATA0095.TRAN_DATE >= DATEADD(dd, - 1, DATEDIFF(dd, 0, GETDATE())))
+				--AND (dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, '19.02.2015', 103))
+		ORDER BY dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '')
+	END
+
+	--
+	IF @Case_ = 'ABTEILUNG_ANLAGE'
+	BEGIN
+		DECLARE @pSearchTypeAbtAnlage varchar(50)
+		SET @pSearchTypeAbtAnlage = @para1
+
+		IF @pSearchTypeAbtAnlage = 'SELECT_ABTEILUNGEN'
+		BEGIN
+			SELECT * FROM LIVE2.dbo.MatRueck_Abteilung WHERE Aktiviert=1 ORDER BY Abteilung
+		END
+		IF @pSearchTypeAbtAnlage = 'SELECT_ANLAGEN'
+		BEGIN
+			SELECT * FROM LIVE2.dbo.MatRueck_Anlage ORDER BY Anlage
+		END
+		IF @pSearchTypeAbtAnlage = 'SELECT_ABTEILUNGENANLAGEN'
+		BEGIN
+			SELECT * FROM LIVE2.dbo.MatRueck_AnlageAbteilung
+		END
+		IF @pSearchTypeAbtAnlage = 'SELECT_ABTEILUNGENANLAGENNAMEN'
+		BEGIN
+			SELECT     TOP 100 PERCENT LIVE2.dbo.MatRueck_Anlage.ID, LIVE2.dbo.MatRueck_Abteilung.Abteilung, LIVE2.dbo.MatRueck_Anlage.Anlage
+			FROM         LIVE2.dbo.MatRueck_Abteilung INNER JOIN
+				LIVE2.dbo.MatRueck_AnlageAbteilung ON LIVE2.dbo.MatRueck_Abteilung.ID = LIVE2.dbo.MatRueck_AnlageAbteilung.Abteilung_PTR INNER JOIN
+				LIVE2.dbo.MatRueck_Anlage ON LIVE2.dbo.MatRueck_AnlageAbteilung.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+			WHERE LIVE2.dbo.MatRueck_Abteilung.Aktiviert=1
+			ORDER BY LIVE2.dbo.MatRueck_Abteilung.Abteilung
+		END
+		IF @pSearchTypeAbtAnlage = 'SELECT_ANLAGE_FILTER'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT 
+					LIVE2.dbo.MatRueck_Anlage.ID, 
+					LIVE2.dbo.MatRueck_Anlage.Anlage, 
+					LIVE2.dbo.MatRueck_AnlageAbteilung.D34_PTR
+				FROM         
+					LIVE2.dbo.MatRueck_AnlageAbteilung INNER JOIN
+					LIVE2.dbo.MatRueck_Anlage ON 
+					LIVE2.dbo.MatRueck_AnlageAbteilung.Anlage_PTR = LIVE2.dbo.MatRueck_Anlage.ID
+				WHERE     
+					(LIVE2.dbo.MatRueck_AnlageAbteilung.Abteilung_PTR = CAST(@para2 AS numeric(10, 0)) )
+			END
+		END
+		IF @pSearchTypeAbtAnlage = 'abteilungstransaktionen'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT LIVE2.dbo.MatRueck_AnlageAbteilung.D34_PTR
+				FROM LIVE2.dbo.MatRueck_AnlageAbteilung
+				WHERE LIVE2.dbo.MatRueck_AnlageAbteilung.Abteilung_PTR = CAST(@para2 AS numeric(10, 0))   
+			END
+		END
+		IF @pSearchTypeAbtAnlage = 'select_abteilung_anlage_ptr'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT LIVE2.dbo.MatRueck_AnlageAbteilung.Abteilung_PTR,
+					LIVE2.dbo.MatRueck_AnlageAbteilung.Anlage_PTR
+				FROM LIVE2.dbo.MatRueck_AnlageAbteilung
+				WHERE LIVE2.dbo.MatRueck_AnlageAbteilung.D34_PTR = CAST(@para2 AS numeric(10, 0))   
+			END
+		END
+	END
+
+	--Dieser Abschnitt liefert alle Lager aus der Datenbank
+	--Gebraucht wird es in der Applikation um alle Lager in der Liste anzuzeigen damit später Ausgabe erfolgen kann
+	IF @Case_ = 'SELECT_LAGER'
+	BEGIN
+		DECLARE @pSearchTypeLager varchar(50)
+		SET @pSearchTypeLager = @para1
+		IF @pSearchTypeLager = 'lagerliste'
+		BEGIN
+			SELECT RKEY, WAREHOUSE_CODE, WAREHOUSE_NAME FROM DATA0015 WITH (NOLOCK)
+			WHERE ((DATA0015.WAREHOUSE_TYPE = 0) or (DATA0015.WAREHOUSE_TYPE = 1)) AND
+			(Data0015.ACTIVE_FLAG = 0 OR Data0015.ACTIVE_FLAG IS NULL) AND
+			Data0015.WAREHOUSE_CODE > ' ' ORDER BY WAREHOUSE_CODE
+		END
+		IF @pSearchTypeLager = 'artikellagerplatz'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0 AND ISNUMERIC(CAST(@para3 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT dbo.DATA0019.RKEY AS DATA0019RKEY, dbo.DATA0019.INVENTORY_PTR AS DATA0017RKEY,
+				dbo.DATA0019.QUAN_ON_HAND - dbo.DATA0019.QUAN_ALLOCATED AS Verfuegbar, 
+				dbo.DATA0015.RKEY AS DATA0015RKEY, dbo.DATA0016.RKEY AS DATA0016RKEY, dbo.DATA0016.CODE 
+				FROM dbo.DATA0019 INNER JOIN dbo.DATA0018 ON dbo.DATA0019.INV_WHOUSE_PTR = dbo.DATA0018.RKEY 
+				INNER JOIN dbo.DATA0015 ON dbo.DATA0018.WHOUSE_PTR = dbo.DATA0015.RKEY INNER 
+				JOIN  dbo.DATA0016 ON dbo.DATA0019.LOCATION_PTR = dbo.DATA0016.RKEY 
+				WHERE (dbo.DATA0019.INVENTORY_PTR = CAST(@para2 AS numeric(10, 0)))
+				AND (dbo.DATA0015.RKEY = CAST(@para3 AS numeric(10, 0))) ORDER BY Verfuegbar DESC
+			END
+		END
+		IF @pSearchTypeLager = 'artikellagerplatz_konsi_summe'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0 AND ISNUMERIC(CAST(@para3 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT ISNULL(SUM(QUANTITY), 0) AS CONSIGNMENT_STOCK FROM DATA0340 
+				WITH (NOLOCK) WHERE DATA0017_PTR = CAST(@para2 AS numeric(10, 0)) 
+				AND DATA0015_PTR = CAST(@para3 AS numeric(10, 0)) AND INSP_FLAG = 0
+			END
+		END
+		IF @pSearchTypeLager = 'artikellagerplatz_konsi'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0 AND ISNUMERIC(CAST(@para3 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT dbo.DATA0340.RKEY AS DATA0019RKEY, dbo.DATA0340.DATA0017_PTR AS DATA0017RKEY, 
+						dbo.DATA0340.QUANTITY AS Verfuegbar, dbo.DATA0340.DATA0015_PTR AS DATA0015RKEY, 
+						dbo.DATA0340.DATA0016_PTR AS DATA0016RKEY, dbo.DATA0016.CODE
+				FROM dbo.DATA0340 WITH (NOLOCK) INNER JOIN dbo.DATA0016 
+						ON dbo.DATA0340.DATA0016_PTR = dbo.DATA0016.RKEY
+				WHERE  dbo.DATA0340.DATA0017_PTR = CAST(@para2 AS numeric(10, 0))
+						AND dbo.DATA0340.DATA0015_PTR = CAST(@para3 AS numeric(10, 0)) 
+						AND dbo.DATA0340.INSP_FLAG = 0
+				ORDER BY dbo.DATA0340.DATA0017_PTR, dbo.DATA0340.DATA0015_PTR
+			END
+		END
+		IF @pSearchTypeLager = 'lagerplatz'
+		BEGIN
+			SELECT TOP 1 RKEY FROM dbo.DATA0019 WHERE RKEY = @para2
+		END
+		IF @pSearchTypeLager = 'konsilagerplatz'
+		BEGIN
+			IF Exists(
+					SELECT * FROM  DATA0019  WITH (NOLOCK)  
+					WHERE INVENTORY_PTR = @RKEY_D17 AND INV_WHOUSE_PTR = CAST(@para2 AS numeric(10, 0)) 
+					AND LOCATION_PTR = 
+						(SELECT TOP 1 DATA0016_PTR FROM DATA0340 WHERE RKEY = CAST(@para3 AS numeric(10, 0)))
+					)
+			BEGIN
+				SELECT TOP 1 RKEY FROM  DATA0019  WITH (NOLOCK)  
+				WHERE INVENTORY_PTR = @RKEY_D17 AND INV_WHOUSE_PTR = CAST(@para2 AS numeric(10, 0)) 
+				AND LOCATION_PTR = 
+					(SELECT TOP 1 DATA0016_PTR FROM DATA0340 WHERE RKEY = CAST(@para3 AS numeric(10, 0)))
+			END
+			ELSE
+			BEGIN
+				--Wenn in DATA0019 kein Datensatz vorhanden ist, dann einfügen (so wird's auch in Paradigm gemacht)
+				--#######################################################################################
+				BEGIN TRANSACTION  --####################################################################
+				--#######################################################################################
+				DECLARE 
+						@pIDENTITY_D19 INT,
+						@pINV_WHOUSE_PTR FLOAT,
+						@pLOCATION_PTR FLOAT
+				SET @pINV_WHOUSE_PTR = CAST(@para2 AS FLOAT)
+				SET @pLOCATION_PTR = CAST((SELECT TOP 1 DATA0016_PTR FROM DATA0340 WHERE RKEY = CAST(@para3 AS numeric(10, 0))) AS FLOAT)
+
+				EXEC SP_INSERTDATA0019 
+									@RKEY_D17, 
+									@pINV_WHOUSE_PTR, 
+									@pLOCATION_PTR, 
+									0, 
+									0, 
+									NULL, 
+									@DATA0019RKEY = @pIDENTITY_D19 OUTPUT
+				IF @@ERROR <> 0 
+				BEGIN
+					--#######################################################################################
+					ROLLBACK TRANSACTION  --#################################################################
+					--#######################################################################################
+					SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0019 (Konsi)...'
+					RETURN @@ERROR
+				END
+				ELSE
+				BEGIN
+					--#######################################################################################
+					COMMIT TRANSACTION  --###################################################################
+					--#######################################################################################
+					--SELECT @RKEY_D17, @pINV_WHOUSE_PTR, @pLOCATION_PTR
+					SELECT @pIDENTITY_D19 AS RKEY
+
+				END
+			END
+		END
+		IF @pSearchTypeLager = 'D18'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0 AND ISNUMERIC(CAST(@para3 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT * FROM DATA0018 WHERE WHOUSE_PTR = CAST(@para2 AS numeric(10, 0))
+				AND INVENT_PTR = CAST(@para3 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeLager = 'YTD_QUAN_USAGE_D18'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 YTD_QUAN_USAGE FROM DATA0018 WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+	END
+	--Hiermit kann die Applikation Paradigm Benutzer setzen. Die User-Info wird dann bei der Transaktion benötigt
+	IF @Case_ = 'SELECT_MITARBEITER'
+	BEGIN
+		DECLARE @pSearchTypeEmpl varchar(50)
+		SET @pSearchTypeEmpl = @para1
+		IF @pSearchTypeEmpl = 'auto'
+		BEGIN
+			SELECT dbo.DATA0005.EMPL_CODE, dbo.DATA0073.USER_LOGIN_NAME, dbo.DATA0073.USER_ID, 
+			dbo.DATA0005.RKEY AS DATA0005RKEY, dbo.DATA0073.RKEY AS DATA0073RKEY, dbo.DATA0005.EMPLOYEE_NAME
+            FROM dbo.DATA0005 WITH (NOLOCK) INNER JOIN dbo.DATA0073 
+			ON dbo.DATA0005.RKEY = dbo.DATA0073.EMPLOYEE_PTR
+            WHERE UPPER(USER_LOGIN_NAME) =UPPER(RTRIM(@para2))
+		END
+		IF @pSearchTypeEmpl = 'last_tran'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT dbo.DATA0005.EMPL_CODE, dbo.DATA0073.USER_LOGIN_NAME, dbo.DATA0073.USER_ID, 
+				dbo.DATA0005.RKEY AS DATA0005RKEY, dbo.DATA0073.RKEY AS DATA0073RKEY, dbo.DATA0005.EMPLOYEE_NAME
+				FROM dbo.DATA0005 WITH (NOLOCK) INNER JOIN dbo.DATA0073 
+				ON dbo.DATA0005.RKEY = dbo.DATA0073.EMPLOYEE_PTR
+				WHERE dbo.DATA0005.RKEY = CAST(@para2 AS numeric(10, 0)) 
+			END
+		END
+		IF @pSearchTypeEmpl = 'list'
+		BEGIN
+			--IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			--BEGIN
+				SELECT DATA0005.ABBR_NAME, dbo.DATA0005.RKEY AS DATA0005RKEY, dbo.DATA0073.RKEY AS DATA0073RKEY,dbo.DATA0005.EMPL_CODE, dbo.DATA0005.EMPLOYEE_NAME, dbo.DATA0073.USER_LOGIN_NAME
+				FROM dbo.DATA0005 WITH (NOLOCK) INNER JOIN dbo.DATA0073 ON dbo.DATA0005.RKEY = dbo.DATA0073.EMPLOYEE_PTR 
+				WHERE dbo.DATA0005.ACTIVE_FLAG = 'Y' ORDER BY DATA0005.ABBR_NAME --dbo.DATA0073.USER_LOGIN_NAME
+			--END
+		END
+		IF @pSearchTypeEmpl = 'manual'
+		BEGIN
+			SELECT dbo.DATA0005.EMPL_CODE, dbo.DATA0073.USER_LOGIN_NAME, dbo.DATA0073.USER_ID, 
+			dbo.DATA0005.RKEY AS DATA0005RKEY, dbo.DATA0073.RKEY AS DATA0073RKEY, dbo.DATA0005.EMPLOYEE_NAME
+            FROM dbo.DATA0005 WITH (NOLOCK) INNER JOIN dbo.DATA0073 
+			ON dbo.DATA0005.RKEY = dbo.DATA0073.EMPLOYEE_PTR
+            WHERE dbo.DATA0005.EMPL_CODE = @para2
+		END
+	END
+	IF @Case_ = 'SELECT_TRANSAKTIONEN'
+	BEGIN
+		DECLARE @pSearchTypeTran varchar(50)
+		SET @pSearchTypeTran = @para1
+		IF @pSearchTypeTran = 'sum_quan_per_year'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 SUM(dbo.DATA0095.QUANTITY) AS Sum_Quan
+				FROM dbo.DATA0017 INNER JOIN
+					 dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+				WHERE (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)))
+						AND (YEAR(dbo.DATA0095.TRAN_DATE) = YEAR(GETDATE())) AND (dbo.DATA0095.TRAN_TP = 15 OR
+						 dbo.DATA0095.TRAN_TP = 16 OR dbo.DATA0095.TRAN_TP = 23)
+			END
+		END
+		IF @pSearchTypeTran = 'sum_quan_per_month'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 SUM(dbo.DATA0095.QUANTITY) AS Sum_Quan, 
+					RTRIM(ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '')) + ' (' + RTRIM(dbo.DATA0017.INV_PART_NUMBER) + ')' AS INV_PART
+				FROM dbo.DATA0017 INNER JOIN
+					 dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+				WHERE (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)))
+						AND (YEAR(dbo.DATA0095.TRAN_DATE) = YEAR(GETDATE())) AND (dbo.DATA0095.TRAN_TP = 15 OR
+						 dbo.DATA0095.TRAN_TP = 16 OR dbo.DATA0095.TRAN_TP = 23) AND (MONTH(dbo.DATA0095.TRAN_DATE) = MONTH(GETDATE()))
+				GROUP BY RTRIM(ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '')) + ' (' + RTRIM(dbo.DATA0017.INV_PART_NUMBER) + ')'
+			END
+		END
+		IF @pSearchTypeTran = 'letzte_ausgabetransaktion' --...um Inventurkorrektur ausführen zu können
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 RKEY FROM DATA0095 
+				WHERE TRAN_TP=15 and QTY_RETURNED=0 and INVT_PTR=CAST(@para2 AS numeric(10, 0))
+				ORDER BY RKEY DESC
+			END
+		END
+		IF @pSearchTypeTran = 'letzter_EK_preis'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 ISNULL(PRICE, 0) FROM DATA0071 
+				WHERE INVT_PTR = CAST(@para2 AS numeric(10, 0))
+				ORDER BY RKEY DESC
+			END
+		END
+		IF @pSearchTypeTran = 'letzter_EK_Preis_oder_Stammpreis'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				DECLARE @p_letzterEKPreis float
+				SET @p_letzterEKPreis = ISNULL(
+										(SELECT TOP 1 ISNULL(PRICE, 0) FROM DATA0071 
+										WHERE INVT_PTR = CAST(@para2 AS numeric(10, 0))
+										ORDER BY RKEY DESC)
+										, 0)
+				IF @p_letzterEKPreis > 0
+				BEGIN
+					SELECT TOP 1 ISNULL(PRICE, 0) FROM DATA0071 
+					WHERE INVT_PTR = CAST(@para2 AS numeric(10, 0))
+					ORDER BY RKEY DESC
+				END
+				ELSE
+				BEGIN
+					SELECT STD_COST FROM DATA0017 WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+				END
+			END
+		END
+		IF @pSearchTypeTran = 'curr_date'
+		BEGIN
+			--SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			--AND dbo.DATA0095.TRAN_DATE = DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE())) ORDER BY TRAN_DATE DESC, TTIME DESC
+			SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			AND DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.DATA0095.TRAN_DATE ))= DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE())) ORDER BY TRAN_DATE DESC, TTIME DESC
+		END
+		IF @pSearchTypeTran = 'curr_date_dept'
+		BEGIN
+			--SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			--AND dbo.DATA0095.TRAN_DATE = Convert(varchar,Getdate(),104) 
+			--AND (SRCE_PTR = @para2) ORDER BY TRAN_DATE DESC, TTIME DESC
+			SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			AND DATEADD(dd, 0, DATEDIFF(dd, 0, dbo.DATA0095.TRAN_DATE ))= DATEADD(dd, 0, DATEDIFF(dd, 0, GETDATE())) 
+			AND (SRCE_PTR = CAST(@para2 AS numeric(10, 0))) ORDER BY TRAN_DATE DESC, TTIME DESC
+		END
+		IF @pSearchTypeTran = 'from_date'
+		BEGIN
+			--SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			--AND dbo.DATA0095.TRAN_DATE >= Convert(varchar,@para3,104) ORDER BY TRAN_DATE DESC, TTIME DESC
+			SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			AND dbo.DATA0095.TRAN_DATE >= DATEADD(dd, 0, DATEDIFF(dd, 0, Convert(varchar,@para3,104))) ORDER BY TRAN_DATE DESC, TTIME DESC
+		END
+		IF @pSearchTypeTran = 'from_date_dept'
+		BEGIN
+			--SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			--AND dbo.DATA0095.TRAN_DATE >= Convert(varchar,@para3,104) 
+			--AND (SRCE_PTR = @para2) ORDER BY TRAN_DATE DESC, TTIME DESC
+			SELECT * FROM DATA0095 WITH (NOLOCK) WHERE (TRAN_TP = 15) 
+			AND dbo.DATA0095.TRAN_DATE >=DATEADD(dd, 0, DATEDIFF(dd, 0, Convert(varchar,@para3,104)))
+			AND (SRCE_PTR = CAST(@para2 AS BIGINT)) ORDER BY TRAN_DATE DESC, TTIME DESC
+		END
+		IF @pSearchTypeTran = 'get_art'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT RKEY AS D17RKEY, INV_PART_NUMBER, STOCK_UNIT_PTR,ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION,PURCH_UNIT_PTR
+				FROM  DATA0017  WITH (NOLOCK)  WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeTran = 'get_res'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT * FROM  DATA0034  WITH (NOLOCK) WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeTran = 'get_unit'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT RKEY, UNIT_CODE,UNIT_NAME FROM  DATA0002  WITH (NOLOCK) WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeTran = 'get_user'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT USER_LOGIN_NAME FROM DATA0073  WITH (NOLOCK) WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT dbo.DATA0017.RKEY, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0207.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0034.DEPT_CODE, dbo.DATA0034.DEPT_NAME, 
+				dbo.DATA0207.ENTERED_DATE,
+				dbo.DATA0207.ENTERED_TIME, dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY as D95_RKEY
+				FROM dbo.DATA0017 INNER JOIN
+				dbo.DATA0207 ON dbo.DATA0017.RKEY = dbo.DATA0207.INVENTORY_PTR INNER JOIN
+				dbo.DATA0034 ON dbo.DATA0207.SOURCE_PTR = dbo.DATA0034.RKEY INNER JOIN
+				dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+				dbo.DATA0095 ON dbo.DATA0207.TRANSACTION_PTR = dbo.DATA0095.RKEY INNER JOIN
+				dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY
+				WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+				ORDER BY dbo.DATA0207.ENTERED_DATE DESC, dbo.DATA0207.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_ausrueck'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				--Ausgaben/Rückgaben
+				SELECT TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0207.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0034.DEPT_CODE As Feld1, dbo.DATA0034.DEPT_NAME As Feld2, dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY
+				FROM dbo.DATA0017 INNER JOIN
+				dbo.DATA0207 ON dbo.DATA0017.RKEY = dbo.DATA0207.INVENTORY_PTR INNER JOIN
+				dbo.DATA0034 ON dbo.DATA0207.SOURCE_PTR = dbo.DATA0034.RKEY INNER JOIN
+				dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+				dbo.DATA0095 ON dbo.DATA0207.TRANSACTION_PTR = dbo.DATA0095.RKEY INNER JOIN
+				dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY
+				WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+				ORDER BY dbo.DATA0095.ENTERED_DATE DESC, dbo.DATA0095.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_empfangen'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				--Empfangen von Lieferanten
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				'PO: ' + dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY
+				FROM         dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+									  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+									  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 5)
+				ORDER BY dbo.DATA0095.ENTERED_DATE DESC, dbo.DATA0095.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_empfangen_ohne_BestNr'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				--Empfangen von Lieferanten ohne Bestellnummer
+				SELECT     TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+                       dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, 'Bestellung' AS Feld1, 'ohne Bestellnummer' AS Feld2, 
+                      dbo.DATA0002.UNIT_CODE, dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+                      dbo.DATA0017.RKEY AS D17_RKEY
+				FROM         dbo.DATA0005 INNER JOIN
+                      dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+                      dbo.DATA0017 INNER JOIN
+                      dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                      dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+                      dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 22)
+				ORDER BY dbo.DATA0095.ENTERED_DATE DESC, dbo.DATA0095.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_versch'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				--Verschiedenes
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, 
+				dbo.DATA0095.ENTERED_TIME AS Zeit,
+				dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 17)
+				ORDER BY dbo.DATA0095.ENTERED_DATE DESC, dbo.DATA0095.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_inventur'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				--Inventur
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 23)
+				ORDER BY dbo.DATA0095.ENTERED_DATE DESC, dbo.DATA0095.ENTERED_TIME DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_alle'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT * FROM 
+				(
+				--Ausgaben/Rückgaben
+				--SELECT TOP 100 PERCENT 
+				--dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				--dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0207.QUANTITY, 
+				--dbo.DATA0034.DEPT_CODE As Feld1, dbo.DATA0034.DEPT_NAME As Feld2, dbo.DATA0002.UNIT_CODE, 
+				--dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY
+				--FROM dbo.DATA0017 INNER JOIN
+				--dbo.DATA0207 ON dbo.DATA0017.RKEY = dbo.DATA0207.INVENTORY_PTR INNER JOIN
+				--dbo.DATA0034 ON dbo.DATA0207.SOURCE_PTR = dbo.DATA0034.RKEY INNER JOIN
+				--dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+				--dbo.DATA0095 ON dbo.DATA0207.TRANSACTION_PTR = dbo.DATA0095.RKEY INNER JOIN
+				--dbo.DATA0005 ON dbo.DATA0095.TRAN_BY = dbo.DATA0005.RKEY
+				--WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+				SELECT TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, 
+				ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+				dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, dbo.DATA0034.DEPT_CODE AS Feld1, dbo.DATA0034.DEPT_NAME AS Feld2, 
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+				dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				FROM dbo.DATA0005 RIGHT OUTER JOIN
+				dbo.DATA0002 INNER JOIN
+				dbo.DATA0017 ON dbo.DATA0002.RKEY = dbo.DATA0017.STOCK_UNIT_PTR INNER JOIN
+				dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+				dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY
+				WHERE (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 15 OR dbo.DATA0095.TRAN_TP = 16)
+
+				UNION ALL
+
+				--02.10.2013 / Dsi: Deaktiviert nach Vorgaben von Jha, 
+				--weil neu nur noch die Einlagerung (Type=7) angezeigt wird
+				--Empfangen von Lieferanten mit Bestellnummer
+				--SELECT     TOP 100 PERCENT 
+				--dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				--dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				--'PO: ' + dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+				--dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+				--dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 
+				--dbo.DATA0070.PURCHASE_ORDER_TYPE AS Feld3
+				--FROM         dbo.DATA0005 INNER JOIN
+				--					  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+				--					  dbo.DATA0017 INNER JOIN
+				--					  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+				--					  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+				--					  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+				--					  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+				--					  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				--WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 5)
+				--		AND dbo.DATA0070.PURCHASE_ORDER_TYPE<>2
+				--UNION ALL
+				--Empfangen von Lieferanten ohne Bestellnummer
+				--SELECT     TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+                --       dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, 'Bestellung' AS Feld1, 'ohne Bestellnummer' AS Feld2, 
+                --      dbo.DATA0002.UNIT_CODE, dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+                --      dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				--FROM         dbo.DATA0005 INNER JOIN
+                --      dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+                --      dbo.DATA0017 INNER JOIN
+                --      dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                --      dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+                --      dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY
+				--WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 22)
+				----
+				----UNION ALL
+				----Verschiedenes
+				----SELECT     TOP 100 PERCENT 
+				----dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				---dbo.DATA0095.ENTERED_DATE AS Datum, 
+				----dbo.DATA0095.ENTERED_TIME AS Zeit,
+				----dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				----dbo.DATA0016.LOCATION As Feld1, 
+				----'' As Feld2,
+				----dbo.DATA0002.UNIT_CODE, 
+				----dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				----dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				----FROM         dbo.DATA0016 INNER JOIN
+				----					  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+				----					  dbo.DATA0005 INNER JOIN
+				----					  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+				----					  dbo.DATA0017 INNER JOIN
+				----					  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+				----					  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				----WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 17)
+				----
+				--UNION ALL
+
+				--Inventur
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 23)
+
+				UNION ALL
+
+				--Einlagerung (ohne Konsi)
+				SELECT  TOP 100 PERCENT 
+							dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+							dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+							dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+							dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+							dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+							FROM         dbo.DATA0005 INNER JOIN
+												  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+												  dbo.DATA0017 INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+							WHERE    (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)))  AND  (dbo.DATA0095.TRAN_TP = 7) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+
+				UNION ALL
+
+				--restliche Transaktionen
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+					AND dbo.DATA0095.TRAN_TP Not In (5, 7, 15, 16, 17, 21, 22, 23, 29, 32)
+				) As TmpTbl
+				ORDER BY TmpTbl.Datum DESC, TmpTbl.Zeit DESC, TRAN_TP
+				--ORDER BY TmpTbl.TRAN_TP, TmpTbl.Datum DESC, TmpTbl.Zeit DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_top_100'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 100 * FROM 
+				(
+				SELECT TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, 
+				ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+				dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, dbo.DATA0034.DEPT_CODE AS Feld1, dbo.DATA0034.DEPT_NAME AS Feld2, 
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+				dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				FROM dbo.DATA0005 RIGHT OUTER JOIN
+				dbo.DATA0002 INNER JOIN
+				dbo.DATA0017 ON dbo.DATA0002.RKEY = dbo.DATA0017.STOCK_UNIT_PTR INNER JOIN
+				dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+				dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY
+				WHERE (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 15 OR dbo.DATA0095.TRAN_TP = 16)
+
+				UNION ALL
+
+				--02.10.2013 / Dsi: Deaktiviert nach Vorgaben von Jha, 
+				--weil neu nur noch die Einlagerung (Type=7) angezeigt wird
+				--Empfangen von Lieferanten mit Bestellnummer
+				--SELECT     TOP 100 PERCENT 
+				--dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				--dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				--'PO: ' + dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+				--dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+				--dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 
+				--dbo.DATA0070.PURCHASE_ORDER_TYPE AS Feld3
+				--FROM         dbo.DATA0005 INNER JOIN
+				--					  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+				--					  dbo.DATA0017 INNER JOIN
+				--					  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+				--					  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+				--					  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+				--					  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+				--					  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				--WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 5)
+				--		AND dbo.DATA0070.PURCHASE_ORDER_TYPE<>2
+				--
+				--UNION ALL
+
+				--Empfangen von Lieferanten ohne Bestellnummer
+				--SELECT     TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+                --       dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, 'Bestellung' AS Feld1, 'ohne Bestellnummer' AS Feld2, 
+                --      dbo.DATA0002.UNIT_CODE, dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+                --      dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				--FROM         dbo.DATA0005 INNER JOIN
+                --      dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+                --      dbo.DATA0017 INNER JOIN
+                --      dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                --      dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+                --      dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY
+				--WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 22)
+				--
+				----UNION ALL
+				----Verschiedenes
+				----SELECT     TOP 100 PERCENT 
+				----dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				----dbo.DATA0095.ENTERED_DATE AS Datum, 
+				----dbo.DATA0095.ENTERED_TIME AS Zeit,
+				----dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				----dbo.DATA0016.LOCATION As Feld1, 
+				----'' As Feld2,
+				----dbo.DATA0002.UNIT_CODE, 
+				----dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				----dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				----FROM         dbo.DATA0016 INNER JOIN
+				----					  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+				----					  dbo.DATA0005 INNER JOIN
+				----					  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+				----					  dbo.DATA0017 INNER JOIN
+				----					  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+				----					  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				----WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 17)
+				----
+				--UNION ALL
+
+				--Inventur
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 23)
+
+				UNION ALL
+
+				--Einlagerung (ohne Konsi)
+				SELECT  TOP 100 PERCENT 
+							dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+							dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+							dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+							dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+							dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+							FROM         dbo.DATA0005 INNER JOIN
+												  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+												  dbo.DATA0017 INNER JOIN
+												  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+							WHERE    (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)))  AND  (dbo.DATA0095.TRAN_TP = 7) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+
+				UNION ALL
+
+				--restliche Transaktionen
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+					AND dbo.DATA0095.TRAN_TP Not In (5, 7, 15, 16, 17, 21, 22, 23, 29, 32, 33) --02.10.2013 (5, 7, 15, 16, 17, 22, 23, 29, 32)
+				) As TmpTbl
+				ORDER BY TmpTbl.Datum DESC, TmpTbl.Zeit DESC, TRAN_TP
+				--ORDER BY TmpTbl.TRAN_TP, TmpTbl.Datum DESC, TmpTbl.Zeit DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_alle_typen'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 100 * FROM 
+				(
+				SELECT TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, 
+				ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+				dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, dbo.DATA0034.DEPT_CODE AS Feld1, dbo.DATA0034.DEPT_NAME AS Feld2, 
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+				dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				FROM dbo.DATA0005 RIGHT OUTER JOIN
+				dbo.DATA0002 INNER JOIN
+				dbo.DATA0017 ON dbo.DATA0002.RKEY = dbo.DATA0017.STOCK_UNIT_PTR INNER JOIN
+				dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+				dbo.DATA0034 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0034.RKEY ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY
+				WHERE (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 15 OR dbo.DATA0095.TRAN_TP = 16)
+
+				UNION ALL
+
+				--Empfangen von Lieferanten mit Bestellnummer
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				'PO: ' + dbo.DATA0070.PO_NUMBER AS Feld1, dbo.DATA0023.SUPPLIER_NAME AS Feld2, dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER,
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 
+				dbo.DATA0070.PURCHASE_ORDER_TYPE AS Feld3
+				FROM         dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+									  dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+									  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 5)
+						AND dbo.DATA0070.PURCHASE_ORDER_TYPE<>2
+
+				UNION ALL
+
+				--Empfangen von Lieferanten ohne Bestellnummer
+				SELECT     TOP 100 PERCENT dbo.DATA0095.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0095.ENTERED_DATE AS Datum,
+                       dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND, 'Bestellung' AS Feld1, 'ohne Bestellnummer' AS Feld2, 
+                      dbo.DATA0002.UNIT_CODE, dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, dbo.DATA0095.RKEY AS D95_RKEY, 
+                      dbo.DATA0017.RKEY AS D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0005 INNER JOIN
+                      dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+                      dbo.DATA0017 INNER JOIN
+                      dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+                      dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+                      dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 22)
+
+				--UNION ALL
+				--Verschiedenes
+				--SELECT     TOP 100 PERCENT 
+				--dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.INV_PART_DESCRIPTION, 
+				--dbo.DATA0095.ENTERED_DATE AS Datum, 
+				--dbo.DATA0095.ENTERED_TIME AS Zeit,
+				--dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				--dbo.DATA0016.LOCATION As Feld1, 
+				--'' As Feld2,
+				--dbo.DATA0002.UNIT_CODE, 
+				--dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				--dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				--FROM         dbo.DATA0016 INNER JOIN
+				--					  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+				--					  dbo.DATA0005 INNER JOIN
+				--					  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+				--					  dbo.DATA0017 INNER JOIN
+				--					  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+				--					  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				--WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 17)
+
+				UNION ALL
+
+				--Inventur
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     (dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))) AND (dbo.DATA0095.TRAN_TP = 23)
+
+				UNION ALL
+
+				--restliche Transaktionen
+				SELECT     TOP 100 PERCENT 
+				dbo.DATA0095.TRAN_TP,dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0095.ENTERED_DATE AS Datum, dbo.DATA0095.ENTERED_TIME AS Zeit, dbo.DATA0095.QUANTITY, dbo.DATA0017.QUAN_ON_HAND,
+				dbo.DATA0016.LOCATION As Feld1, 
+				'' As Feld2,
+				dbo.DATA0002.UNIT_CODE, 
+				dbo.DATA0005.ABBR_NAME, dbo.DATA0095.REFERENCE_NUMBER, 
+				dbo.DATA0095.RKEY as D95_RKEY, dbo.DATA0017.RKEY as D17_RKEY, 0 AS Feld3
+				FROM         dbo.DATA0016 INNER JOIN
+									  dbo.DATA0019 ON dbo.DATA0016.RKEY = dbo.DATA0019.LOCATION_PTR RIGHT OUTER JOIN
+									  dbo.DATA0005 INNER JOIN
+									  dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+									  dbo.DATA0017 INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY ON 
+									  dbo.DATA0019.RKEY = dbo.DATA0095.INVT_LOC_PTR
+				WHERE     dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+					AND dbo.DATA0095.TRAN_TP Not In (5, 15, 16, 22, 23)
+				) As TmpTbl
+				ORDER BY TmpTbl.Datum DESC, TmpTbl.Zeit DESC, TRAN_TP DESC
+				--ORDER BY TmpTbl.TRAN_TP, TmpTbl.Datum DESC, TmpTbl.Zeit DESC
+			END
+		END
+		IF @pSearchTypeTran = 'prev_mat_trans_alle_konsi'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT     dbo.DATA0341.TRAN_TP, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0341.TRAN_DATE AS Datum, '' AS Zeit, 
+									  dbo.DATA0341.QUANTITY, dbo.DATA0017.CONSIGN_ONHAND_QTY AS QUAN_ON_HAND, '' AS Feld1, '' AS Feld2, dbo.DATA0002.UNIT_CODE, 
+									  dbo.DATA0005.ABBR_NAME, dbo.DATA0341.REFERENCE_NUMBER, dbo.DATA0341.RKEY AS D95_RKEY, dbo.DATA0017.RKEY AS D17_RKEY
+				FROM         dbo.DATA0016 RIGHT OUTER JOIN
+						  dbo.DATA0341 LEFT OUTER JOIN
+						  dbo.DATA0005 ON dbo.DATA0341.DATA0005_PTR = dbo.DATA0005.RKEY LEFT OUTER JOIN
+						  dbo.DATA0466 ON dbo.DATA0341.DATA0466_PTR = dbo.DATA0466.RKEY LEFT OUTER JOIN
+						  dbo.DATA0023 ON dbo.DATA0341.DATA0023_PTR = dbo.DATA0023.RKEY ON dbo.DATA0016.RKEY = dbo.DATA0341.FROM_D16_PTR LEFT OUTER JOIN
+						  dbo.DATA0002 INNER JOIN
+						  dbo.DATA0017 ON dbo.DATA0002.RKEY = dbo.DATA0017.STOCK_UNIT_PTR ON dbo.DATA0341.DATA0017_PTR = dbo.DATA0017.RKEY
+				WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0))
+				ORDER BY dbo.DATA0341.TRAN_DATE DESC
+			END
+		END
+	END
+
+	--Schnell Zugriff auf einen Benutzer (Liste der Paradigm Benutzer, die zuletzt eine Abmeldung durchgeführt haben)
+	IF @Case_ = 'SELECT_MITARBEITER_SCHNELLZUGRIFF'
+	BEGIN
+		--SELECT DISTINCT TOP 10 dbo.DATA0073.EMPLOYEE_PTR, dbo.DATA0073.USER_LOGIN_NAME, 
+		--MAX(dbo.DATA0095.TRAN_DATE) AS Expr1 FROM dbo.DATA0095 INNER JOIN dbo.DATA0073 
+		--ON dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY WHERE(dbo.DATA0095.TRAN_TP = 15) 
+        --GROUP BY dbo.DATA0073.USER_LOGIN_NAME, dbo.DATA0073.EMPLOYEE_PTR 
+        --ORDER BY MAX(dbo.DATA0095.TRAN_DATE) DESC
+		SELECT DISTINCT TOP 30 dbo.DATA0005.RKEY AS DATA0005RKEY, dbo.DATA0005.EMPL_CODE, 
+		dbo.DATA0005.EMPLOYEE_NAME, dbo.DATA0073.USER_LOGIN_NAME, dbo.DATA0073.RKEY AS DATA0073RKEY, 
+		MAX(dbo.DATA0095.TRAN_DATE) AS Expr1 FROM dbo.DATA0095 INNER JOIN dbo.DATA0073 ON 
+		dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY INNER JOIN dbo.DATA0005 ON dbo.DATA0095.TRAN_BY 
+		= dbo.DATA0005.RKEY WHERE (dbo.DATA0095.TRAN_TP = 15) GROUP BY dbo.DATA0073.USER_LOGIN_NAME, 
+		dbo.DATA0005.EMPL_CODE, dbo.DATA0005.EMPLOYEE_NAME, dbo.DATA0005.RKEY, dbo.DATA0073.RKEY
+		ORDER BY MAX(dbo.DATA0095.TRAN_DATE) DESC
+	END
+	--Liefert Einträge für die Ressourcen-Liste
+	IF @Case_ = 'SELECT_RESSOURCE'
+	BEGIN
+		DECLARE @pSearchTypeRes varchar(50)
+		SET @pSearchTypeRes = @para1
+		IF @pSearchTypeRes = 'all' --Abteilung
+		BEGIN
+			SELECT * FROM DATA0034 WITH (NOLOCK) WHERE BARCODE_ENTRY_FLAG='Y' AND TTYPE='1' ORDER BY DEPT_CODE
+		END
+		IF @pSearchTypeRes = 'filter'
+		BEGIN
+			DECLARE @pSQLRes varchar(3000)
+			--SET @pSQLRes = 'SELECT * FROM DATA0034 WHERE ' + RTRIM(@para3) + ' BARCODE_ENTRY_FLAG=''Y'' AND TTYPE=''1'' ORDER BY DEPT_CODE'
+			SET @pSQLRes = 'SELECT * FROM DATA0034 WHERE ' + RTRIM(@para3) + ' BARCODE_ENTRY_FLAG=''Y'' ORDER BY DEPT_CODE'
+			Exec(@pSQLRes)
+		END
+		IF @pSearchTypeRes = 'TTYPE=2' --Gruppe
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT * FROM DATA0034 WHERE DEPT_PTR = CAST(@para2 AS numeric(10, 0)) 
+				AND TTYPE='2' ORDER BY DEPT_CODE
+			END
+		END
+		IF @pSearchTypeRes = 'TTYPE=3' --Maschinenplatz
+		BEGIN
+			IF ISNUMERIC(@para2) > 0
+			BEGIN
+				SELECT * FROM DATA0034 WHERE GROUP_PTR = CAST(@para2 AS numeric(10, 0)) 
+				AND TTYPE='3' ORDER BY DEPT_CODE
+			END
+		END
+		IF @pSearchTypeRes = 'get_user_filter'
+		BEGIN
+			SELECT DISTINCT dbo.Data0034.DEPT_CODE FROM ((dbo.DATA0095 INNER JOIN dbo.Data0017
+            ON dbo.DATA0095.INVT_PTR = dbo.Data0017.RKEY) INNER JOIN dbo.Data0034 ON 
+            dbo.DATA0095.SRCE_PTR = dbo.Data0034.RKEY) INNER JOIN dbo.DATA0073 
+            ON dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY 
+			WHERE dbo.DATA0073.USER_LOGIN_NAME = RTRIM(@para3)
+            AND dbo.DATA0095.TRAN_TP=15 ORDER BY dbo.Data0034.DEPT_CODE
+		END
+		IF @pSearchTypeRes = 'ArtikelRessource' --Paradigm Ressource des Artikels
+		BEGIN
+			IF ISNUMERIC(@para2) > 0
+			BEGIN
+				SELECT     TOP 1 LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR, dbo.DATA0005.RKEY AS RKEY_D0005, dbo.DATA0034.DEPT_NAME, dbo.DATA0005.EMPLOYEE_NAME, 
+                      LIVE2.dbo.MatRueck_Transaktion.Abteilung_PTR, LIVE2.dbo.MatRueck_Transaktion.Anlage_PTR
+				FROM         dbo.DATA0005 RIGHT OUTER JOIN
+									  dbo.DATA0034 ON dbo.DATA0005.RKEY = dbo.DATA0034.SUPERVISOR_PTR RIGHT OUTER JOIN
+									  dbo.[A-Data0017] INNER JOIN
+									  LIVE2.dbo.MatRueck_Transaktion ON dbo.[A-Data0017].RKEY = LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR ON 
+									  dbo.DATA0034.RKEY = LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR
+				WHERE     (dbo.[A-Data0017].RKEY = CAST(@para2 AS numeric(10, 0)) )
+			END
+		END
+	END
+	--In diesem Abschnitt werden der Applikation die Artikel-Daten zur Verfügung gestellt. 
+	IF @Case_ = 'SELECT_ARTIKEL'
+	BEGIN
+		DECLARE @pSearchTypeArt varchar(50)
+		SET @pSearchTypeArt = @para1
+		IF @pSearchTypeArt = 'all'
+		BEGIN
+			SELECT DISTINCT dbo.[A-Data0017].RKEY, dbo.[A-Data0017].INV_PART_NUMBER, 
+			CASE
+				WHEN ISNULL(dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+					dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER
+				ELSE
+					ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') 
+			END AS INV_PART_DESCRIPTION,
+            --dbo.[A-Data0017].INV_PART_DESCRIPTION, 
+			dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED AS Verfuegbar,
+			dbo.[A-Data0017].CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar
+            FROM dbo.[A-Data0017] 
+			WHERE (dbo.[A-Data0017].TTYPE='R' OR dbo.[A-Data0017].TTYPE='M') AND dbo.[A-Data0017].ACTIVE_FLAG='Y'
+			ORDER BY 			CASE
+				WHEN ISNULL(dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+					dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER
+				ELSE
+					ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '')
+				END, dbo.[A-Data0017].INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'Properties_1'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT  dbo.DATA0017.RKEY AS D17RKEY,dbo.DATA0017.INV_PART_NUMBER, 
+						CASE WHEN ISNULL(LONG_INVENTORY_PART_NUMBER, '')='' THEN ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') ELSE LONG_INVENTORY_PART_NUMBER END AS INV_PART_DESCRIPTION, 
+						dbo.DATA0017.QUAN_ON_HAND, dbo.DATA0017.QUAN_ALLOCATED, 
+						dbo.DATA0017.QUAN_ON_ORDER, dbo.DATA0017.QUAN_IN_INSP, 
+						dbo.DATA0002.UNIT_CODE, dbo.DATA0017.STD_COST, dbo.DATA0017.ACTIVE_FLAG,
+						dbo.DATA0017.CONSIGN_ONHAND_QTY,
+						ISNULL((
+								SELECT TOP 1 SUM(MIN_STOCK) AS RES
+								FROM dbo.DATA0018
+								WHERE dbo.DATA0018.INVENT_PTR = dbo.DATA0017.RKEY
+						), 0) AS Min_LagerMenge,
+						ISNULL((
+								SELECT  TOP 1  dbo.DATA0023.SUPPLIER_NAME
+								FROM dbo.DATA0023 
+								WHERE dbo.DATA0023.RKEY = DATA0017.PREF_SUPPLIER_PTR
+						), 0) AS BevorzLief
+				FROM    dbo.DATA0002 INNER JOIN dbo.DATA0017 ON dbo.DATA0002.RKEY = dbo.DATA0017.STOCK_UNIT_PTR
+				WHERE   dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)) 
+			END
+		END
+		IF @pSearchTypeArt = 'dept' --Deaktiviert ab der Version 1.0.0.9 (neu ist 'dept_rkey')
+		BEGIN
+			SELECT DISTINCT dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER,
+			ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION , dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED 
+			AS Verfuegbar FROM ((dbo.DATA0095 INNER JOIN dbo.[A-Data0017] 
+			ON dbo.DATA0095.INVT_PTR = dbo.[A-Data0017].RKEY) INNER JOIN dbo.[A-Data0034] ON 
+			dbo.DATA0095.SRCE_PTR = dbo.[A-Data0034].RKEY) INNER JOIN dbo.DATA0073 
+			ON dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY WHERE (((dbo.[A-Data0034].DEPT_CODE) = RTRIM(@para2)) 
+			AND ((dbo.DATA0095.TRAN_TP)=15)) AND dbo.[A-Data0017].S_B_N='N' ORDER BY dbo.[A-Data0017].INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'dept_rkey' --Aktiviert ab der Version 1.0.0.9 (alt war 'dept')						 
+		BEGIN							 --Deaktiviert ab der Version 1.0.0.15
+			SELECT DISTINCT dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER,
+			ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED 
+			AS Verfuegbar FROM ((dbo.DATA0095 INNER JOIN dbo.[A-Data0017] 
+			ON dbo.DATA0095.INVT_PTR = dbo.[A-Data0017].RKEY) INNER JOIN dbo.[A-Data0034] ON 
+			dbo.DATA0095.SRCE_PTR = dbo.[A-Data0034].RKEY) INNER JOIN dbo.DATA0073 
+			ON dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY WHERE (((dbo.[A-Data0034].RKEY) = @para2) 
+			AND ((dbo.DATA0095.TRAN_TP)=15)) AND dbo.[A-Data0017].S_B_N='N' ORDER BY dbo.[A-Data0017].INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'dept_rkey2' --Aktiviert ab der Version 1.0.0.15 (alt war 'dept_rkey')
+		BEGIN
+			IF ISNULL(@para3, '')='' SET @para3='Y'
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT DISTINCT TOP 100 PERCENT dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER, ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED AS Verfuegbar, 
+				LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR,
+				dbo.[A-Data0017].CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar
+				FROM dbo.[A-Data0017] INNER JOIN LIVE2.dbo.MatRueck_Transaktion ON dbo.[A-Data0017].RKEY = LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+				WHERE (dbo.[A-Data0017].S_B_N = 'N') AND dbo.[A-Data0017].ACTIVE_FLAG=RTRIM(@para3)
+				AND (LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR = CAST(@para2 AS numeric(10, 0)))
+				AND dbo.[A-Data0017].RKEY NOT IN (
+													CASE WHEN @para2 = 328 THEN 707  ELSE 0 END --ÄTZ. ALK. FESTRESIST-STRIPPER 
+													,
+													CASE WHEN @para2 = 312 THEN 1064 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 1065 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 25099 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 191 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 1033 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 225 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 193 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 44693 ELSE 0 END --ML PRESSEN (PRESSE 1)
+													,
+													CASE WHEN @para2 = 312 THEN 436 ELSE 0 END --ML PRESSEN (PRESSE 1)
+												)
+				ORDER BY ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '')
+			END
+		END
+		IF @pSearchTypeArt = 'dept_rkey2_filter' --Aktiviert ab der Version 1.0.0.15 (alt war 'dept_rkey')
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT DISTINCT TOP 100 PERCENT dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER, ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED AS Verfuegbar, 
+				LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR,
+				dbo.[A-Data0017].CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar
+				FROM dbo.[A-Data0017] INNER JOIN LIVE2.dbo.MatRueck_Transaktion ON dbo.[A-Data0017].RKEY = LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+				WHERE (dbo.[A-Data0017].S_B_N = 'N') AND dbo.[A-Data0017].ACTIVE_FLAG='Y'
+				AND (LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR = CAST(@para2 AS numeric(10, 0)))
+				AND dbo.[A-Data0017].INV_PART_DESCRIPTION COLLATE Latin1_General_CI_AS LIKE @para3
+				ORDER BY ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '')
+			END
+		END
+		IF @pSearchTypeArt = 'VerbrauchSOLL'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT DISTINCT TOP 100 PERCENT dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+				dbo.DATA0017.IES_DIRECT_MATL_COST
+				FROM dbo.DATA0017 INNER JOIN LIVE2.dbo.MatRueck_Transaktion ON dbo.DATA0017.RKEY = LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+				WHERE (dbo.DATA0017.S_B_N = 'N') AND dbo.DATA0017.ACTIVE_FLAG='Y'
+				AND (LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR = CAST(@para2 AS numeric(10, 0)))
+				ORDER BY dbo.DATA0017.INV_PART_NUMBER
+			END
+		END
+		IF @pSearchTypeArt = 'Update_VerbrauchSOLL'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				UPDATE dbo.DATA0017 SET IES_DIRECT_MATL_COST = @para3 WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+
+		IF @pSearchTypeArt = 'filter'
+		BEGIN
+			SELECT *
+			FROM
+			(
+			SELECT DISTINCT dbo.[A-Data0017].RKEY, dbo.[A-Data0017].INV_PART_NUMBER, 
+			CASE
+				WHEN ISNULL(dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+					dbo.[A-Data0017].LONG_INVENTORY_PART_NUMBER
+				ELSE
+					ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '')
+			END AS INV_PART_DESCRIPTION,
+			--dbo.[A-Data0017].INV_PART_DESCRIPTION, 
+			dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED AS Verfuegbar,
+			dbo.[A-Data0017].CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar
+			FROM dbo.[A-Data0017] 
+			WHERE (dbo.[A-Data0017].TTYPE='R' OR dbo.[A-Data0017].TTYPE='M')
+			AND dbo.[A-Data0017].ACTIVE_FLAG='Y'
+			) AS myTblInvPart
+			WHERE 
+				INV_PART_DESCRIPTION Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS 
+			OR INV_PART_NUMBER Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS 
+			OR (ISNULL(INV_PART_NUMBER,'')+ISNULL(INV_PART_DESCRIPTION,'') Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS) 
+			ORDER BY INV_PART_DESCRIPTION, INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'favorite' --Deaktiviert ab der Version 1.0.0.15
+		BEGIN
+			SELECT DISTINCT TOP 30 dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER, 
+            ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED 
+			AS Verfuegbar, dbo.[A-Data0034].DEPT_CODE, dbo.[A-Data0034].RKEY FROM 
+			((dbo.DATA0095 INNER JOIN dbo.[A-Data0017] ON dbo.DATA0095.INVT_PTR = dbo.[A-Data0017].RKEY) 
+            INNER JOIN dbo.[A-Data0034] ON dbo.DATA0095.SRCE_PTR = dbo.[A-Data0034].RKEY) 
+            INNER JOIN dbo.DATA0073 ON dbo.DATA0095.USER_PTR = dbo.DATA0073.RKEY 
+            WHERE (((dbo.DATA0073.USER_LOGIN_NAME) = RTRIM(@para2))
+            AND ((dbo.DATA0095.TRAN_TP)=15)) ORDER BY dbo.[A-Data0017].INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'favorite2' --Aktiviert ab der Version 1.0.0.15 (alt war 'favorite')
+		BEGIN
+			SELECT DISTINCT TOP 100 PERCENT dbo.[A-Data0017].RKEY AS DATA0017RKEY, dbo.[A-Data0017].INV_PART_NUMBER, ISNULL(dbo.[A-Data0017].INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, 
+			dbo.[A-Data0017].QUAN_ON_HAND - dbo.[A-Data0017].QUAN_ALLOCATED AS Verfuegbar, 
+			LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR, 
+			dbo.DATA0034.DEPT_NAME, dbo.DATA0034.RKEY,
+			dbo.[A-Data0017].CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar
+			FROM dbo.[A-Data0017] INNER JOIN LIVE2.dbo.MatRueck_Transaktion ON dbo.[A-Data0017].RKEY = LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR INNER JOIN
+			dbo.DATA0034 ON LIVE2.dbo.MatRueck_Transaktion.D34_Dept_PTR = dbo.DATA0034.RKEY
+			WHERE (dbo.[A-Data0017].TTYPE='R') AND (dbo.[A-Data0017].S_B_N = 'N') AND dbo.[A-Data0017].ACTIVE_FLAG='Y'
+			AND LIVE2.dbo.MatRueck_Transaktion.Benutzer = RTRIM(@para2)
+			ORDER BY dbo.[A-Data0017].INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'rkey'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0017.S_B_N,
+				ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0017.QUAN_ON_HAND, 
+				dbo.DATA0002.UNIT_CODE, dbo.DATA0002.UNIT_NAME, dbo.DATA0017.CONSIGN_ONHAND_QTY, dbo.DATA0017.STOCK_PURCH
+				FROM dbo.DATA0017 INNER JOIN dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)) 
+			END
+		END
+		IF @pSearchTypeArt = 'YTD_USAGE_D17'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				SELECT TOP 1 YTD_USAGE FROM DATA0017 WHERE RKEY = CAST(@para2 AS numeric(10, 0))
+			END
+		END
+		IF @pSearchTypeArt = 'recycling'
+		BEGIN
+			SELECT dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0018.RKEY AS DATA0018RKEY, 
+			ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0017.QUAN_ON_HAND AS Verfuegbar, 
+			dbo.DATA0002.UNIT_CODE, dbo.DATA0015.WAREHOUSE_CODE, dbo.DATA0016.CODE AS LAGERPLATZ
+			FROM dbo.DATA0017 INNER JOIN
+			dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+			dbo.DATA0018 ON dbo.DATA0017.RKEY = dbo.DATA0018.INVENT_PTR INNER JOIN
+			dbo.DATA0015 ON dbo.DATA0018.WHOUSE_PTR = dbo.DATA0015.RKEY INNER JOIN
+			dbo.DATA0016 ON dbo.DATA0018.LOCATION_PTR1 = dbo.DATA0016.RKEY
+			WHERE (dbo.DATA0017.INV_PART_NUMBER LIKE 'REC-%') ORDER BY dbo.DATA0017.INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'is_recycling'
+		BEGIN
+			IF ISNUMERIC(CAST(@para2 AS numeric(10, 0)) ) > 0
+			BEGIN
+				IF Exists(SELECT  *
+						FROM    dbo.DATA0008 INNER JOIN
+						dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR
+						WHERE   
+						dbo.DATA0008.PROD_CODE = 'REC' AND dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)) )
+				BEGIN
+					SELECT  'Y' AS RES, dbo.DATA0017.QUAN_ON_HAND, dbo.DATA0017.INV_PART_NUMBER, 
+							dbo.DATA0002.UNIT_CODE, ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION
+					FROM         dbo.DATA0017 INNER JOIN
+						  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+					WHERE dbo.DATA0017.RKEY = CAST(@para2 AS numeric(10, 0)) 
+				END
+				ELSE
+				BEGIN
+					SELECT 'N' AS RES
+				END	
+			END
+		END
+		IF @pSearchTypeArt = 'zum_anschleifen'
+		BEGIN
+			SELECT dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0018.RKEY AS DATA0018RKEY, 
+			ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '') AS INV_PART_DESCRIPTION, dbo.DATA0017.QUAN_ON_HAND AS Verfuegbar, 
+			dbo.DATA0002.UNIT_CODE, dbo.DATA0015.WAREHOUSE_CODE, dbo.DATA0016.CODE AS LAGERPLATZ
+			FROM dbo.DATA0017 INNER JOIN
+			dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+			dbo.DATA0018 ON dbo.DATA0017.RKEY = dbo.DATA0018.INVENT_PTR INNER JOIN
+			dbo.DATA0015 ON dbo.DATA0018.WHOUSE_PTR = dbo.DATA0015.RKEY INNER JOIN
+			dbo.DATA0016 ON dbo.DATA0018.LOCATION_PTR1 = dbo.DATA0016.RKEY
+			WHERE dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_ANSCHL%' OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_A%' 
+				OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Lager ggp%' 
+			ORDER BY dbo.DATA0017.INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'zum_anschleifen_filter'
+		BEGIN
+			--SELECT dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, dbo.DATA0018.RKEY AS DATA0018RKEY, 
+			--dbo.DATA0017.INV_PART_DESCRIPTION, dbo.DATA0017.QUAN_ON_HAND AS Verfuegbar, 
+			--dbo.DATA0002.UNIT_CODE, dbo.DATA0015.WAREHOUSE_CODE, dbo.DATA0016.CODE AS LAGERPLATZ
+			--FROM dbo.DATA0017 INNER JOIN
+			--dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+			--dbo.DATA0018 ON dbo.DATA0017.RKEY = dbo.DATA0018.INVENT_PTR INNER JOIN
+			--dbo.DATA0015 ON dbo.DATA0018.WHOUSE_PTR = dbo.DATA0015.RKEY INNER JOIN
+			--dbo.DATA0016 ON dbo.DATA0018.LOCATION_PTR1 = dbo.DATA0016.RKEY
+			--WHERE dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_ANSCHL%' OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_A%' 
+			--	OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Lager ggp%' 
+			--ORDER BY dbo.DATA0017.INV_PART_NUMBER
+			SELECT *
+			FROM
+			(
+			SELECT DISTINCT dbo.DATA0017.RKEY AS DATA0017RKEY, dbo.DATA0017.INV_PART_NUMBER, 
+			CASE
+				WHEN ISNULL(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER, '')<>'' THEN 
+					dbo.DATA0017.LONG_INVENTORY_PART_NUMBER
+				ELSE
+					ISNULL(dbo.DATA0017.INV_PART_DESCRIPTION, '')
+			END AS INV_PART_DESCRIPTION, dbo.DATA0018.RKEY AS DATA0018RKEY,
+			dbo.DATA0017.QUAN_ON_HAND - dbo.DATA0017.QUAN_ALLOCATED AS Verfuegbar,
+			dbo.DATA0017.CONSIGN_ONHAND_QTY AS Konsi_Verfuegbar, dbo.DATA0002.UNIT_CODE, dbo.DATA0015.WAREHOUSE_CODE, 
+			dbo.DATA0016.CODE AS LAGERPLATZ
+			--FROM dbo.[A-Data0017] 
+			FROM dbo.DATA0017 INNER JOIN
+			dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY INNER JOIN
+			dbo.DATA0018 ON dbo.DATA0017.RKEY = dbo.DATA0018.INVENT_PTR INNER JOIN
+			dbo.DATA0015 ON dbo.DATA0018.WHOUSE_PTR = dbo.DATA0015.RKEY INNER JOIN
+			dbo.DATA0016 ON dbo.DATA0018.LOCATION_PTR1 = dbo.DATA0016.RKEY
+			--WHERE (dbo.DATA0017.TTYPE='R' OR dbo.DATA0017.TTYPE='M')
+			--AND dbo.DATA0017.ACTIVE_FLAG='Y'
+			WHERE dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_ANSCHL%' OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Z_A%' 
+				OR dbo.DATA0017.INV_PART_NUMBER LIKE '%Lager ggp%' 
+			) AS myTblInvPart
+			WHERE 
+				INV_PART_DESCRIPTION Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS 
+			OR INV_PART_NUMBER Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS 
+			OR (ISNULL(INV_PART_NUMBER,'')+ISNULL(INV_PART_DESCRIPTION,'') Like '%' + RTRIM(@para2) + '%' COLLATE Latin1_General_CI_AS) 
+			ORDER BY INV_PART_DESCRIPTION, INV_PART_NUMBER
+		END
+		IF @pSearchTypeArt = 'recycling_Test_FINANCE'
+		BEGIN
+			SELECT FINANCE.dbo.DATA0017.RKEY AS DATA0017RKEY, FINANCE.dbo.DATA0017.INV_PART_NUMBER, FINANCE.dbo.DATA0018.RKEY AS DATA0018RKEY, 
+			FINANCE.dbo.DATA0017.INV_PART_DESCRIPTION, FINANCE.dbo.DATA0017.QUAN_ON_HAND AS Verfuegbar, 
+			FINANCE.dbo.DATA0002.UNIT_CODE, FINANCE.dbo.DATA0015.WAREHOUSE_CODE, FINANCE.dbo.DATA0016.CODE AS LAGERPLATZ
+			FROM FINANCE.dbo.DATA0017 INNER JOIN
+			FINANCE.dbo.DATA0002 ON FINANCE.dbo.DATA0017.STOCK_UNIT_PTR = FINANCE.dbo.DATA0002.RKEY INNER JOIN
+			FINANCE.dbo.DATA0018 ON FINANCE.dbo.DATA0017.RKEY = FINANCE.dbo.DATA0018.INVENT_PTR INNER JOIN
+			FINANCE.dbo.DATA0015 ON FINANCE.dbo.DATA0018.WHOUSE_PTR = FINANCE.dbo.DATA0015.RKEY INNER JOIN
+			FINANCE.dbo.DATA0016 ON FINANCE.dbo.DATA0018.LOCATION_PTR1 = FINANCE.dbo.DATA0016.RKEY
+			WHERE (FINANCE.dbo.DATA0017.INV_PART_NUMBER LIKE 'REC-%') ORDER BY FINANCE.dbo.DATA0017.INV_PART_NUMBER
+		END
+	END
+
+	--Dieser Abschnitt fügt analog zum Modul C0113 die Materialausgabe/rückgabe Transaktion in die Paradigm Datenbank
+	IF @Case_ = 'INSERT_AUSGABE_RUECKGABE'
+	BEGIN
+		--Lagerart zwischenspeichern (Seriennummernverwaltung=S , Chargenkontrolle=B , keine=N)
+		DECLARE @pS_B_N char(1)
+		SET @pS_B_N = (SELECT S_B_N FROM DATA0017 WHERE RKEY = @RKEY_D17)
+		--Parameter prüfen
+		IF ISNULL(@RKEY_D17, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Artikelzeiger nicht vorhanden!'
+			RETURN 0
+		END
+		IF ISNULL(@SELECTED_RKEY_D19, 0)=0 OR ISNULL(@RKEY_D18, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Einige Tabellen-Zeiger sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @pS_B_N = 'B'
+		BEGIN
+			IF ISNULL(@SELECTED_RKEY_D20, 0)=0 OR ISNULL(@newQUAN_ON_HAND_D20, '')=''
+			BEGIN
+				SELECT @OUTPUT_RES = 'Chargen Tabellen-Zeiger/Menge sind nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF @newQUAN_ON_HAND_D17 IS NULL OR @newQUAN_ON_HAND_D19 IS NULL OR @newYTD_USAGE_D17_D18 IS NULL
+		BEGIN
+			SELECT @OUTPUT_RES = 'Gebrauchte Mengen sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @COMPUTER_NAME='' OR @NETWORK_USER='' OR @TDATE IS NULL
+		BEGIN
+			SELECT @OUTPUT_RES = 'Computername, Netzwerk-Benutzer oder Transaktionsdatum ist/sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF ISNULL(@SRCE_PTR_D95, 0)=0 OR ISNULL(@RKEY_D05, 0)=0
+			OR ISNULL(@RKEY_D73, 0)=0 OR ISNULL(@INVT_LOC_PTR_D95, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Einige gebrauchte Tabellen-Zeiger sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @AUSGABE = 'N'
+		BEGIN
+			IF ISNULL(@rueckgabeRKEY_D95, 0)=0 
+			BEGIN
+				SELECT @OUTPUT_RES = 'Rückgabe Zeiger ist nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF ISNULL(@AUSGABE_MENGE, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Ausgabemenge/Rückgabemenge nicht vorhanden!'
+			RETURN 0
+		END
+		IF @AUSGABE = 'J'
+		BEGIN
+			IF @ERGAENZUNG_NEUANSATZ=''
+			BEGIN
+				SELECT @OUTPUT_RES = 'Ergänzung/Neuansatz nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF @AUSGABE=''
+		BEGIN
+			SELECT @OUTPUT_RES = 'Flag Rückgabe_/Ausgabe nicht vorhanden!'
+			RETURN 0
+		END
+		--Prüfen, ob Inventurlisten vorhanden
+		IF Exists(SELECT * FROM  DATA0093  WITH (NOLOCK)  WHERE WHOUSE_LOC_PTR = @INVT_LOC_PTR_D95) --@WHOUSE_LOC_PTR_D93)
+		BEGIN
+			SELECT @OUTPUT_RES = 'Materialausgabe nicht möglich, weil Inventurliste vorhanden!'
+			RETURN 0
+		END
+		--Prüfen, ob vorhandenen Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ON_HAND AS D17_QUAN_ON_HAND 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ON_HAND <> (SELECT
+					SUM(D19.QUAN_ON_HAND) AS D19_TOTAL_QTY FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorhandene Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ON_HAND AS D19_QUAN_ON_HAND 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17
+					WITH (NOLOCK)  WHERE (D19.QUAN_ON_HAND <> (SELECT  
+					SUM(D20.QUAN_ON_HAND) AS D20_TOTAL_QTY FROM DATA0020 D20 
+					WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) )) AND 
+					(D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorhandene Menge zwischen Lager und Charge stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob reservierte Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ALLOCATED AS D17_QUAN_ALLOCATED 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ALLOCATED <> (SELECT
+					SUM(D19.QUAN_ALLOCATED) AS D19_TOTAL_ALLOC FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Reservierte Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ALLOCATED AS D19_QUAN_ALLOCATED 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17 WITH (NOLOCK)  
+					WHERE (D19.QUAN_ALLOCATED <> (SELECT  SUM(D20.QUAN_ALLOCATED) AS D20_TOTAL_ALLOC
+					FROM DATA0020 D20 WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) ))
+					AND (D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Reservierte Menge zwischen Lager und Charge stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Vorrat-Mengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_BACKLOG AS D17_QUAN_BACKLOG
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_BACKLOG <>
+					(SELECT SUM(D18.QUAN_IN_BACKLOG) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorrat-Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Inspektionsmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_INSP AS D17_QUAN_IN_INSP
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_INSP <>
+					(SELECT SUM(D18.QUAN_IN_INSP) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Inspektionsmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Transitmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_TRANSIT AS D17_QUAN_IN_TRANSIT
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_TRANSIT <>
+					(SELECT SUM(D18.QUAN_IN_TRANSIT) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Transitmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Bestellmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_ON_ORDER AS D17_QUAN_ON_ORDER
+					FROM   DATA0017 D17  WITH (NOLOCK)  WHERE  (D17.QUAN_ON_ORDER <>
+					(SELECT SUM(D18.QUAN_ON_ORDER) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Bestellmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--#######################################################################################
+		BEGIN TRANSACTION  --####################################################################
+		--#######################################################################################
+		--Artikel sperren
+		DELETE FROM DATA0540 WHERE (TABLENAME = 'DATA0017') AND (LOCKED_RECORD_KEY = @RKEY_D17)
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : DELETE FROM DATA0540...'
+			RETURN @@ERROR
+		END
+		DECLARE @pIDENTITY_D540 numeric(10, 0)
+		DECLARE @PARADIGM_USER char(5)
+		SET @PARADIGM_USER = (SELECT USER_ID FROM DATA0073 WHERe RKEY = @RKEY_D73)
+------------------------------------------------------------------------------------------
+--TEST
+------------------------------------------------------------------------------------------
+--SELECT @OUTPUT_RES = 'STOP : ' + CAST(@RKEY_D17 AS varchar(50)) + ', ' + RTRIM(@COMPUTER_NAME) + ', ' + RTRIM(@NETWORK_USER) + ', ' + RTRIM(@PARADIGM_USER) + ', ' + CONVERT(varchar(15), @TDATE,104)
+--SELECT @OUTPUT_RES = 'STOP : ' + @pS_B_N + ', newQUAN_ON_HAND_D17_D19=' + CAST(@newQUAN_ON_HAND_D17_D19 AS varchar(50))
+--										+ ', SELECTED_RKEY_D19=' + CAST(@SELECTED_RKEY_D19 AS varchar(50))
+--										+ ', newYTD_USAGE_D17_D18=' + CAST(@newYTD_USAGE_D17_D18 AS varchar(50))
+--										+ ', RKEY_D17=' + CAST(@RKEY_D17 AS varchar(50))
+--										+ ', newYTD_USAGE_D17_D18=' + CAST(@newYTD_USAGE_D17_D18 AS varchar(50))
+--										+ ', RKEY_D18=' + CAST(@RKEY_D18 AS varchar(50))
+------------------------------------------------------------------------------------------
+--TEST
+------------------------------------------------------------------------------------------
+		exec SP_INSERTDATA0540	'DATA0017', 
+								@RKEY_D17, 
+								@COMPUTER_NAME, 
+								@NETWORK_USER, 
+								'\\ggp-srv-101\PARADIGM\Csi\Exec\C0113.EXE', 
+								@PARADIGM_USER, 
+								@TDATE,
+								@DATA0540RKEY = @pIDENTITY_D540
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0540...'
+			RETURN @@ERROR
+		END
+		--Chargenmenge aktualisieren (nur wenn Material Chargenorientiert ist)
+		IF @pS_B_N = 'B'
+		BEGIN
+			UPDATE DATA0020 SET QUAN_ON_HAND = @newQUAN_ON_HAND_D20 WHERE RKEY = @SELECTED_RKEY_D20
+			IF @@ERROR <> 0 
+			BEGIN
+				--#######################################################################################
+				ROLLBACK TRANSACTION  --#################################################################
+				--#######################################################################################
+				SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0020 SET...'
+				RETURN @@ERROR
+			END
+		END
+		--Die Lagerplatzmenge des Materials aktualisieren
+		UPDATE DATA0019 SET QUAN_ON_HAND = @newQUAN_ON_HAND_D19 WHERE RKEY = @SELECTED_RKEY_D19
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0019 SET...'
+			RETURN @@ERROR
+		END
+		--Die vorhandene Menge und Jahresverbrauch des Materials aktualisieren. 
+		UPDATE DATA0017 SET QUAN_ON_HAND = @newQUAN_ON_HAND_D17, YTD_USAGE = @newYTD_USAGE_D17_D18 WHERE RKEY = @RKEY_D17
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0017 SET...'
+			RETURN @@ERROR
+		END
+		--Jahresverbrauch des Materials beim Lager aktualisieren. 
+		UPDATE DATA0018 SET YTD_QUAN_USAGE = @newYTD_USAGE_D17_D18 WHERE RKEY = @RKEY_D18
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0018 SET...'
+			RETURN @@ERROR
+		END
+
+
+		--Prüfen, ob vorhandenen Mengen übereinstimmen
+		IF Exists
+				(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ON_HAND AS D17_QUAN_ON_HAND 
+					--SELECT Count(D17.RKEY) AS D17_RKEY
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ON_HAND <> (SELECT
+					SUM(D19.QUAN_ON_HAND) AS D19_TOTAL_QTY FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (1)Prüfen, ob vorhandenen Mengen übereinstimmen (vor Update), RKEY_D17=' + STR(@RKEY_D17)
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY , D19.QUAN_ON_HAND AS D19_QUAN_ON_HAND 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17
+					WITH (NOLOCK)  WHERE (D19.QUAN_ON_HAND <> (SELECT  
+					SUM(D20.QUAN_ON_HAND) AS D20_TOTAL_QTY FROM DATA0020 D20 
+					WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) )) AND 
+					(D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (2)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob reservierte Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ALLOCATED AS D17_QUAN_ALLOCATED 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ALLOCATED <> (SELECT
+					SUM(D19.QUAN_ALLOCATED) AS D19_TOTAL_ALLOC FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (3)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ALLOCATED AS D19_QUAN_ALLOCATED 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17 WITH (NOLOCK)  
+					WHERE (D19.QUAN_ALLOCATED <> (SELECT  SUM(D20.QUAN_ALLOCATED) AS D20_TOTAL_ALLOC
+					FROM DATA0020 D20 WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) ))
+					AND (D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (4)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Vorrat-Mengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_BACKLOG AS D17_QUAN_BACKLOG
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_BACKLOG <>
+					(SELECT SUM(D18.QUAN_IN_BACKLOG) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (5)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Inspektionsmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_INSP AS D17_QUAN_IN_INSP
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_INSP <>
+					(SELECT SUM(D18.QUAN_IN_INSP) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (6)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Transitmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_TRANSIT AS D17_QUAN_IN_TRANSIT
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_TRANSIT <>
+					(SELECT SUM(D18.QUAN_IN_TRANSIT) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (7)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Bestellmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_ON_ORDER AS D17_QUAN_ON_ORDER
+					FROM   DATA0017 D17  WITH (NOLOCK)  WHERE  (D17.QUAN_ON_ORDER <>
+					(SELECT SUM(D18.QUAN_ON_ORDER) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (8)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+
+
+
+		--Ausgabe-Transaktion
+		DECLARE @pIDENTITY_D95 numeric(10, 0)
+		DECLARE @pINVT_LOC_PTR_D95 numeric(10, 0)
+		DECLARE @pTRAN_TP_D95 numeric(10, 0)
+		IF @pS_B_N = 'B' SET @pINVT_LOC_PTR_D95 = @SELECTED_RKEY_D20 ELSE SET @pINVT_LOC_PTR_D95 = @INVT_LOC_PTR_D95
+		SET @pTRAN_TP_D95 = 15
+		IF @AUSGABE = 'N' 
+		BEGIN
+			SET @pTRAN_TP_D95 = 16 
+			SET @AUSGABE_MENGE = @AUSGABE_MENGE * (-1)
+		END
+------------------------------------------------------------------------------------------
+--TEST
+------------------------------------------------------------------------------------------
+--SELECT @OUTPUT_RES = 'STOP : '
+--DECLARE @pSTANDARD_COST numeric(20, 7)
+--SET @pSTANDARD_COST = (SELECT TOP 1 (PRICE/CONVERSION_FACTOR) AS PREIS FROM Data0071 WITH (NOLOCK)
+--WHERE INVT_PTR = @RKEY_D17 ORDER BY PO_PTR DESC)
+--SELECT @OUTPUT_RES = 'STOP : '	+ ', @pTRAN_TP_D95=' + CAST(@pTRAN_TP_D95 AS varchar(50))
+--								+ ', @RKEY_D17=' + CAST(@RKEY_D17 AS varchar(50))
+--								+ ', @SRCE_PTR_D95=' + CAST(@SRCE_PTR_D95 AS varchar(50))
+--								+ ', @RKEY_D05=' + CAST(@RKEY_D05 AS varchar(50))
+--								+ ', @RKEY_D73=' + CAST(@RKEY_D73 AS varchar(50))
+--								+ ', @pINVT_LOC_PTR_D95=' + CAST(@pINVT_LOC_PTR_D95 AS varchar(50))
+--								+ ', @pS_B_N=' + CAST(@pS_B_N AS varchar(50))
+--								+ ', @TDATE=' + CAST(@TDATE AS varchar(50))
+--								+ ', @TTIME=' + CAST(@TTIME AS varchar(50))
+--								+ ', @AUSGABE_MENGE=' + CAST(@AUSGABE_MENGE AS varchar(50))
+--								+ ', @ERGAENZUNG_NEUANSATZ=' + CAST(@ERGAENZUNG_NEUANSATZ AS varchar(50))
+--								+ ', @rueckgabeRKEY_D95=' + CAST(@rueckgabeRKEY_D95 AS varchar(50))
+--								+ ', @pSTANDARD_COST=' + CAST(@pSTANDARD_COST AS varchar(50))
+--IF @@error <> 0 
+--BEGIN
+--	SELECT @OUTPUT_RES = 'STOP : '	+ ' Error ' + @@error
+--END
+--RETURN 0
+------------------------------------------------------------------------------------------
+--TEST
+------------------------------------------------------------------------------------------
+		
+		DECLARE @pTDATE datetime
+		SET @pTDATE = DATEADD(dd, 0, DATEDIFF(dd, 0, @TDATE))
+		IF @AUSGABE = 'N'
+		BEGIN
+			SET @ERGAENZUNG_NEUANSATZ = (SELECT REFERENCE_NUMBER FROM DATA0095 WHERE RKEY = @rueckgabeRKEY_D95)
+		END
+		exec SP_INSERTDATA0095 
+								@pTRAN_TP_D95, 
+								@RKEY_D17, 
+								@SRCE_PTR_D95, 
+								@RKEY_D05, 
+								@RKEY_D73, 
+								@RKEY_D05, 
+								@pINVT_LOC_PTR_D95, 
+								@pS_B_N, 
+								@pTDATE, 
+								@TTIME, 
+								@AUSGABE_MENGE, 
+								' ', 
+								@ERGAENZUNG_NEUANSATZ, 
+								0, 
+								@pTDATE, 
+								@TTIME,
+								@DATA0095RKEY = @pIDENTITY_D95 OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D95, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0095...'
+			RETURN @@ERROR
+		END
+		IF @AUSGABE = 'N'
+		BEGIN
+			UPDATE DATA0095 SET QTY_RETURNED = QTY_RETURNED + ABS(@AUSGABE_MENGE) WHERE RKEY = @rueckgabeRKEY_D95
+			IF @@ERROR <> 0 
+			BEGIN
+				--#######################################################################################
+				ROLLBACK TRANSACTION  --#################################################################
+				--#######################################################################################
+				SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0095 SET...'
+				RETURN @@ERROR
+			END
+		END
+		--Material Job-Kosten
+		DECLARE @pIDENTITY_D207 numeric(10, 0)
+		DECLARE @pSTANDARD_COST numeric(20, 7)
+		SET @pSTANDARD_COST = (SELECT TOP 1 (PRICE/CONVERSION_FACTOR) AS PREIS FROM Data0071 WITH (NOLOCK)
+								WHERE INVT_PTR = @RKEY_D17 ORDER BY PO_PTR DESC)
+		exec SP_INSERTDATA0207 
+								2, 
+								@SRCE_PTR_D95, 
+								@RKEY_D17, 
+								0, 
+								@pIDENTITY_D95, 
+								@pTDATE, 
+								@AUSGABE_MENGE, 
+								@pSTANDARD_COST, 
+								@pTDATE, 
+								@TTIME,
+								@DATA0207RKEY = @pIDENTITY_D207 OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D207, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0207 ...'
+			RETURN @@ERROR
+		END
+
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION'
+			RETURN @@ERROR
+		END
+		ELSE
+		BEGIN
+			SELECT  @OUTPUT_RES = 'OK' + ';' + STR(ISNULL(@pIDENTITY_D95, 0)) + ';' + STR(ISNULL(@pIDENTITY_D207, 0))
+		END
+		--#######################################################################################
+		COMMIT TRANSACTION  --###################################################################
+		--#######################################################################################
+	END
+
+	--Dieser Abschnitt fügt analog zum Modul C0113 die Konsignations-Materialausgabe Transaktion in die Paradigm Datenbank
+	IF @Case_ = 'INSERT_AUSGABE_KONSIGNATION'
+	BEGIN
+		--Lagerart zwischenspeichern (Seriennummernverwaltung=S , Chargenkontrolle=B , keine=N)
+		DECLARE @pS_B_N_Consi char(1)
+		SET @pS_B_N_Consi = (SELECT S_B_N FROM DATA0017 WHERE RKEY = @RKEY_D17)
+		--Parameter prüfen
+		IF ISNULL(@RKEY_D17, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Artikelzeiger nicht vorhanden!'
+			RETURN 0
+		END
+		IF ISNULL(@SELECTED_RKEY_D19, 0)=0 OR ISNULL(@RKEY_D18, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Einige Tabellen-Zeiger sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @pS_B_N_Consi = 'B'
+		BEGIN
+			IF ISNULL(@SELECTED_RKEY_D20, 0)=0 OR ISNULL(@newQUAN_ON_HAND_D20, '')=''
+			BEGIN
+				SELECT @OUTPUT_RES = 'Chargen Tabellen-Zeiger/Menge sind nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF @newQUAN_ON_HAND_D17 IS NULL OR @newQUAN_ON_HAND_D19 IS NULL OR @newYTD_USAGE_D17_D18 IS NULL
+		BEGIN
+			SELECT @OUTPUT_RES = 'Gebrauchte Mengen sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @COMPUTER_NAME='' OR @NETWORK_USER='' OR @TDATE IS NULL
+		BEGIN
+			SELECT @OUTPUT_RES = 'Computername, Netzwerk-Benutzer oder Transaktionsdatum ist/sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF ISNULL(@SRCE_PTR_D95, 0)=0 OR ISNULL(@RKEY_D05, 0)=0
+			OR ISNULL(@RKEY_D73, 0)=0 OR ISNULL(@INVT_LOC_PTR_D95, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Einige gebrauchte Tabellen-Zeiger sind nicht vorhanden!'
+			RETURN 0
+		END
+		IF @AUSGABE = 'N'
+		BEGIN
+			IF ISNULL(@rueckgabeRKEY_D95, 0)=0 
+			BEGIN
+				SELECT @OUTPUT_RES = 'Rückgabe Zeiger ist nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF ISNULL(@AUSGABE_MENGE, 0)=0
+		BEGIN
+			SELECT @OUTPUT_RES = 'Ausgabemenge/Rückgabemenge nicht vorhanden!'
+			RETURN 0
+		END
+		IF @AUSGABE = 'J'
+		BEGIN
+			IF @ERGAENZUNG_NEUANSATZ=''
+			BEGIN
+				SELECT @OUTPUT_RES = 'Ergänzung/Neuansatz nicht vorhanden!'
+				RETURN 0
+			END
+		END
+		IF @AUSGABE=''
+		BEGIN
+			SELECT @OUTPUT_RES = 'Flag Rückgabe_/Ausgabe nicht vorhanden!'
+			RETURN 0
+		END
+		--Prüfen, ob Inventurlisten vorhanden
+		--IF Exists(SELECT * FROM  DATA0093  WITH (NOLOCK)  WHERE WHOUSE_LOC_PTR = @INVT_LOC_PTR_D95) --@WHOUSE_LOC_PTR_D93)
+		--BEGIN
+		--	SELECT @OUTPUT_RES = 'Materialausgabe nicht möglich, weil Inventurliste vorhanden!'
+		--	RETURN 0
+		--END
+		--Prüfen, ob vorhandenen Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ON_HAND AS D17_QUAN_ON_HAND 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ON_HAND <> (SELECT
+					SUM(D19.QUAN_ON_HAND) AS D19_TOTAL_QTY FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorhandene Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ON_HAND AS D19_QUAN_ON_HAND 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17
+					WITH (NOLOCK)  WHERE (D19.QUAN_ON_HAND <> (SELECT  
+					SUM(D20.QUAN_ON_HAND) AS D20_TOTAL_QTY FROM DATA0020 D20 
+					WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) )) AND 
+					(D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N_Consi) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorhandene Menge zwischen Lager und Charge stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob reservierte Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ALLOCATED AS D17_QUAN_ALLOCATED 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ALLOCATED <> (SELECT
+					SUM(D19.QUAN_ALLOCATED) AS D19_TOTAL_ALLOC FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Reservierte Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ALLOCATED AS D19_QUAN_ALLOCATED 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17 WITH (NOLOCK)  
+					WHERE (D19.QUAN_ALLOCATED <> (SELECT  SUM(D20.QUAN_ALLOCATED) AS D20_TOTAL_ALLOC
+					FROM DATA0020 D20 WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) ))
+					AND (D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N_Consi) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Reservierte Menge zwischen Lager und Charge stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Vorrat-Mengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_BACKLOG AS D17_QUAN_BACKLOG
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_BACKLOG <>
+					(SELECT SUM(D18.QUAN_IN_BACKLOG) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Vorrat-Menge zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Inspektionsmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_INSP AS D17_QUAN_IN_INSP
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_INSP <>
+					(SELECT SUM(D18.QUAN_IN_INSP) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Inspektionsmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Transitmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_TRANSIT AS D17_QUAN_IN_TRANSIT
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_TRANSIT <>
+					(SELECT SUM(D18.QUAN_IN_TRANSIT) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Transitmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--Prüfen, ob Bestellmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_ON_ORDER AS D17_QUAN_ON_ORDER
+					FROM   DATA0017 D17  WITH (NOLOCK)  WHERE  (D17.QUAN_ON_ORDER <>
+					(SELECT SUM(D18.QUAN_ON_ORDER) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			SELECT @OUTPUT_RES = 'Bestellmengen zwischen Artikel und Lagerplätzen stimmt nicht überein!'
+			RETURN 0
+		END
+		--#######################################################################################
+		BEGIN TRANSACTION  --####################################################################
+		--#######################################################################################
+		--Artikel sperren
+		DELETE FROM DATA0540 WHERE (TABLENAME = 'DATA0017') AND (LOCKED_RECORD_KEY = @RKEY_D17)
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : DELETE FROM DATA0540...'
+			RETURN @@ERROR
+		END
+		DECLARE @pIDENTITY_D540_Consi numeric(10, 0)
+		DECLARE @PARADIGM_USER_Consi char(5)
+		SET @PARADIGM_USER_Consi = (SELECT USER_ID FROM DATA0073 WHERe RKEY = @RKEY_D73)
+
+		exec SP_INSERTDATA0540	'DATA0017', 
+								@RKEY_D17, 
+								@COMPUTER_NAME, 
+								@NETWORK_USER, 
+								'\\ggp-srv-101\PARADIGM\Csi\Exec\C0113.EXE', 
+								@PARADIGM_USER_Consi, 
+								@TDATE,
+								@DATA0540RKEY = @pIDENTITY_D540_Consi
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0540...'
+			RETURN @@ERROR
+		END
+		--Chargenmenge aktualisieren (nur wenn Material Chargenorientiert ist)
+		--IF @pS_B_N_Consi = 'B'
+		--BEGIN
+		--	UPDATE DATA0020 SET QUAN_ON_HAND = @newQUAN_ON_HAND_D20 WHERE RKEY = @SELECTED_RKEY_D20
+		--	IF @@ERROR <> 0 
+		--	BEGIN
+		--		--#######################################################################################
+		--		ROLLBACK TRANSACTION  --#################################################################
+		--		--#######################################################################################
+		--		SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0020 SET...'
+		--		RETURN @@ERROR
+		--	END
+		--END
+		--Die Konsi-Lagerplatzmenge des Materials aktualisieren
+		UPDATE DATA0340 SET QUANTITY = @newQUAN_ON_HAND_D19 WHERE RKEY = @SELECTED_RKEY_D19
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0340 SET...'
+			RETURN @@ERROR
+		END
+		--Die vorhandene Menge und Jahresverbrauch des Materials aktualisieren. 
+		UPDATE DATA0017 SET CONSIGN_ONHAND_QTY = @newQUAN_ON_HAND_D17, YTD_USAGE = @newYTD_USAGE_D17_D18 WHERE RKEY = @RKEY_D17
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0017 SET...'
+			RETURN @@ERROR
+		END
+		--Jahresverbrauch des Materials beim Lager aktualisieren. 
+		UPDATE DATA0018 SET YTD_QUAN_USAGE = @newYTD_USAGE_D17_D18 WHERE RKEY = @RKEY_D18
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0018 SET...'
+			RETURN @@ERROR
+		END
+
+
+		--Prüfen, ob vorhandenen Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ON_HAND AS D17_QUAN_ON_HAND 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ON_HAND <> (SELECT
+					SUM(D19.QUAN_ON_HAND) AS D19_TOTAL_QTY FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (1)Prüfen, ob vorhandenen Mengen übereinstimmen (nach Update)'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ON_HAND AS D19_QUAN_ON_HAND 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17
+					WITH (NOLOCK)  WHERE (D19.QUAN_ON_HAND <> (SELECT  
+					SUM(D20.QUAN_ON_HAND) AS D20_TOTAL_QTY FROM DATA0020 D20 
+					WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) )) AND 
+					(D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N_Consi) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (2)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob reservierte Mengen übereinstimmen
+		IF Exists(
+					SELECT D17.RKEY AS D17_RKEY, D17.QUAN_ALLOCATED AS D17_QUAN_ALLOCATED 
+					FROM  DATA0017 D17 WITH (NOLOCK)  WHERE (D17.QUAN_ALLOCATED <> (SELECT
+					SUM(D19.QUAN_ALLOCATED) AS D19_TOTAL_ALLOC FROM DATA0019 D19
+					WHERE (D19.INVENTORY_PTR = D17.RKEY) )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (3)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		IF Exists(
+					SELECT D19.RKEY AS D19_RKEY, D19.QUAN_ALLOCATED AS D19_QUAN_ALLOCATED 
+					FROM  DATA0019 D19 WITH (NOLOCK)  ,  DATA0017 D17 WITH (NOLOCK)  
+					WHERE (D19.QUAN_ALLOCATED <> (SELECT  SUM(D20.QUAN_ALLOCATED) AS D20_TOTAL_ALLOC
+					FROM DATA0020 D20 WHERE (D20.INV_WHOUSE_LOC_PTR = D19.RKEY) ))
+					AND (D19.INVENTORY_PTR = D17.RKEY) AND (D17.S_B_N = @pS_B_N_Consi) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (4)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Vorrat-Mengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_BACKLOG AS D17_QUAN_BACKLOG
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_BACKLOG <>
+					(SELECT SUM(D18.QUAN_IN_BACKLOG) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (5)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Inspektionsmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_INSP AS D17_QUAN_IN_INSP
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_INSP <>
+					(SELECT SUM(D18.QUAN_IN_INSP) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (6)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Transitmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_IN_TRANSIT AS D17_QUAN_IN_TRANSIT
+					FROM   DATA0017 D17 WITH (NOLOCK)  WHERE  (D17.QUAN_IN_TRANSIT <>
+					(SELECT SUM(D18.QUAN_IN_TRANSIT) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (7)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+		--Prüfen, ob Bestellmengen übereinstimmen
+		IF Exists(
+					SELECT  D17.RKEY AS D17_RKEY, D17.QUAN_ON_ORDER AS D17_QUAN_ON_ORDER
+					FROM   DATA0017 D17  WITH (NOLOCK)  WHERE  (D17.QUAN_ON_ORDER <>
+					(SELECT SUM(D18.QUAN_ON_ORDER) AS TOTAL_QTY FROM DATA0018 D18
+					WHERE D18.INVENT_PTR = D17.RKEY  )) AND (D17.RKEY = @RKEY_D17)
+				  )
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : (8)Prüfen, ob vorhandenen Mengen übereinstimmen'
+			RETURN 0
+		END
+
+
+
+		--Ausgabe-Transaktion
+		DECLARE @pIDENTITY_D95_Consi_33 numeric(10, 0)
+		--DECLARE @pINVT_LOC_PTR_D95_Consi numeric(10, 0)
+		DECLARE @pTRAN_TP_D95_Consi numeric(10, 0)
+		--IF @pS_B_N_Consi = 'B' SET @pINVT_LOC_PTR_D95_Consi = @SELECTED_RKEY_D20 ELSE SET @pINVT_LOC_PTR_D95_Consi = @INVT_LOC_PTR_D95
+		SET @pTRAN_TP_D95_Consi = 33 --Einlagerung
+		--IF @AUSGABE = 'N' 
+		--BEGIN
+		--	SET @pTRAN_TP_D95_Consi = 16 
+		--	SET @AUSGABE_MENGE = @AUSGABE_MENGE * (-1)
+		--END
+		
+		DECLARE @pTDATE_Consi datetime
+		SET @pTDATE_Consi = DATEADD(dd, 0, DATEDIFF(dd, 0, @TDATE))
+		--IF @AUSGABE = 'N'
+		--BEGIN
+		--	SET @ERGAENZUNG_NEUANSATZ = (SELECT REFERENCE_NUMBER FROM DATA0095 WHERE RKEY = @rueckgabeRKEY_D95)
+		--END
+		DECLARE @pSRCE_PTR_D95_Consi numeric(10, 0)
+		SET @pSRCE_PTR_D95_Consi = (SELECT TOP 1 DATA0467_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+
+		exec SP_INSERTDATA0095 
+								@pTRAN_TP_D95_Consi, 
+								@RKEY_D17, 
+								@pSRCE_PTR_D95_Consi, 
+								@RKEY_D05, 
+								@RKEY_D73, 
+								@RKEY_D05, 
+								@INVT_LOC_PTR_D95, 
+								@pS_B_N_Consi, 
+								@pTDATE_Consi, 
+								@TTIME, 
+								@AUSGABE_MENGE, 
+								' ', 
+								@ERGAENZUNG_NEUANSATZ, 
+								0, 
+								@pTDATE_Consi, 
+								@TTIME,
+								@DATA0095RKEY = @pIDENTITY_D95_Consi_33 OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D95_Consi_33, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0095...'
+			RETURN @@ERROR
+		END
+
+	
+		DECLARE @pIDENTITY_D95_Consi_15 numeric(10, 0)
+	
+		SET @pTRAN_TP_D95_Consi = 15 --Materialausgabe
+		exec SP_INSERTDATA0095 
+								@pTRAN_TP_D95_Consi, 
+								@RKEY_D17, 
+								@SRCE_PTR_D95, 
+								@RKEY_D05, 
+								@RKEY_D73, 
+								@RKEY_D05, 
+								@INVT_LOC_PTR_D95, 
+								@pS_B_N_Consi, 
+								@pTDATE_Consi, 
+								@TTIME, 
+								@AUSGABE_MENGE, 
+								' ', 
+								@ERGAENZUNG_NEUANSATZ, 
+								0, 
+								@pTDATE_Consi, 
+								@TTIME,
+								@DATA0095RKEY = @pIDENTITY_D95_Consi_15 OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D95_Consi_15, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0095...'
+			RETURN @@ERROR
+		END
+
+		--IF @AUSGABE = 'N'
+		--BEGIN
+		--	UPDATE DATA0095 SET QTY_RETURNED = QTY_RETURNED + ABS(@AUSGABE_MENGE) WHERE RKEY = @rueckgabeRKEY_D95
+		--	IF @@ERROR <> 0 
+		--	BEGIN
+		--		--#######################################################################################
+		--		ROLLBACK TRANSACTION  --#################################################################
+		--		--#######################################################################################
+		--		SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : UPDATE DATA0095 SET...'
+		--		RETURN @@ERROR
+		--	END
+		--END
+		--Material Job-Kosten
+		DECLARE @pIDENTITY_D207_Consi numeric(10, 0)
+		DECLARE @pSTANDARD_COST_Consi numeric(20, 7)
+		SET @pSTANDARD_COST_Consi = (SELECT TOP 1 (PRICE/CONVERSION_FACTOR) AS PREIS FROM Data0071 WITH (NOLOCK)
+								WHERE INVT_PTR = @RKEY_D17 ORDER BY PO_PTR DESC)
+		exec SP_INSERTDATA0207 
+								2, 
+								@SRCE_PTR_D95, 
+								@RKEY_D17, 
+								0, 
+								@pIDENTITY_D95_Consi_15, 
+								@pTDATE_Consi, 
+								@AUSGABE_MENGE, 
+								@pSTANDARD_COST_Consi, 
+								@pTDATE_Consi, 
+								@TTIME,
+								@DATA0207RKEY = @pIDENTITY_D207_Consi OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D207_Consi, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0207 ...'
+			RETURN @@ERROR
+		END
+
+		DECLARE @pIDENTITY_D341_Consi numeric(10, 0)
+
+		DECLARE @pDATA0023_PTR_Consi numeric(10, 0)
+		SET @pDATA0023_PTR_Consi = (SELECT TOP 1 DATA0023_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+		DECLARE @pDATA0015_PTR_Consi numeric(10, 0)
+		SET @pDATA0015_PTR_Consi = (SELECT TOP 1 DATA0015_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+		DECLARE @pDATA0016_PTR_Consi numeric(10, 0)
+		SET @pDATA0016_PTR_Consi = (SELECT TOP 1 DATA0016_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+		DECLARE @pDATA0019_PTR_Consi numeric(10, 0)
+		SET @pDATA0019_PTR_Consi = (SELECT TOP 1 RKEY FROM  DATA0019  WITH (NOLOCK)  WHERE INVENTORY_PTR = @RKEY_D17 AND INV_WHOUSE_PTR = @RKEY_D18 AND LOCATION_PTR = @pDATA0016_PTR_Consi)
+		DECLARE @pSTD_COST_Consi numeric(20, 7)
+		SET @pSTD_COST_Consi = (SELECT TOP 1 STD_COST FROM Data0017 WITH (NOLOCK) WHERE RKEY = @RKEY_D17)
+		DECLARE @pDATA0466_PTR_Consi numeric(10, 0)
+		SET @pDATA0466_PTR_Consi = (SELECT TOP 1 DATA0466_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+		DECLARE @pDATA0467_PTR_Consi numeric(10, 0)
+		SET @pDATA0467_PTR_Consi = (SELECT TOP 1 DATA0467_PTR FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+
+		--Konsignation-Transaktion
+		exec SP_INSERTDATA0341 
+								@RKEY_D17, 
+								@pDATA0023_PTR_Consi, 
+								@pDATA0015_PTR_Consi, 
+								@pDATA0016_PTR_Consi, 
+								@pDATA0019_PTR_Consi, 
+								0, --DATA0020.RKEY -> Inventory Batch Pointer
+								@RKEY_D05,
+								0, --DATA0024.RKEY -> Supplier Location Pointer
+								0, --DATA0076.RKEY -> Material Rejects Pointer
+								@AUSGABE_MENGE,
+								@pTDATE_Consi, 
+								5, --Transaction Type = 5 -> Issue to Production Resource
+								@ERGAENZUNG_NEUANSATZ,
+								0, --Packing Slip Flag
+								@pSTD_COST_Consi,
+								@pDATA0466_PTR_Consi,
+								@pDATA0467_PTR_Consi,
+								NULL, --Expiry Date
+								'', --Delivery Note Number
+								'', --Stock Number
+								@SRCE_PTR_D95, --Bei Typ 5 ist das der Zeiger auf D34 (Ressource)
+								NULL, --UNDO_DATE DATETIME--
+								@DATA0341RKEY = @pIDENTITY_D341_Consi OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D341_Consi, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0341 ...'
+			RETURN @@ERROR
+		END
+
+		DECLARE @pIDENTITY_D342_Consi numeric(10, 0)
+
+		--Konsignation-Nachbestellung
+		exec SP_INSERTDATA0342 
+								@RKEY_D17, 
+								@pDATA0023_PTR_Consi, 
+								@pDATA0015_PTR_Consi,
+								@pIDENTITY_D95_Consi_15,
+								3, --Source Type = 3 -> Issue to Production Resources
+								@AUSGABE_MENGE,
+								@pTDATE_Consi,
+								@pDATA0466_PTR_Consi,
+								@pDATA0467_PTR_Consi,
+								'', --Delivery Note Number
+								'', --Stock Number
+								@pIDENTITY_D95_Consi_33,
+								@DATA0342RKEY = @pIDENTITY_D342_Consi OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D342_Consi, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0342 ...'
+			RETURN @@ERROR
+		END
+
+		--Ist scheinbar neu dazu gekommen (2015)
+		DECLARE @pIDENTITY_D625_Consi numeric(10, 0)
+		EXEC SP_INSERTDATA0625 
+								@pIDENTITY_D95_Consi_15, 
+								@pIDENTITY_D95_Consi_33, 
+								@pIDENTITY_D341_Consi, 
+								@DATA0625RKEY = @pIDENTITY_D625_Consi OUTPUT
+		IF @@ERROR <> 0 OR ISNULL(@pIDENTITY_D625_Consi, 0)=0
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : exec SP_INSERTDATA0625 ...'
+			RETURN @@ERROR
+		END
+
+		--Wenn Konsi-Bestellmenge leer ist, dann Eintrag aus DATA0340 löschen (entspricht DATA0019 bei normalem Material)
+		DECLARE @pNEUE_QUANTITY_Consi numeric(10, 0)
+		SET @pNEUE_QUANTITY_Consi = (SELECT TOP 1 QUANTITY FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19)
+		IF @pNEUE_QUANTITY_Consi=0
+		BEGIN
+			DELETE FROM DATA0340 WHERE RKEY = @SELECTED_RKEY_D19
+		END
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION : DELETE DATA0340 ...'
+			RETURN @@ERROR
+		END
+
+
+		IF @@ERROR <> 0 
+		BEGIN
+			--#######################################################################################
+			ROLLBACK TRANSACTION  --#################################################################
+			--#######################################################################################
+			SELECT @OUTPUT_RES = 'ROLLBACK TRANSACTION'
+			RETURN @@ERROR
+		END
+		ELSE
+		BEGIN
+			SELECT  @OUTPUT_RES = 'OK' + ';' + STR(ISNULL(@pIDENTITY_D95_Consi_15, 0)) + ';' + STR(ISNULL(@pIDENTITY_D207_Consi, 0))
+		END
+		--#######################################################################################
+		COMMIT TRANSACTION  --###################################################################
+		--#######################################################################################
+	END
+END

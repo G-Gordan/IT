@@ -1,0 +1,20 @@
+#pozadina {
+	background-image: url("../projekat za loto/image.png");
+}
+
+.ukucaj {
+	font-size: 70px;
+	color: red;
+	text-align: center;
+}
+
+.klikni {
+	font-size: 50px;
+	color: green;
+	text-align: center;
+}
+
+.start {
+	text-align: center;
+	margin-top: 250px;
+}

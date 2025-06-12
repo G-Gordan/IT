@@ -1,0 +1,54 @@
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\ResolveAssemblyReference.cache
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Form1.resources
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.login.resources
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Resources.resources
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.GenerateResource.Cache
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\UnK140K165.exe
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\UnK140K165.pdb
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\UnK140K165.xml
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.exe
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.xml
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.pdb
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\Interop.DTS.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\Interop.DTSCustTasks.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\Interop.DTSPump.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.ResolveComReference.cache
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\Interop.DTS.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\Interop.DTSCustTasks.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\bin\Debug\Interop.DTSPump.dll
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormRazl.resources
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormVanRasp.resources
+D:\.net\Radne verzije\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormNedU.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\Interop.DTS.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\Interop.DTSCustTasks.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\Interop.DTSPump.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.ResolveComReference.cache
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.exe
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.xml
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.pdb
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\UnK140K165.exe
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\UnK140K165.pdb
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\UnK140K165.xml
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\Interop.DTS.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\Interop.DTSCustTasks.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\bin\Debug\Interop.DTSPump.dll
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\ResolveAssemblyReference.cache
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Form1.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormNedU.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormRazl.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormVanRasp.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.login.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Resources.resources
+D:\.net\Gotovi projekti\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.GenerateResource.Cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.ResolveComReference.cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.exe
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.xml
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.pdb
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\ResolveAssemblyReference.cache
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Form1.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormNedU.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormRazl.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.FormVanRasp.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.login.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.Resources.resources
+C:\Users\gordan.grujic\Documents\Visual Studio 2008\Projects\UnK140K165\UnK140K165\obj\Debug\UnK140K165.vbproj.GenerateResource.Cache

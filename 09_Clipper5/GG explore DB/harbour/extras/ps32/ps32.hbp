@@ -1,0 +1,20 @@
+#
+# $Id: ps32.hbp 18512 2012-11-11 12:01:01Z vszakats $
+#
+
+-hblib
+-inc
+
+-olib/${hb_plat}/${hb_comp}/${hb_name}
+
+-w2 -es2
+
+hbxpp.hbc
+
+tpscript.prg
+
+-hbx=${hb_name}.hbx
+${hb_name}.hbx
+{hbdyn}${hb_name}.hbc
+$hb_pkg_dynlib.hbm
+$hb_pkg_install.hbm

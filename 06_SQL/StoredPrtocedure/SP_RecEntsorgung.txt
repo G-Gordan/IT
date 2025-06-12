@@ -1,0 +1,1599 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_RecEntsorgung]    Script Date: 22.12.2017 12:04:13 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		DSI
+-- Create date: 09.09.2015
+-- Description:Wird für die Auswertung Recycling und Entsorgung verwendet (s. GGP Manager)
+-- =============================================
+ALTER PROCEDURE [dbo].[GGP_SP_RecEntsorgung]
+	@Case_ varchar(255) = '',
+	@para varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(255) = '',
+	@para10 varchar(255) = '', 
+	@para11 varchar(255) = '',
+	@para12 varchar(255) = '', 
+	@para13 varchar(2000) = '',
+	@val1 numeric(10, 0) = 0,
+	@val2 numeric(10, 0) = 0,
+	@val3 numeric(10, 0) = 0,
+	@val4 numeric(10, 0) = 0,
+	@val5 numeric(10, 0) = 0,
+	@val6 decimal(10, 0) = 0,
+	@val7 decimal(10, 0) = 0,
+	@val8 decimal(10, 0) = 0,
+	@val9 decimal(10, 0) = 0,
+	@val10 decimal(10, 0) = 0,
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	DECLARE 
+		@Vorjahr_Von varchar(10),
+		@Vorjahr_Bis varchar(10)
+
+/*
+	IF @Case_ = 'REC_Material'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56269'
+
+		SELECT
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %')
+			), 0) AS LB,
+			ISNULL((
+				SELECT TOP 1 SUM(
+									dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY
+									* 
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+									*
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+									*
+									2.72																-- spez. Gewicht gr/cm3
+									/
+									1000																-- Kg
+								) 
+
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %')
+			), 0) AS LB_Alu,
+			*,
+			YEAR(Datum) AS Jahr,
+
+			ISNULL((
+				SELECT TOP 1 SUM(QUANTITY) AS RES 
+				FROM dbo.DATA0095 
+				WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+			), 0) AS MengeLautProd,
+			ISNULL((
+				SELECT TOP 1 SUM(QUANTITY) AS RES 
+				FROM dbo.DATA0095 
+				WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP=21 AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+			), 0) AS Abholmenge,
+			ISNULL((
+				SELECT TOP 1 SUM(QUANTITY) AS RES 
+				FROM dbo.DATA0095 
+				WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP=22 AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+			), 0) AS Einlagerung,
+			0 AS Verrechnet,
+			0 AS Kosten,
+
+			------
+			--ALU
+			------
+/*
+			ISNULL((
+
+				SELECT TOP 1 SUM(
+									CASE WHEN dbo.DATA0002.UNIT_CODE = 'KG' THEN
+											dbo.DATA0095.QUANTITY 
+										ELSE
+											(
+												dbo.DATA0095.QUANTITY 
+												* 
+												CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+												*
+												CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+												*
+												2.72																-- spez. Gewicht gr/cm3
+												/
+												1000	 															-- Kg
+											)
+									END
+								) 
+				FROM         dbo.DATA0017 INNER JOIN
+                      dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR INNER JOIN
+                      dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+						AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+			), 0) AS ALU_Einkauf_in_Kg,
+*/
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY 
+											* 
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+											*
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+											*
+											2.72																-- spez. Gewicht gr/cm3
+											/
+											1000																-- Kg
+										) 
+						--FROM dbo.DATA0095 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16, 23) 
+								AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0)
+			), 0) AS ALU_Ausgaben_in_Kg,
+			dbo.F_dsi_JahrAluKg(YEAR(Datum)) AS ALU_Einkauf_in_Kg,
+			------
+			--PLEX
+			------
+			ISNULL((
+				SELECT TOP 1 SUM(
+									dbo.DATA0095.QUANTITY 
+									* 
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+									*
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+									*
+									1.2																	-- spez. Gewicht gr/cm3
+									/
+									1000																-- Kg
+								) 
+				--FROM dbo.DATA0095 
+				FROM         dbo.DATA0017 INNER JOIN
+                      dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+				WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+						AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Plexiglas %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+			), 0) AS PLEX_Ausgaben_in_Kg,
+			ISNULL((
+				SELECT TOP 1 SUM(
+									dbo.DATA0108.QUANTITY 
+									* 
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+									*
+									CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+									*
+									1.2																	-- spez. Gewicht gr/cm3
+									/
+									1000																-- Kg
+								) 
+				FROM         dbo.DATA0017 INNER JOIN
+					  dbo.DATA0071 ON dbo.DATA0017.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+					  dbo.DATA0108 ON dbo.DATA0071.RKEY = dbo.DATA0108.DATA0071_PTR INNER JOIN
+					  dbo.DATA0107 ON dbo.DATA0108.DATA0107_PTR = dbo.DATA0107.RKEY
+				WHERE YEAR(dbo.DATA0107.INV_DATE)=YEAR(Datum)
+						AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Plexiglas %')
+			), 0) AS PLEX_Einkauf_in_Kg,
+
+			------
+			--CU
+			------
+			ISNULL((
+				SELECT TOP 1
+					SUM(
+							CASE WHEN dbo.ARTIKELDATEN.CuD_B=0 OR (( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) - (dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)/( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) <= 0
+											OR (( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) - (dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)/( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) >= 1 THEN
+									ROUND(
+										(( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000)*0.6)*dbo.ARTIKELDATEN.CuD_B*8.92/1000*(CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) / dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT))
+										, 4)
+									ELSE
+									ROUND(
+										(( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000)-(dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)*dbo.ARTIKELDATEN.CuD_B*8.92/1000*(CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) / dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT))
+										, 4)
+							END 
+						) AS CuKg
+
+				FROM         dbo.DATA0056 WITH (nolock) LEFT OUTER JOIN
+									  dbo.DATA0038 ON dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR AND dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER RIGHT OUTER JOIN
+									  dbo.ARTIKELDATEN RIGHT OUTER JOIN
+									  dbo.DATA0048 WITH (nolock) INNER JOIN
+									  dbo.DATA0034 WITH (nolock) ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0006 WITH (nolock) ON dbo.DATA0048.WO_PTR = dbo.DATA0006.RKEY ON dbo.ARTIKELDATEN.CUST_PART_PTR = dbo.DATA0006.CUST_PART_PTR ON 
+									  dbo.DATA0056.RKEY = dbo.DATA0048.TPUT_PTR
+				WHERE     
+					dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT > 0 
+					AND dbo.DATA0038.TTYPE = 2 
+					AND YEAR(dbo.DATA0048.TDATE) = 2015
+					AND dbo.DATA0034.RKEY IN (86, 328, 329, 53, 452)
+			), 0) AS CU_Ausgaben_in_Kg,
+			------
+			--ZINN BF
+			------
+			ISNULL((
+				ISNULL((
+					SELECT TOP 1 SUM(
+										dbo.DATA0095.QUANTITY -- Kg
+									) 
+					FROM         dbo.DATA0017 INNER JOIN
+						  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+					WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16, 21) 
+							AND (dbo.DATA0017.RKEY=1214) --Zinn-Barren SnNi für bleifrei HAL
+				), 0)
+			), 0) AS ZinnBF_Ausgaben_in_Kg
+
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				ISNULL((
+					SELECT TOP 1 SUM(PEX95.recycling_IstMenge) AS RES 
+					FROM         dbo.DATA0095 AS D95 INNER JOIN
+										  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 16, 23))
+								AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS MengeJahr,
+				dbo.DATA0095.QUANTITY AS SollMenge,
+				ISNULL((
+					SELECT TOP 1 SUM(D95.QUANTITY) AS RES
+					FROM         dbo.DATA0095 AS D95
+					WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 21))
+								AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS SollMengeJahr,
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis, 
+				ISNULL((
+					--SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					--FROM LIVE2.dbo.PEX_D0095Extend AS PEX95 
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					FROM         dbo.DATA0095 AS D95 INNER JOIN
+										  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 21))
+								AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS VKWert,
+				ISNULL((
+					SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					FROM LIVE2.dbo.PEX_D0095Extend AS PEX95 
+					WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS Diff,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+					AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS MengeJahr,
+			0 AS SollMenge,
+			0 AS SollMengeJahr,
+			ISNULL(Einzelpreis/1000, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis/1000, 0) AS Einzelpreis,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge * ExcelDaten.Einzelpreis/1000) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+						AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS VKWert,
+			0 AS Diff,
+			Entsorger,
+			RENummer
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblAluUNION
+		ORDER BY Datum DESC
+	END
+*/
+
+	IF @Case_ = 'REC_Material_ALU'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56269'
+
+		SELECT
+			ISNULL((
+				SELECT TOP 1
+					INV_PART_DESCRIPTION
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %')
+			), '') AS Bezeichnung,
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			ISNULL(Boersenpreis, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis, 0) AS Einzelpreis,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY 
+											* 
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+											*
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+											*
+											2.72																-- spez. Gewicht gr/cm3
+											/
+											1000																-- Kg
+										) 
+						--FROM dbo.DATA0095 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+								AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0)
+				+
+				ISNULL((
+						SELECT TOP 1 (-1)*SUM(
+											dbo.DATA0095.QUANTITY 
+											* 
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+											*
+											CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+											*
+											2.72																-- spez. Gewicht gr/cm3
+											/
+											1000																-- Kg
+										) 
+						--FROM dbo.DATA0095 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23 --Inventur
+								AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0)
+			), 0) AS ALU_Ausgaben_in_Kg_Jahr,
+			dbo.F_dsi_JahrAluKg(YEAR(Datum)) AS ALU_Einkauf_in_Kg_Jahr,
+			MengeJahr,
+			VKWertJahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(
+							(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY)
+							* 
+							CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+							*
+							CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+							*
+							2.72																-- spez. Gewicht gr/cm3
+							/
+							1000																-- Kg
+					) AS RES
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Aluminium %')
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge,
+				ISNULL((
+					ISNULL((
+						SELECT TOP 1 SUM(PEX95.recycling_IstMenge) AS RES 
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+											  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+						--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+						WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 16, 21))
+									AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					), 0) 
+					--+
+					--ISNULL((
+					--	SELECT TOP 1 (-1)*SUM(PEX95.recycling_IstMenge) AS RES 
+					--	FROM         dbo.DATA0095 AS D95 INNER JOIN
+					--						  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--	--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					--	WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP = 23)
+					--				AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					--), 0) 
+				), 0) AS MengeJahr, 
+				dbo.DATA0095.QUANTITY AS GGPAusgabeMenge,
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis, 
+				ISNULL((
+					--SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					--FROM LIVE2.dbo.PEX_D0095Extend AS PEX95 
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					FROM         dbo.DATA0095 AS D95 INNER JOIN
+										  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 21))
+								AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS VKWertJahr,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+					AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS MengeJahr,
+			0 AS GGPAusgabeMenge,
+			ISNULL(BoersenPreis, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis, 0) AS Einzelpreis,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge * ExcelDaten.Einzelpreis) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+						AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS VKWertJahr,
+			Entsorger,
+			RENummer
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblAluUNION
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'REC_Material_II'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56272'
+
+		SELECT
+			ISNULL((
+				SELECT TOP 1
+					INV_PART_DESCRIPTION
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0)))
+			), '') AS Bezeichnung,
+			Datum,
+			Menge,
+			Einzelpreis,
+			GGPAusgabeMenge,
+			Entsorger, 
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+					SELECT TOP 1 SUM(QUANTITY) AS RES 
+					FROM dbo.DATA0095 
+					WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0) 
+				+
+				ISNULL((
+					SELECT TOP 1 (-1)*SUM(QUANTITY) AS RES 
+					FROM dbo.DATA0095 
+					WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23 AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0) 
+			), 0) AS GGPAusgabeMenge_Jahr,
+			(
+				(
+					ISNULL((
+						SELECT TOP 1 SUM(QUANTITY) AS RES 
+						FROM dbo.DATA0095 
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+					), 0)
+					+
+					ISNULL((
+						SELECT TOP 1 SUM(QUANTITY) AS RES 
+						FROM dbo.DATA0095 
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23 AND INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+					), 0)
+				)
+				*
+				ISNULL(Einzelpreis, 0)
+			) AS VKWert_Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0)))
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				dbo.DATA0095.QUANTITY AS GGPAusgabeMenge,
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 16, 21))
+
+			UNION ALL
+
+			SELECT
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			0 AS GGPAusgabeMenge,
+			ISNULL(BoersenPreis, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis, 0) AS Einzelpreis,
+			Entsorger,
+			RENummer
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblAluUNION
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'REC_Material_PLEXI'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56271'
+
+		SELECT
+			ISNULL((
+				SELECT TOP 1
+					INV_PART_DESCRIPTION
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0))
+			), '') AS Bezeichnung,
+			Datum,
+			Menge,
+			Einzelpreis,
+			GGPAusgabeMenge,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+					SELECT TOP 1 SUM(
+										dbo.DATA0095.QUANTITY 
+										* 
+										CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+										*
+										CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+										*
+										1.2																	-- spez. Gewicht gr/cm3
+										/
+										1000																-- Kg
+									) 
+					--FROM dbo.DATA0095 
+					FROM         dbo.DATA0017 INNER JOIN
+						  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+					WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+							AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Plexiglas %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0) 
+				+
+				ISNULL((
+					SELECT TOP 1 (-1)*SUM(
+										dbo.DATA0095.QUANTITY 
+										* 
+										CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE1, ',', '.') AS REAL)/10		-- Dicke in cm
+										*
+										CAST(REPLACE(dbo.DATA0017.ANALYSIS_CODE5, ',', '.') AS REAL)*10000	-- Fläche
+										*
+										1.2																	-- spez. Gewicht gr/cm3
+										/
+										1000																-- Kg
+									) 
+					--FROM dbo.DATA0095 
+					FROM         dbo.DATA0017 INNER JOIN
+						  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+					WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23 
+							AND (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Plexiglas %') --INVT_PTR=CAST(@para AS DECIMAL(10, 0))
+				), 0)
+			), 0) AS PLEXI_Ausgaben_in_Kg_Jahr,
+			dbo.F_dsi_JahrPlexiKg(YEAR(Datum)) AS PLEXI_Einkauf_in_Kg_Jahr,
+			MengeJahr,
+			VKWertJahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE (dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'Plexiglas %')
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				ISNULL((
+					ISNULL((
+						SELECT TOP 1 SUM(PEX95.recycling_IstMenge) AS RES 
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+											  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+						--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+						WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 16, 21))
+									AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					), 0) 
+					--+
+					--ISNULL((
+					--	SELECT TOP 1 (-1)*SUM(PEX95.recycling_IstMenge) AS RES 
+					--	FROM         dbo.DATA0095 AS D95 INNER JOIN
+					--						  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--	--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					--	WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP = 23)
+					--				AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					--), 0) 
+				), 0) AS MengeJahr,
+				dbo.DATA0095.QUANTITY AS GGPAusgabeMenge,
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis, 
+				ISNULL((
+					--SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					--FROM LIVE2.dbo.PEX_D0095Extend AS PEX95 
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					SELECT TOP 1 SUM(PEX95.recycling_IstMenge * PEX95.recycling_EinzelpreisEUR) AS RES 
+					FROM         dbo.DATA0095 AS D95 INNER JOIN
+										  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+					--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 21))
+								AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+				), 0) AS VKWertJahr,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+					AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS MengeJahr,
+			0 AS GGPAusgabeMenge,
+			ISNULL(BoersenPreis, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis, 0) AS Einzelpreis,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge * ExcelDaten.Einzelpreis) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+						AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS VKWertJahr,
+			Entsorger,
+			RENummer
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblPlexiUNION
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'REC_Material_Cu'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56268'
+
+		SELECT
+			ISNULL((
+				SELECT TOP 1
+					INV_PART_DESCRIPTION
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS Bezeichnung,
+			Datum,
+			Menge,
+			BoersenPreis,
+			Einzelpreis,
+			GGPAusgabeMenge,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(
+							CASE WHEN dbo.ARTIKELDATEN.CuD_B=0 OR (( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) - (dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)/( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) <= 0
+											OR (( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) - (dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)/( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000) >= 1 THEN
+									ROUND(
+										(( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000)*0.6)*dbo.ARTIKELDATEN.CuD_B*8.92/1000*(CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) / dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT))
+										, 4)
+									ELSE
+									ROUND(
+										(( CASE WHEN dbo.ARTIKELDATEN.LE>1 THEN 2 ELSE 1 END *dbo.ARTIKELDATEN.ZuX*dbo.ARTIKELDATEN.ZuY/1000000)-(dbo.ARTIKELDATEN.CuFl_L+dbo.ARTIKELDATEN.CuFl_B)/100)*dbo.ARTIKELDATEN.CuD_B*8.92/1000*(CAST(CAST(dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT AS FLOAT) / dbo.ARTIKELDATEN.ELP_Zu + 0.9999 AS INT))
+										, 4)
+							END 
+						) AS CuKg
+
+				FROM         dbo.DATA0056 WITH (nolock) LEFT OUTER JOIN
+									  dbo.DATA0038 ON dbo.DATA0056.WO_PTR = dbo.DATA0038.SOURCE_PTR AND dbo.DATA0056.STEP = dbo.DATA0038.STEP_NUMBER RIGHT OUTER JOIN
+									  dbo.ARTIKELDATEN RIGHT OUTER JOIN
+									  dbo.DATA0048 WITH (nolock) INNER JOIN
+									  dbo.DATA0034 WITH (nolock) ON dbo.DATA0048.WORK_CENTER_PTR = dbo.DATA0034.RKEY INNER JOIN
+									  dbo.DATA0006 WITH (nolock) ON dbo.DATA0048.WO_PTR = dbo.DATA0006.RKEY ON dbo.ARTIKELDATEN.CUST_PART_PTR = dbo.DATA0006.CUST_PART_PTR ON 
+									  dbo.DATA0056.RKEY = dbo.DATA0048.TPUT_PTR
+				WHERE     
+					dbo.DATA0048.QTY_PROD + dbo.DATA0048.QTY_REJECT > 0 
+					AND dbo.DATA0038.TTYPE = 2 
+					AND YEAR(dbo.DATA0048.TDATE) = 2015
+					AND dbo.DATA0034.RKEY IN (86, 328, 329, 53, 452)
+			), 0) AS CU_Ausgaben_in_Kg_Jahr,
+			MengeJahr,
+			GGPAusgabeMengeJahr,
+			GGPAusgabeMengeJahr*Einzelpreis AS VKWertJahr,
+
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				ISNULL((
+					ISNULL((
+						SELECT TOP 1 SUM(PEX95.recycling_IstMenge) AS RES 
+						FROM         dbo.DATA0095 AS D95 INNER JOIN
+											  LIVE2.dbo.PEX_D0095Extend AS PEX95 ON D95.RKEY = PEX95.D95_PTR
+						--WHERE YEAR(PEX95.recycling_REDatum) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+						WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 16, 21))
+									AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					), 0) 
+					--+
+					--ISNULL((
+					--	SELECT TOP 1 (-1)*SUM(QUANTITY) AS RES 
+					--	FROM         dbo.DATA0095 
+					--	WHERE     (INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (TRAN_TP = 23)
+					--				AND YEAR(TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					--), 0) 
+				), 0) AS MengeJahr,
+				dbo.DATA0095.QUANTITY AS GGPAusgabeMenge,
+				ISNULL((
+					ISNULL((
+						SELECT TOP 1 SUM(D95.QUANTITY) AS RES
+						FROM         dbo.DATA0095 AS D95
+						WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP IN (15, 21))
+									AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					), 0)
+					+
+					ISNULL((
+						SELECT TOP 1 (-1)*SUM(D95.QUANTITY) AS RES
+						FROM         dbo.DATA0095 AS D95
+						WHERE     (D95.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (D95.TRAN_TP = 23)
+									AND YEAR(D95.TRAN_DATE) = YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum)
+					), 0)
+				), 0) AS GGPAusgabeMengeJahr,
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+			Datum,
+			ISNULL(Menge, 0) AS Menge,
+			ISNULL((
+				SELECT TOP 1 SUM(ExcelDaten.Menge) AS RES 
+				FROM LIVE2.dbo.RecyclingAlteExcelDaten AS ExcelDaten 
+				WHERE YEAR(ExcelDaten.Datum) = YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum)
+					AND ExcelDaten.D17_PTR = CAST(@para AS DECIMAL(10, 0))
+			), 0) AS MengeJahr,
+			0 AS GGPAusgabeMenge,
+			0 AS GGPAusgabeMengeJahr,
+			ISNULL(BoersenPreis, 0) AS BoersenPreis,
+			ISNULL(Einzelpreis, 0) AS Einzelpreis,
+			Entsorger,
+			RENummer
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblAluUNION
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'REC_Material_HAL'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255),
+		--@para1 varchar(255)
+		--SET @para = '56243' --Wertstoff Zinnbarren  bleifrei
+		--SET @para1 = '1214' --Zinn-Barren SnNi für bleifrei HAL
+
+		SELECT
+			Datum,
+			Menge,
+			BoersenPreis,
+			Einzelpreis,
+			SollMengeGGP,
+			Diff_GGP_Lieferant,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+								AND (dbo.DATA0017.RKEY=CAST(@para AS DECIMAL(10, 0)) )
+				), 0) 
+				+
+				ISNULL((
+						SELECT TOP 1 (-1)*SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23
+								AND (dbo.DATA0017.RKEY=CAST(@para AS DECIMAL(10, 0)) )
+				), 0) 
+			), 0) AS Materialrueckmeldung,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+										+ 
+										(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKMenge_Jahr,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										(LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge * LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR) 
+										+
+										(
+											(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+											* 
+											LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR
+										)
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge*ISNULL(Einzelpreis/1000, 0)) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKWert_Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0)) 
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis,
+				dbo.DATA0095.QUANTITY AS SollMengeGGP,
+				(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) AS Diff_GGP_Lieferant,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+				
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 16, 21))
+
+			UNION ALL
+
+			SELECT
+				Datum,
+				ISNULL(Menge, 0) AS Menge,
+				ISNULL(BoersenPreis, 0) AS BoersenPreis,
+				ISNULL(Einzelpreis, 0) AS Einzelpreis,
+				ISNULL(Menge, 0) AS SollMengeGGP,
+				0 AS Diff_GGP_Lieferant,
+				Entsorger,
+				RENummer
+
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblHallBF
+		ORDER BY Datum DESC
+	END
+
+/*
+	IF @Case_ = 'REC_Material_HAL_BF'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56243' --Wertstoff Zinnbarren  bleifrei
+
+		SELECT
+			Datum,
+			Menge,
+			BoersenPreis,
+			Einzelpreis,
+			SollMengeGGP,
+			Diff_GGP_Lieferant,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+								AND (dbo.DATA0017.RKEY=1214) --Zinn-Barren SnNi für bleifrei HAL
+				), 0) 
+				+
+				ISNULL((
+						SELECT TOP 1 (-1)*SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23
+								AND (dbo.DATA0017.RKEY=1214) --Zinn-Barren SnNi für bleifrei HAL
+				), 0) 
+			), 0) AS Materialrueckmeldung,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+										+ 
+										(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKMenge_Jahr,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										(LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge * LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR) 
+										+
+										(
+											(
+												LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+												+ 
+												(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+											)
+											* 
+											LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR
+										)
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge*ISNULL(Einzelpreis/1000, 0)) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKWert_Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = 1214 -- Zinn-Barren SnNi für bleifrei HAL
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis,
+				dbo.DATA0095.QUANTITY AS SollMengeGGP,
+				(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) AS Diff_GGP_Lieferant,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+				
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+				Datum,
+				ISNULL(Menge, 0) AS Menge,
+				ISNULL(Einzelpreis/1000, 0) AS BoersenPreis,
+				ISNULL(Einzelpreis/1000, 0) AS Einzelpreis,
+				ISNULL(Menge, 0) AS SollMengeGGP,
+				0 AS Diff_GGP_Lieferant,
+				Entsorger,
+				RENummer
+
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblHallBF
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'REC_Material_HAL_VB'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255)
+		--SET @para = '56250' --Wertstoff Zinnbarren verbleit
+
+		SELECT
+			Datum,
+			Menge,
+			BoersenPreis,
+			Einzelpreis,
+			SollMengeGGP,
+			Diff_GGP_Lieferant,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+								AND (dbo.DATA0017.RKEY=236) --Blei/Zinn-Stangen Sn63Pb37, DIN EN 29453
+				), 0) 
+				+
+				ISNULL((
+						SELECT TOP 1 (-1)*SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23
+								AND (dbo.DATA0017.RKEY=236) --Blei/Zinn-Stangen Sn63Pb37, DIN EN 29453
+				), 0) 
+			), 0) AS Materialrueckmeldung,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+										+ 
+										(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKMenge_Jahr,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										(LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge * LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR) 
+										+
+										(
+											(
+												LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+												+ 
+												(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+											)
+											* 
+											LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR
+										)
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge*ISNULL(Einzelpreis/1000, 0)) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKWert_Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = 236 --Blei/Zinn-Stangen Sn63Pb37, DIN EN 29453
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis,
+				dbo.DATA0095.QUANTITY AS SollMengeGGP,
+				(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) AS Diff_GGP_Lieferant,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+				
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+
+			UNION ALL
+
+			SELECT
+				Datum,
+				ISNULL(Menge, 0) AS Menge,
+				ISNULL(Einzelpreis/1000, 0) AS BoersenPreis,
+				ISNULL(Einzelpreis/1000, 0) AS Einzelpreis,
+				ISNULL(Menge, 0) AS SollMengeGGP,
+				0 AS Diff_GGP_Lieferant,
+				Entsorger,
+				RENummer
+
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblHallBF
+		ORDER BY Datum DESC
+	END
+*/
+
+	IF @Case_ = 'REC_Material_V'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255),
+		--@para1 varchar(255)
+		--SET @para = '56279' 
+
+		SELECT
+			Datum,
+			Menge,
+			BoersenPreis,
+			Einzelpreis,
+			SollMengeGGP,
+			Diff_GGP_Lieferant,
+			EntsorgerKosten,
+			Entsorger,
+			RENummer,
+
+			YEAR(Datum) AS Jahr,
+			ISNULL((
+				ISNULL((
+						SELECT TOP 1 SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP IN (15, 16) 
+								AND (dbo.DATA0017.RKEY=CAST(@para AS DECIMAL(10, 0)) )
+				), 0) 
+				+
+				ISNULL((
+						SELECT TOP 1 (-1)*SUM(
+											dbo.DATA0095.QUANTITY -- Kg
+										) 
+						FROM         dbo.DATA0017 INNER JOIN
+							  dbo.DATA0095 ON dbo.DATA0017.RKEY = dbo.DATA0095.INVT_PTR
+						WHERE YEAR(TRAN_DATE)=YEAR(Datum) AND TRAN_TP = 23
+								AND (dbo.DATA0017.RKEY=CAST(@para AS DECIMAL(10, 0)) )
+				), 0) 
+			), 0) AS Materialrueckmeldung,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge 
+										+ 
+										(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKMenge_Jahr,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1   
+								SUM(
+										(LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge * LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR) 
+										+
+										(
+											(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) 
+											* 
+											LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR
+										)
+									) AS RES
+								
+							FROM         dbo.DATA0095 INNER JOIN
+												  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+							WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 21))
+									AND YEAR(LIVE2.dbo.PEX_D0095Extend.recycling_REDatum) = YEAR(tblHallBF.Datum)
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Menge*ISNULL(Einzelpreis/1000, 0)) AS RES
+
+							FROM LIVE2.dbo.RecyclingAlteExcelDaten
+							WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+									AND YEAR(LIVE2.dbo.RecyclingAlteExcelDaten.Datum) = YEAR(tblHallBF.Datum)
+					), 0)
+			), 0) AS VKWert_Jahr,
+			ISNULL((
+				SELECT TOP 1
+					SUM(dbo.DATA0017.QUAN_ON_HAND + dbo.DATA0017.CONSIGN_ONHAND_QTY) AS RES
+				FROM dbo.DATA0017 WHERE dbo.DATA0017.RKEY = CAST(@para AS DECIMAL(10, 0)) 
+			), 0) AS LB
+
+		FROM
+		(
+			SELECT     
+				LIVE2.dbo.PEX_D0095Extend.recycling_REDatum AS Datum, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge AS Menge, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_BoersenpreisEUR AS BoersenPreis, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_EinzelpreisEUR AS Einzelpreis,
+				(
+					ISNULL(LIVE2.dbo.PEX_D0095Extend.recycling_TransKosten, 0) 
+					+
+					ISNULL(LIVE2.dbo.PEX_D0095Extend.recycling_AnalyKosten, 0) 
+					+
+					ISNULL(LIVE2.dbo.PEX_D0095Extend.recycling_BearbKosten, 0) 
+					+
+					ISNULL(LIVE2.dbo.PEX_D0095Extend.recycling_SonstKosten, 0) 
+				) AS EntsorgerKosten,
+				dbo.DATA0095.QUANTITY AS SollMengeGGP,
+				(dbo.DATA0095.QUANTITY-LIVE2.dbo.PEX_D0095Extend.recycling_IstMenge) AS Diff_GGP_Lieferant,
+				LIVE2.dbo.PEX_D0095Extend.recycling_ABBR_NAME AS Entsorger, 
+				LIVE2.dbo.PEX_D0095Extend.recycling_RENummer AS RENummer
+				
+			FROM         dbo.DATA0095 INNER JOIN
+								  LIVE2.dbo.PEX_D0095Extend ON dbo.DATA0095.RKEY = LIVE2.dbo.PEX_D0095Extend.D95_PTR
+			WHERE     (dbo.DATA0095.INVT_PTR = CAST(@para AS DECIMAL(10, 0))) AND (dbo.DATA0095.TRAN_TP IN (15, 16, 21))
+
+			UNION ALL
+
+			SELECT
+				Datum,
+				ISNULL(Menge, 0) AS Menge,
+				ISNULL(BoersenPreis, 0) AS BoersenPreis,
+				ISNULL(Einzelpreis, 0) AS Einzelpreis,
+				0 AS EntsorgerKosten,
+				ISNULL(Menge, 0) AS SollMengeGGP,
+				0 AS Diff_GGP_Lieferant,
+				Entsorger,
+				RENummer
+
+			FROM LIVE2.dbo.RecyclingAlteExcelDaten
+			WHERE D17_PTR=CAST(@para AS DECIMAL(10, 0))
+		) AS tblHallBF
+		ORDER BY Datum DESC
+	END
+
+	IF @Case_ = 'ENTS_PC_GRP'
+	BEGIN
+		--DECLARE 
+		--@para4 varchar(255),
+		--@para5 varchar(255)
+		--SET @para4 = '01.07.2015'	--Datum Von
+		--SET @para5 = '31.08.2015'	--Datum Bis
+
+		--DECLARE 
+		--@Vorjahr_Von varchar(10),
+		--@Vorjahr_Bis varchar(10)
+
+		SET @Vorjahr_Von = LEFT(RTRIM(@para4), 6) + LTRIM(RTRIM(STR(CAST(RIGHT(RTRIM(@para4), 4) AS INT)-1)))
+		SET @Vorjahr_Bis = LEFT(RTRIM(@para5), 6) + LTRIM(RTRIM(STR(CAST(RIGHT(RTRIM(@para5), 4) AS INT)-1)))
+
+		SELECT 
+			*
+		FROM
+		(
+			SELECT
+				INV_PART_DESCRIPTION,
+				ISNULL((
+					SELECT TOP 1  
+						SUM(dbo.DATA0108.QUANTITY * (dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE)) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0008 AS D8 INNER JOIN
+										  dbo.DATA0017 AS D17 ON D8.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+										  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0107.SUPP_PTR = dbo.DATA0023.RKEY
+					WHERE     
+							D17.INV_PART_DESCRIPTION = tblGrpPCLief.INV_PART_DESCRIPTION
+							AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103)
+							AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103)
+				), 0) AS Kosten,
+				ISNULL((
+					SELECT TOP 1  
+						SUM(dbo.DATA0108.QUANTITY * (dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE)) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0008 AS D8 INNER JOIN
+										  dbo.DATA0017 AS D17 ON D8.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+										  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0023 AS D23 ON dbo.DATA0107.SUPP_PTR = D23.RKEY
+					WHERE     
+							D17.RKEY = tblGrpPCLief.D17_PTR
+							AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @Vorjahr_Von, 103)
+							AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @Vorjahr_Bis, 103)
+				), 0) AS Kosten_Vorjahr
+			FROM
+			(
+				SELECT   
+					dbo.DATA0017.RKEY AS D17_PTR,  
+					dbo.DATA0017.INV_PART_DESCRIPTION
+
+				FROM         dbo.DATA0107 INNER JOIN
+							  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+							  dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0071 ON dbo.DATA0017.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+							  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+							  dbo.DATA0023 ON dbo.DATA0017.PREF_SUPPLIER_PTR = dbo.DATA0023.RKEY INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE     
+						LEFT(dbo.DATA0008.PROD_CODE, 3) IN ('EXE', 'EXF')
+						AND
+							(
+								(dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103) AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103))
+								OR
+								(dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @Vorjahr_Von, 103) AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @Vorjahr_Bis, 103))
+							)
+				GROUP BY
+					dbo.DATA0017.RKEY,
+					dbo.DATA0017.INV_PART_DESCRIPTION
+			) AS tblGrpPCLief
+		) AS tblGrpPCLiefSort
+		ORDER BY Kosten DESC
+	END
+
+	IF @Case_ = 'ENTS_PC_GRP_Art'
+	BEGIN
+		--DECLARE 
+		--@para4 varchar(255),
+		--@para5 varchar(255)
+		--SET @para4 = '01.07.2015'	--Datum Von
+		--SET @para5 = '31.08.2015'	--Datum Bis
+
+		--DECLARE 
+		--@Vorjahr_Von varchar(10),
+		--@Vorjahr_Bis varchar(10)
+
+		SET @Vorjahr_Von = LEFT(RTRIM(@para4), 6) + LTRIM(RTRIM(STR(CAST(RIGHT(RTRIM(@para4), 4) AS INT)-1)))
+		SET @Vorjahr_Bis = LEFT(RTRIM(@para5), 6) + LTRIM(RTRIM(STR(CAST(RIGHT(RTRIM(@para5), 4) AS INT)-1)))
+
+		SELECT 
+			*
+		FROM
+		(
+			SELECT
+				INV_PART_DESCRIPTION,
+				SUPPLIER_NAME,
+				UNIT_CODE,
+				ISNULL((
+					SELECT TOP 1  
+						SUM(dbo.DATA0108.QUANTITY) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0008 AS D8 INNER JOIN
+										  dbo.DATA0017 AS D17 ON D8.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+										  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0107.SUPP_PTR = dbo.DATA0023.RKEY
+					WHERE     
+							D17.RKEY = tblGrpPCLief.D17_PTR
+							AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103)
+							AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103)
+				), 0) AS QUANTITY,
+				ISNULL((
+					SELECT TOP 1  
+						SUM(dbo.DATA0108.QUANTITY * (dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE)) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0008 AS D8 INNER JOIN
+										  dbo.DATA0017 AS D17 ON D8.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+										  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0107.SUPP_PTR = dbo.DATA0023.RKEY
+					WHERE     
+							D17.INV_PART_DESCRIPTION = tblGrpPCLief.INV_PART_DESCRIPTION
+							AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103)
+							AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103)
+				), 0) AS Kosten,
+				ISNULL((
+					SELECT TOP 1  
+						SUM(dbo.DATA0108.QUANTITY * (dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE)) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0008 AS D8 INNER JOIN
+										  dbo.DATA0017 AS D17 ON D8.RKEY = D17.PROD_CODE_SELL_PTR INNER JOIN
+										  dbo.DATA0071 ON D17.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+										  dbo.DATA0023 AS D23 ON dbo.DATA0107.SUPP_PTR = D23.RKEY
+					WHERE     
+							D17.RKEY = tblGrpPCLief.D17_PTR
+							AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @Vorjahr_Von, 103)
+							AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @Vorjahr_Bis, 103)
+				), 0) AS Kosten_Vorjahr
+			FROM
+			(
+				SELECT   
+					dbo.DATA0017.RKEY AS D17_PTR,  
+					dbo.DATA0017.INV_PART_DESCRIPTION, 
+					dbo.DATA0023.SUPPLIER_NAME,
+					dbo.DATA0002.UNIT_CODE
+
+				FROM         dbo.DATA0107 INNER JOIN
+							  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+							  dbo.DATA0008 INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0071 ON dbo.DATA0017.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+							  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+							  dbo.DATA0023 ON dbo.DATA0017.PREF_SUPPLIER_PTR = dbo.DATA0023.RKEY INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE     
+						LEFT(dbo.DATA0008.PROD_CODE, 3) IN ('EXE', 'EXF')
+						AND
+							(
+								(dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103) AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103))
+								OR
+								(dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @Vorjahr_Von, 103) AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @Vorjahr_Bis, 103))
+							)
+				GROUP BY
+					dbo.DATA0017.RKEY,
+					dbo.DATA0023.SUPPLIER_NAME,
+					dbo.DATA0017.INV_PART_DESCRIPTION,
+					dbo.DATA0002.UNIT_CODE
+			) AS tblGrpPCLief
+		) AS tblGrpPCLiefSort
+		ORDER BY Kosten DESC
+	END
+
+	IF @Case_ = 'ENTS_PC_GRP_Art_Datum'
+	BEGIN
+		--DECLARE 
+		--@para4 varchar(255),
+		--@para5 varchar(255)
+		--SET @para4 = '01.07.2015'	--Datum Von
+		--SET @para5 = '31.08.2015'	--Datum Bis
+
+
+		SELECT
+			INV_DATE,
+			D17_PTR,  
+			INV_PART_DESCRIPTION,
+			SUPPLIER_NAME,
+			UNIT_CODE,
+			SUM(QUANTITY) AS QUANTITY,
+			SUM(Einzelpreis) AS Einzelpreis,
+			SUM(Kosten) AS Kosten
+		FROM
+		(
+			SELECT 
+				dbo.DATA0107.INV_DATE,
+				dbo.DATA0017.RKEY AS D17_PTR,  
+				dbo.DATA0017.INV_PART_DESCRIPTION,
+				dbo.DATA0023.SUPPLIER_NAME,
+				dbo.DATA0002.UNIT_CODE,
+				dbo.DATA0108.QUANTITY,
+				(dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE) AS Einzelpreis,
+				dbo.DATA0108.QUANTITY * (dbo.DATA0108.PRICE / dbo.DATA0107.EX_RATE) AS Kosten
+
+			FROM         dbo.DATA0107 INNER JOIN
+						  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+						  dbo.DATA0008 INNER JOIN
+						  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+						  dbo.DATA0071 ON dbo.DATA0017.RKEY = dbo.DATA0071.INVT_PTR INNER JOIN
+						  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+						  dbo.DATA0023 ON dbo.DATA0017.PREF_SUPPLIER_PTR = dbo.DATA0023.RKEY INNER JOIN
+						  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+			WHERE     
+					LEFT(dbo.DATA0008.PROD_CODE, 3) IN ('EXE', 'EXF')
+					AND dbo.DATA0107.INV_DATE >= CONVERT(DATETIME, @para4, 103) 
+					AND dbo.DATA0107.INV_DATE <= CONVERT(DATETIME, @para5, 103)
+		) AS tblGrp
+		GROUP BY
+			INV_DATE,
+			D17_PTR,  
+			INV_PART_DESCRIPTION,
+			SUPPLIER_NAME,
+			UNIT_CODE
+		ORDER BY
+			INV_PART_DESCRIPTION,
+			INV_DATE
+	END
+
+END

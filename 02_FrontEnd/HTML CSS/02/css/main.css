@@ -1,0 +1,90 @@
+			body{ 
+				margin:0;
+				font-family:arial;
+				font-size:10pt;
+				background-color:silver;
+			}
+			nav{
+				background-color:black;
+				padding:20px;
+				border-bottom:10px solid silver;
+			}
+			
+			nav > a,
+			nav > a:hover
+			{
+				padding-left:10px; padding-right:10px;
+				color:white;
+				font-weight:bold;
+				border-right:2px dotted silver;
+				text-decoration:none;
+			}
+			nav > a:last-child {
+				border:none;
+			}
+			
+			/* ovo je za svaki neparni...
+			nav > a:nth-child(2n+1) {
+				color:red;
+			}
+			*/
+			main{
+				padding:30px;
+				background-color:white;
+			}
+			main > article a {
+				text-decoration:none;
+				font-weight:bold;
+			}
+			
+			
+			main > article:first-child { 
+				font-size:120%; 
+				border:1px solid blue;
+			}
+			
+			.istaknut {
+				border:1px solid red;
+				font-size:110%;
+			}
+			nav > a.trenutna_stranica{
+				color:red;
+			}
+			
+			nav > a:hover{
+				background-color:grey;
+			}
+			
+			
+			
+			.cet{
+				color:#03D8B5;
+				font-weight:bold;
+			}
+			
+			p > .cet{
+				font-style:italic;
+			}
+			
+			#glavni_naslov{
+				text-align:center;
+				border-bottom:1px solid black;
+				letter-spacing: 8px;
+				text-transform: uppercase;
+			}
+			
+			footer{
+				text-align:center;
+				font-size:80%;
+			}
+			
+			h1, h2, h3, h4, h5, h6 {
+				font-family: 'Oswald', sans-serif;
+			}
+			h2{ font-weight:normal; }
+			
+			
+			
+			
+			
+			

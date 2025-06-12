@@ -1,0 +1,1 @@
+<?php bloginfo('name') //ispisuje naziv sajta?>

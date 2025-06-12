@@ -1,0 +1,3142 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_Handel_EKVK]    Script Date: 22.12.2017 11:30:33 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		D.S.Simic
+-- Create date: 05.05.2016
+-- Change date: 05.05.2016
+-- Description:	Wird bei dem Vergleich von EK und VK Seite im Handel verwendet (siehe Applikation Handel-EK nach PC im GGP Manager)
+-- =============================================
+ALTER PROCEDURE  [dbo].[GGP_SP_Handel_EKVK]
+	@p_Case_ varchar(255) = '',
+	@p_para1 varchar(255) = '',
+	@p_para2 varchar(255) = '',
+	@p_para3 varchar(255) = '',
+	@p_para4 varchar(255) = '',
+	@p_para5 varchar(255) = '',
+	@p_para6 varchar(255) = '',
+	@p_para7 varchar(255) = '',
+	@p_para8 varchar(255) = '',
+	@p_para9 varchar(2000) = '',
+	@p_para10 varchar(2000) = '',
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+
+	DECLARE
+		@Case_ varchar(255) = '',
+		@para1 varchar(255) = '',
+		@para2 varchar(255) = '',
+		@para3 varchar(255) = '',
+		@para4 varchar(255) = '',
+		@para5 varchar(255) = '',
+		@para6 varchar(255) = '',
+		@para7 varchar(255) = '',
+		@para8 varchar(255) = '',
+		@para9 varchar(2000) = '',
+		@para10 varchar(2000) = ''
+
+		SET @Case_ = @p_Case_
+		SET @para1 = @p_para1
+		SET @para2 = @p_para2
+		SET @para3 = @p_para3
+		SET @para4 = @p_para4
+		SET @para5 = @p_para5
+		SET @para6 = @p_para6
+		SET @para7 = @p_para7
+		SET @para8 = @p_para8
+		SET @para9 = @p_para9
+		SET @para10 = @p_para10
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+
+	IF @Case_ = 'EKDetail'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '52395.300'
+		--SET @para2 = '24.11.2015' 
+		--SET @para3 = '09.04.2016' 
+
+		SELECT 
+			dbo.DATA0070.PO_NUMBER AS Bestellung,
+			MAX(dbo.DATA0095.TRAN_DATE) AS LetzteEinlagerung,
+			SUM(dbo.DATA0095.QUANTITY) AS Enlagerungsmenge,
+			ISNULL((
+					SELECT TOP 1     
+						SUM(dbo.DATA0108.QUANTITY * dbo.DATA0108.PRICE)/SUM(dbo.DATA0108.QUANTITY) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR
+					WHERE 
+						dbo.DATA0107.STATUS IN (1, 2) AND dbo.DATA0108.DATA0071_PTR = MAX(dbo.DATA0071.RKEY)
+			), ISNULL((
+						SELECT TOP 1 D71.PRICE AS RES
+						FROM         dbo.DATA0071 AS D71 INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+						WHERE D71.RKEY = MAX(dbo.DATA0071.RKEY)
+						), MAX(dbo.DATA0017.STD_COST)) 
+			) AS EKPreis,
+			ISNULL((
+					SELECT TOP 1     
+						SUM(dbo.DATA0108.QUANTITY * dbo.DATA0107.EX_RATE)/SUM(dbo.DATA0108.QUANTITY) AS RES
+					FROM         dbo.DATA0107 INNER JOIN
+                      dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR
+					WHERE 
+						dbo.DATA0107.STATUS IN (1, 2) AND dbo.DATA0108.DATA0071_PTR = MAX(dbo.DATA0071.RKEY)
+			), ISNULL((
+						SELECT TOP 1 D70.EXCHANGE_RATE AS RES
+						FROM         dbo.DATA0071 AS D71 INNER JOIN
+											  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+						WHERE D71.RKEY = MAX(dbo.DATA0071.RKEY)
+						), 0) 
+			) AS WKurs
+		FROM         dbo.DATA0005 INNER JOIN
+								dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+								dbo.DATA0017 INNER JOIN
+								dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+		WHERE    
+				--(dbo.DATA0017.INV_PART_NUMBER = 'HD' + @para1) 
+				--AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				--AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+				--AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+			dbo.DATA0070.PO_NUMBER IN (
+										SELECT DISTINCT
+											dbo.DATA0070.PO_NUMBER
+										FROM         dbo.DATA0005 INNER JOIN
+																dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+																dbo.DATA0017 INNER JOIN
+																dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+																dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+																dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+																dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+																dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+										WHERE
+											--(dbo.DATA0017.INV_PART_NUMBER = 'HD' + @para1) 
+											(dbo.DATA0017.INV_PART_NUMBER COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'HD' + @para1 + '%')  
+											AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+											AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+										)
+			AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+		GROUP BY
+			dbo.DATA0070.PO_NUMBER
+		ORDER BY
+			MAX(dbo.DATA0095.TRAN_DATE)
+	END
+
+	IF @Case_ = 'VKDetail'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '52395.300'
+		--SET @para2 = '24.11.2015' 
+		--SET @para3 = '09.04.2016' 
+
+		SELECT
+			--EKBestellnummer,
+			Kommission,
+			VK_Menge,
+			VK_Preis,
+			VK_Vol,
+			FA,
+			Lieferdatum,
+			FA_reserviert,
+			FA_freiLB
+		
+		FROM
+		(
+			SELECT    
+				ISNULL((
+						SELECT  TOP 1   dbo.DATA0070.PO_NUMBER
+						FROM         dbo.DATA0095 INNER JOIN
+											  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+											  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+											  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+											  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+											  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+											  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+						WHERE D6.RKEY=dbo.DATA0006.RKEY 
+				), '') AS EKBestellnummer,
+				dbo.DATA0052.QUAN_SHP AS VK_Menge,
+				dbo.DATA0064.DATE_SHIPPED AS Lieferdatum,
+				ISNULL((
+					CASE 
+						WHEN ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+							ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+							/ 
+							dbo.DATA0060.EXCH_RATE 
+						ELSE
+							dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+					END --ELP_Preis_EUR
+				), 0) AS VK_Preis,
+				ISNULL((
+					CASE 
+						WHEN ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+							ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+							/ 
+							dbo.DATA0060.EXCH_RATE 
+						ELSE
+							dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+					END --ELP_Preis_EUR
+					*
+					dbo.DATA0052.QUAN_SHP --AS gesendet_FA
+				), 0) AS VK_Vol,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA,
+				dbo.DATA0060.SALES_ORDER AS Kommission,
+				ISNULL((SELECT TOP 1 QTY_ALLOC AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_reserviert,
+				ISNULL((SELECT TOP 1 (QTY_ON_HAND - QTY_ALLOC) AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_freiLB
+
+			FROM         dbo.DATA0006 INNER JOIN
+								  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+								  dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+								  dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+								  dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+								  dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY
+			WHERE
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+		) AS tblVK
+		WHERE EKBestellnummer IN (  --'57733'
+									SELECT DISTINCT
+										dbo.DATA0070.PO_NUMBER
+									FROM         dbo.DATA0005 INNER JOIN
+															dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+															dbo.DATA0017 INNER JOIN
+															dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+															dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+															dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+															dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+															dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+									WHERE    
+											--(dbo.DATA0017.INV_PART_NUMBER = 'HD' + @para1) 
+											(dbo.DATA0017.INV_PART_NUMBER COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'HD' + @para1 + '%') 
+											AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+											AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+									--ORDER BY
+									--	dbo.DATA0095.TRAN_DATE
+								)
+		ORDER BY
+			Lieferdatum DESC
+	END
+
+	IF @Case_ = 'EKVKDetail'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '52395.300'
+		--SET @para2 = '24.11.2015' 
+		--SET @para3 = '09.04.2016' 
+
+		DECLARE @tblBestellungenEKVK table(D70_PTR numeric(10, 0))
+
+		INSERT @tblBestellungenEKVK(D70_PTR)
+		SELECT DISTINCT
+			dbo.DATA0070.RKEY AS RES
+		FROM         dbo.DATA0005 INNER JOIN
+								dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+								dbo.DATA0017 INNER JOIN
+								dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+		WHERE    
+				--(dbo.DATA0017.INV_PART_NUMBER = 'HD' + @para1) 
+				(dbo.DATA0017.INV_PART_NUMBER COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'HD' + @para1 + '%') 
+				AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+				AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+
+
+		SELECT
+			*,
+			ISNULL((
+					SELECT TOP 1 MAX(dbo.DATA0010.CUSTOMER_NAME) AS Res
+					FROM         dbo.DATA0060 INNER JOIN
+										  dbo.DATA0010 ON dbo.DATA0060.CUSTOMER_PTR = dbo.DATA0010.RKEY
+					WHERE dbo.DATA0060.SALES_ORDER = Kommission
+			), '')  AS Kunde,
+			ISNULL((
+					SELECT TOP 1 MAX(dbo.DATA0023.SUPPLIER_NAME) AS Res
+					FROM         dbo.DATA0023 INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0023.RKEY = dbo.DATA0070.SUPPLIER_POINTER
+					WHERE dbo.DATA0070.PO_NUMBER = Bestellung
+			), '')  AS Lieferant,
+			ISNULL((
+					SELECT TOP 1 MAX(dbo.DATA0023.CODE) AS Res
+					FROM         dbo.DATA0023 INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0023.RKEY = dbo.DATA0070.SUPPLIER_POINTER
+					WHERE dbo.DATA0070.PO_NUMBER = Bestellung
+			), '')  AS Hersteller,
+			ISNULL((
+					ISNULL((
+							SELECT TOP 1  
+								SUM(dbo.DATA0113.QUANTITY) AS Res
+							FROM         dbo.DATA0053 INNER JOIN
+									  dbo.DATA0050 INNER JOIN
+									  dbo.DATA0113 ON dbo.DATA0050.RKEY = dbo.DATA0113.CUST_PART_PTR INNER JOIN
+									  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR INNER JOIN
+									  dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0113.DEST_PTR LEFT OUTER JOIN
+									  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+							WHERE     
+									(dbo.DATA0113.TRAN_TYPE = 3) --Inventurkorrektur
+									AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) LIKE @para1
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1  
+								SUM(dbo.DATA0113.QUANTITY) AS Res
+							FROM         dbo.DATA0053 INNER JOIN
+									  dbo.DATA0050 INNER JOIN
+									  dbo.DATA0113 ON dbo.DATA0050.RKEY = dbo.DATA0113.CUST_PART_PTR INNER JOIN
+									  dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR INNER JOIN
+									  dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0113.DEST_PTR LEFT OUTER JOIN
+									  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+							WHERE     
+									(dbo.DATA0113.TRAN_TYPE = 1) --manuell erfasst 
+									AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) LIKE @para1
+					), 0)
+			), 0) AS Inventur
+		FROM
+		(
+			SELECT
+				'mit VK' As Verkauf,
+				tblEKSeite.Bestellung, 
+				tblEKSeite.LetzteEinlagerung,
+				tblEKSeite.Enlagerungsmenge, 
+				tblEKSeite.DEKPreis,
+				tblEKSeite.DEKPreis * tblEKSeite.Enlagerungsmenge AS EK_Volumen,
+				--tblEKSeite.EK_Volumen,
+				tblVKSeite.VK_Menge,
+				tblVKSeite.VK_Preis,
+				tblVKSeite.VK_Vol,
+				tblVKSeite.FA,
+				tblVKSeite.D6_PTR,
+				tblVKSeite.Kommission,
+				ISNULL(tblVKSeite.FA_reserviert, 0)
+				+
+				ISNULL((
+					SELECT
+						SUM(QTY_ON_HAND) AS LPKonsi
+					FROM
+					(
+						SELECT DISTINCT
+							dbo.DATA0053.RKEY, 
+							dbo.DATA0053.QTY_ON_HAND
+						FROM         dbo.DATA0006 INNER JOIN
+												dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR
+						WHERE     
+								--dbo.DATA0006.CUST_PART_PTR = ISNULL((SELECT TOP 1 RKEY FROM dbo.DATA0050 WHERE RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1), 0)
+								dbo.DATA0006.RKEY = tblVKSeite.D6_PTR
+								AND dbo.DATA0053.LOC_PTR = 225
+					) AS tblNLPKonsiMenge
+				), 0) AS FA_reserviert,
+				tblVKSeite.FA_freiLB,
+				tblVKSeite.Lieferdatum
+			FROM
+			(
+				SELECT 
+					dbo.DATA0070.PO_NUMBER AS Bestellung,
+					MAX(dbo.DATA0095.TRAN_DATE) AS LetzteEinlagerung,
+					SUM(dbo.DATA0095.QUANTITY) AS Enlagerungsmenge,
+					ISNULL((
+							SELECT TOP 1     
+								CASE WHEN SUM(dbo.DATA0108.QUANTITY) >0 THEN 
+										SUM(dbo.DATA0108.QUANTITY * dbo.DATA0108.PRICE/dbo.DATA0107.EX_RATE)/SUM(dbo.DATA0108.QUANTITY) 
+									ELSE	0
+								END AS RES
+							--FROM         dbo.DATA0107 INNER JOIN
+							--  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR
+							FROM         dbo.DATA0107 INNER JOIN
+												  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+												  dbo.DATA0071 ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY INNER JOIN
+												  dbo.DATA0070 AS D70 ON dbo.DATA0071.PO_PTR = D70.RKEY
+							WHERE 
+								dbo.DATA0107.STATUS IN (1, 2) --AND dbo.DATA0108.DATA0071_PTR = MAX(dbo.DATA0071.RKEY)
+								AND D70.RKEY = MAX(dbo.DATA0070.RKEY)
+					), 
+					ISNULL((
+								SELECT TOP 1 CASE WHEN SUM(D71.QUAN_ORD)>0 THEN SUM(D71.QUAN_ORD * D71.PRICE / D70.EXCHANGE_RATE)/SUM(D71.QUAN_ORD) ELSE 0 END AS RES
+								FROM         dbo.DATA0071 AS D71 INNER JOIN
+													  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE --D71.RKEY = MAX(dbo.DATA0071.RKEY)
+									D70.RKEY = MAX(dbo.DATA0070.RKEY)
+								), MAX(dbo.DATA0017.STD_COST)) 
+					) AS DEKPreis
+				FROM         dbo.DATA0005 INNER JOIN
+										dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+										dbo.DATA0017 INNER JOIN
+										dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE    
+					dbo.DATA0070.RKEY IN (SELECT D70_PTR FROM @tblBestellungenEKVK)
+					AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				GROUP BY
+					dbo.DATA0070.PO_NUMBER
+			) AS tblEKSeite,
+			(
+				SELECT
+					EKBestellnummer,
+					Kommission,
+					VK_Menge,
+					VK_Preis,
+					VK_Vol,
+					FA,
+					D6_PTR,
+					Lieferdatum,
+					FA_reserviert,
+					FA_freiLB
+		
+				FROM
+				(
+					SELECT    
+						ISNULL((
+								SELECT  TOP 1   dbo.DATA0070.PO_NUMBER
+								FROM         dbo.DATA0095 INNER JOIN
+													  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+													  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+													  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+													  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+								WHERE D6.RKEY=dbo.DATA0006.RKEY 
+						), '') AS EKBestellnummer,
+						ISNULL((
+								SELECT  TOP 1   dbo.DATA0070.RKEY
+								FROM         dbo.DATA0095 INNER JOIN
+													  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+													  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+													  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+													  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+								WHERE D6.RKEY=dbo.DATA0006.RKEY 
+						), 0) AS EKBestellnummer_PTR,
+						dbo.DATA0052.QUAN_SHP AS VK_Menge,
+						dbo.DATA0064.DATE_SHIPPED AS Lieferdatum,
+						ISNULL((
+							CASE 
+								WHEN dbo.DATA0060.EXCH_RATE >0 AND ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+									ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+									/ 
+									dbo.DATA0060.EXCH_RATE 
+								ELSE
+									dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+							END --ELP_Preis_EUR
+						), 0) AS VK_Preis,
+						ISNULL((
+							CASE 
+								WHEN dbo.DATA0060.EXCH_RATE>0 AND ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+									ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+									/ 
+									dbo.DATA0060.EXCH_RATE 
+								ELSE
+									dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+							END --ELP_Preis_EUR
+							*
+							dbo.DATA0052.QUAN_SHP --AS gesendet_FA
+						), 0) AS VK_Vol,
+						dbo.DATA0006.WORK_ORDER_NUMBER AS FA,
+						dbo.DATA0006.RKEY AS D6_PTR,
+						dbo.DATA0060.SALES_ORDER AS Kommission,
+						ISNULL((SELECT TOP 1 QTY_ALLOC AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_reserviert,
+						ISNULL((SELECT TOP 1 (QTY_ON_HAND - QTY_ALLOC) AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_freiLB
+
+					FROM         dbo.DATA0006 INNER JOIN
+										  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+										  dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+										  dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+										  dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+										  dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY
+					WHERE
+						RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+				) AS tblVK
+				WHERE EKBestellnummer_PTR IN (SELECT D70_PTR FROM @tblBestellungenEKVK)
+										
+				--ORDER BY
+				--	Lieferdatum DESC
+			) AS tblVKSeite
+			WHERE
+				tblEKSeite.Bestellung = tblVKSeite.EKBestellnummer
+
+			UNION ALL
+
+
+			SELECT
+				'R-Aufträge' As Verkauf,
+				tblEKSeite.Bestellung, 
+				tblEKSeite.LetzteEinlagerung,
+				tblEKSeite.Enlagerungsmenge, 
+				tblEKSeite.DEKPreis,
+				tblEKSeite.DEKPreis * tblEKSeite.Enlagerungsmenge AS EK_Volumen,
+				--tblEKSeite.EK_Volumen,
+				tblVKSeite.VK_Menge,
+				tblVKSeite.VK_Preis,
+				tblVKSeite.VK_Vol,
+				tblVKSeite.FA,
+				tblVKSeite.D6_PTR,
+				tblVKSeite.Kommission,
+				tblVKSeite.FA_reserviert,
+				tblVKSeite.FA_freiLB,
+				tblVKSeite.Lieferdatum
+			FROM
+			(
+				SELECT 
+					dbo.DATA0070.PO_NUMBER AS Bestellung,
+					MAX(dbo.DATA0095.TRAN_DATE) AS LetzteEinlagerung,
+					SUM(dbo.DATA0095.QUANTITY) AS Enlagerungsmenge,
+					ISNULL((
+							SELECT TOP 1     
+								CASE WHEN SUM(dbo.DATA0108.QUANTITY) >0 THEN 
+										SUM(dbo.DATA0108.QUANTITY * dbo.DATA0108.PRICE/dbo.DATA0107.EX_RATE)/SUM(dbo.DATA0108.QUANTITY) 
+									ELSE	0
+								END AS RES
+							FROM         dbo.DATA0107 INNER JOIN
+							  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR
+							WHERE 
+								dbo.DATA0107.STATUS IN (1, 2) AND dbo.DATA0108.DATA0071_PTR = MAX(dbo.DATA0071.RKEY)
+					), ISNULL((
+								SELECT TOP 1 CASE WHEN D70.EXCHANGE_RATE>0 THEN D71.PRICE / D70.EXCHANGE_RATE ELSE 0 END AS RES
+								FROM         dbo.DATA0071 AS D71 INNER JOIN
+													  dbo.DATA0070 AS D70 ON D71.PO_PTR = D70.RKEY
+								WHERE D71.RKEY = MAX(dbo.DATA0071.RKEY)
+								), MAX(dbo.DATA0017.STD_COST)) 
+					) AS DEKPreis
+				FROM         dbo.DATA0005 INNER JOIN
+										dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+										dbo.DATA0017 INNER JOIN
+										dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+										dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+										dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+										dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE    
+					dbo.DATA0070.RKEY IN (SELECT D70_PTR FROM @tblBestellungenEKVK)
+					AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				GROUP BY
+					dbo.DATA0070.PO_NUMBER
+			) AS tblEKSeite,
+			(
+				SELECT
+					EKBestellnummer,
+					Kommission,
+					VK_Menge,
+					VK_Preis,
+					VK_Vol,
+					FA,
+					D6_PTR,
+					Lieferdatum,
+					FA_reserviert,
+					FA_freiLB
+		
+				FROM
+				(
+					SELECT    
+						ISNULL((
+								SELECT  TOP 1   dbo.DATA0070.PO_NUMBER
+								FROM         dbo.DATA0095 INNER JOIN
+													  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+													  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+													  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+													  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+								WHERE D6.RKEY=(SELECT TOP 1 D0006.RKEY FROM dbo.DATA0006 AS D0006 WHERE D0006.WORK_ORDER_NUMBER =  '  ' + SUBSTRING(dbo.DATA0006.WORK_ORDER_NUMBER, 3, 14))
+						), '') AS EKBestellnummer,
+						ISNULL((
+								SELECT  TOP 1   dbo.DATA0070.RKEY
+								FROM         dbo.DATA0095 INNER JOIN
+													  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+													  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+													  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+													  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+													  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+													  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+								WHERE D6.RKEY=(SELECT TOP 1 D0006.RKEY FROM dbo.DATA0006 AS D0006 WHERE D0006.WORK_ORDER_NUMBER =  '  ' + SUBSTRING(dbo.DATA0006.WORK_ORDER_NUMBER, 3, 14))
+						), 0) AS EKBestellnummer_PTR,
+						dbo.DATA0052.QUAN_SHP AS VK_Menge,
+						dbo.DATA0064.DATE_SHIPPED AS Lieferdatum,
+						ISNULL((
+							CASE 
+								WHEN dbo.DATA0060.EXCH_RATE >0 AND ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+									ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+									/ 
+									dbo.DATA0060.EXCH_RATE 
+								ELSE
+									dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+							END --ELP_Preis_EUR
+						), 0) AS VK_Preis,
+						ISNULL((
+							CASE 
+								WHEN dbo.DATA0060.EXCH_RATE>0 AND ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+									ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+									/ 
+									dbo.DATA0060.EXCH_RATE 
+								ELSE
+									dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+							END --ELP_Preis_EUR
+							*
+							dbo.DATA0052.QUAN_SHP --AS gesendet_FA
+						), 0) AS VK_Vol,
+						dbo.DATA0006.WORK_ORDER_NUMBER AS FA,
+						dbo.DATA0006.RKEY AS D6_PTR,
+						dbo.DATA0060.SALES_ORDER AS Kommission,
+						ISNULL((SELECT TOP 1 QTY_ALLOC AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_reserviert,
+						ISNULL((SELECT TOP 1 (QTY_ON_HAND - QTY_ALLOC) AS RES FROM dbo.DATA0053 WHERE WORK_ORDER_PTR = dbo.DATA0006.RKEY ), 0) AS FA_freiLB
+
+					FROM         dbo.DATA0006 INNER JOIN
+										  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+										  dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+										  dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+										  dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+										  dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY
+					WHERE
+						RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+						AND LEFT(dbo.DATA0006.WORK_ORDER_NUMBER, 1) = 'R'
+				) AS tblVK
+				WHERE EKBestellnummer_PTR IN (SELECT D70_PTR FROM @tblBestellungenEKVK)
+										
+				--ORDER BY
+				--	Lieferdatum DESC
+			) AS tblVKSeite
+			WHERE
+				tblEKSeite.Bestellung = tblVKSeite.EKBestellnummer
+
+			UNION ALL
+
+			SELECT 
+				'ohne VK' As Verkauf,
+				ISNULL((SELECT TOP 1 PO_NUMBER FROM dbo.DATA0070 WHERE RKEY=tblBest.D70_PTR), '') AS Bestellung,
+				ISNULL((
+						SELECT TOP 1
+							MAX(dbo.DATA0095.TRAN_DATE) AS Res
+						FROM         dbo.DATA0005 INNER JOIN
+												dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+												dbo.DATA0017 INNER JOIN
+												dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+						WHERE    
+							dbo.DATA0070.RKEY = tblBest.D70_PTR
+							AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0	
+				), '') AS LetzteEinlagerung,
+				ISNULL((
+						SELECT TOP 1
+							SUM(dbo.DATA0095.QUANTITY) AS Res
+						FROM         dbo.DATA0005 INNER JOIN
+												dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+												dbo.DATA0017 INNER JOIN
+												dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+												dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+												dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+												dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+												dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+						WHERE    
+							dbo.DATA0070.RKEY = tblBest.D70_PTR
+							AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0	
+				), 0) AS Enlagerungsmenge,
+				ISNULL((
+						SELECT TOP 1  CASE WHEN SUM(dbo.DATA0071.QUAN_ORD) >0 THEN 
+											SUM(dbo.DATA0071.QUAN_ORD * dbo.DATA0071.PRICE / dbo.DATA0070.EXCHANGE_RATE) / SUM(dbo.DATA0071.QUAN_ORD) 
+										ELSE
+											0
+									END AS RES
+						FROM         dbo.DATA0070 INNER JOIN
+							  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR
+						WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+				), 0) AS DEKPreis,
+				ISNULL((
+						ISNULL((
+								SELECT TOP 1
+									SUM(dbo.DATA0095.QUANTITY) AS Res
+								FROM         dbo.DATA0005 INNER JOIN
+														dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+														dbo.DATA0017 INNER JOIN
+														dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+														dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+														dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+														dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+														dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+								WHERE    
+									dbo.DATA0070.RKEY = tblBest.D70_PTR
+									AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0	
+						), 0) 
+						*
+						ISNULL((
+								SELECT TOP 1  CASE WHEN SUM(dbo.DATA0071.QUAN_ORD)>0 THEN
+													SUM(dbo.DATA0071.QUAN_ORD * dbo.DATA0071.PRICE / dbo.DATA0070.EXCHANGE_RATE) / SUM(dbo.DATA0071.QUAN_ORD) 
+												ELSE	
+													0
+											END AS RES
+								FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR
+								WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+						), 0) 
+				), 0) AS EK_Volumen,
+				0 AS VK_Menge,
+				ISNULL((
+						SELECT TOP 1 CASE WHEN SUM(dbo.DATA0060.PARTS_ORDERED)>0 THEN
+											SUM(dbo.DATA0060.PARTS_ORDERED*dbo.DATA0060.PART_PRICE/dbo.DATA0060.EXCH_RATE)/SUM(dbo.DATA0060.PARTS_ORDERED) 
+										ELSE
+											0
+									END AS Res
+						FROM         dbo.DATA0060 INNER JOIN
+											  dbo.DATA0054 ON dbo.DATA0060.RKEY = dbo.DATA0054.SO_PTR INNER JOIN
+											  dbo.DATA0095 INNER JOIN
+											  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+											  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+											  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+											  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+											  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+											  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0054.WO_PTR = D6.RKEY
+						WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+				), 0) AS VK_Preis,
+				0 AS VK_Vol,
+				ISNULL((
+						SELECT TOP 1 MAX(D6.WORK_ORDER_NUMBER) AS Res
+						FROM         dbo.DATA0060 INNER JOIN
+											  dbo.DATA0054 ON dbo.DATA0060.RKEY = dbo.DATA0054.SO_PTR INNER JOIN
+											  dbo.DATA0095 INNER JOIN
+											  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+											  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+											  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+											  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+											  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+											  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0054.WO_PTR = D6.RKEY
+						WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+				), '') FA,
+				ISNULL((
+						SELECT TOP 1 MAX(D6.RKEY) AS Res
+						FROM         dbo.DATA0060 INNER JOIN
+											  dbo.DATA0054 ON dbo.DATA0060.RKEY = dbo.DATA0054.SO_PTR INNER JOIN
+											  dbo.DATA0095 INNER JOIN
+											  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+											  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+											  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+											  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+											  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+											  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0054.WO_PTR = D6.RKEY
+						WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+				), 0) D6_PTR,
+				ISNULL((
+						SELECT TOP 1 MAX(dbo.DATA0060.SALES_ORDER) AS Res
+						FROM         dbo.DATA0060 INNER JOIN
+											  dbo.DATA0054 ON dbo.DATA0060.RKEY = dbo.DATA0054.SO_PTR INNER JOIN
+											  dbo.DATA0095 INNER JOIN
+											  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+											  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+											  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+											  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+											  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+											  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY ON dbo.DATA0054.WO_PTR = D6.RKEY
+						WHERE dbo.DATA0070.RKEY=tblBest.D70_PTR
+				), '') AS Kommission,
+				ISNULL((
+						SELECT SUM(QTY_ALLOC) AS RES 
+						FROM dbo.DATA0053 
+						WHERE WORK_ORDER_PTR IN (
+													SELECT DISTINCT D6.RKEY
+													FROM         dbo.DATA0095 INNER JOIN
+																			dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+																			dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+																			dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																			dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																			dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+																			dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+													WHERE dbo.DATA0070.RKEY = tblBest.D70_PTR
+															AND  dbo.DATA0095.TRAN_TP IN (13, 14)
+												)
+				), 0) AS FA_reserviert,
+				ISNULL((
+						SELECT SUM((QTY_ON_HAND - QTY_ALLOC)) AS RES 
+						FROM dbo.DATA0053 
+						WHERE WORK_ORDER_PTR IN (
+													SELECT DISTINCT D6.RKEY
+													FROM         dbo.DATA0095 INNER JOIN
+																			dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+																			dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+																			dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																			dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																			dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+																			dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+													WHERE dbo.DATA0070.RKEY = tblBest.D70_PTR
+															AND  dbo.DATA0095.TRAN_TP IN (13, 14)
+												)
+				), 0) AS FA_freiLB,
+				'' AS Lieferdatum	 
+			FROM 
+				@tblBestellungenEKVK AS tblBest
+			WHERE
+				tblBest.D70_PTR NOT IN (
+									SELECT
+										ISNULL((
+												SELECT  TOP 1   dbo.DATA0070.RKEY --PO_NUMBER
+												FROM         dbo.DATA0095 INNER JOIN
+																	  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+																	  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+																	  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																	  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																	  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+																	  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+												WHERE D6.RKEY=dbo.DATA0006.RKEY 
+														AND  dbo.DATA0095.TRAN_TP IN (13, 14)
+										), 0) AS EK_PTR
+									FROM         dbo.DATA0006 INNER JOIN
+															dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+															dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+															dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+															dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+															dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY
+									WHERE
+										RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+								)
+
+			UNION ALL
+
+			SELECT
+				'Lastschrift' As Verkauf,
+				ISNULL((SELECT TOP 1 PO_NUMBER FROM dbo.DATA0070 WHERE RKEY=(D70_PTR)), '') AS Bestellung,
+				leLSDatum AS LetzteEinlagerung,
+				LastschriftRetourniert AS Enlagerungsmenge, 
+				LastschriftStkPreis AS DEKPreis,
+				Lastschrift_EUR AS EK_Volumen,
+				--
+				0 AS VK_Menge,
+				0 AS VK_Preis,
+				0 AS VK_Vol,
+				'' AS FA,
+				0 AS D6_PTR,
+				'' AS Kommission,
+				0 AS FA_reserviert,
+				0 AS FA_freiLB,
+				'' AS Lieferdatum
+
+			FROM
+			(
+				SELECT
+					tblBestLS.D70_PTR,
+					ISNULL((
+						SELECT TOP 1
+							SUM(Lastschriften) AS RES
+						FROM
+						(
+							SELECT DISTINCT
+								dbo.DATA0132.RKEY, 
+								CASE WHEN dbo.DATA0132.EX_RATE>0 THEN ((dbo.DATA0132.AMOUNT - dbo.DATA0132.STATE_TAX) / dbo.DATA0132.EX_RATE) ELSE 0 END AS Lastschriften
+								--(dbo.DATA0132.AMOUNT / dbo.DATA0132.EX_RATE) AS Lastschriften
+
+							FROM         dbo.DATA0132 INNER JOIN
+										dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY INNER JOIN
+										dbo.DATA0070 ON dbo.DATA0107.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY
+
+							WHERE      
+										--RTRIM(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1 + '%'
+										dbo.DATA0070.RKEY = tblBestLS.D70_PTR 
+										AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+										AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+										AND dbo.DATA0132.MEMO_TP IN (1, 6)
+						) AS tblSUMLastschrift
+					), 0) AS Lastschrift_EUR,
+					ISNULL((
+						SELECT TOP 1
+							dbo.DATA0132.MEMO_DATE
+
+						FROM         dbo.DATA0132 INNER JOIN
+									dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY INNER JOIN
+									dbo.DATA0070 ON dbo.DATA0107.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+									dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY
+
+						WHERE      
+									dbo.DATA0070.RKEY = tblBestLS.D70_PTR 
+									AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+									AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+									AND dbo.DATA0132.MEMO_TP IN (1, 6)
+						ORDER BY
+							dbo.DATA0132.MEMO_DATE DESC
+					), '') AS leLSDatum,
+					ISNULL((
+							SELECT TOP 1	
+								SUM(Ruecklieferung) AS RES
+							FROM
+							(
+								SELECT  DISTINCT
+									dbo.DATA0108.RKEY,
+									dbo.DATA0108.quan_debited AS Ruecklieferung
+
+								FROM         dbo.DATA0023 INNER JOIN
+										  dbo.DATA0132 ON dbo.DATA0023.RKEY = dbo.DATA0132.SUPP_PTR INNER JOIN
+										  dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0107.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0005 ON dbo.DATA0132.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+										  dbo.DATA0002 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0002.RKEY = dbo.DATA0071.PURCHASE_UNIT_PTR ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY
+
+								WHERE      
+											dbo.DATA0070.RKEY = tblBestLS.D70_PTR  --RTRIM(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1 + '%'
+											AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+							) AS tblSUMLastschriftDebit
+					), 0) AS LastschriftRetourniert,
+					ISNULL((
+							SELECT TOP 1	
+								CASE WHEN SUM(Menge)>0 THEN SUM(Menge*Preis/WKurs)/SUM(Menge) ELSE 0 END AS RES
+							FROM
+							(
+								SELECT  DISTINCT
+									dbo.DATA0108.RKEY,
+									dbo.DATA0108.PRICE AS Preis,
+									dbo.DATA0107.EX_RATE AS WKurs,
+									dbo.DATA0108.QUAN_DEBITED As Menge
+
+								FROM         dbo.DATA0023 INNER JOIN
+										  dbo.DATA0132 ON dbo.DATA0023.RKEY = dbo.DATA0132.SUPP_PTR INNER JOIN
+										  dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY INNER JOIN
+										  dbo.DATA0070 ON dbo.DATA0107.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+										  dbo.DATA0005 ON dbo.DATA0132.EMPL_PTR = dbo.DATA0005.RKEY INNER JOIN
+										  dbo.DATA0002 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0002.RKEY = dbo.DATA0071.PURCHASE_UNIT_PTR ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+										  dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY
+
+								WHERE      
+											dbo.DATA0070.RKEY = tblBestLS.D70_PTR  --RTRIM(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para1 + '%'
+											AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+							) AS tblSUMLastschriftDebit
+					), 0) AS LastschriftStkPreis
+				FROM 
+					@tblBestellungenEKVK AS tblBestLS
+			) AS tblLastschriften
+			WHERE
+				Lastschrift_EUR>0 OR LastschriftRetourniert>0
+
+		) AS tblEKVKUnion
+		ORDER BY
+			Bestellung DESC, Verkauf DESC
+	END
+
+	IF @Case_ = 'EKVKDetail_GS'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '52395.300'
+		--SET @para2 = '01.01.2015' 
+		--SET @para3 = '30.05.2016' 
+
+		SELECT    
+			ISNULL((
+				SELECT
+					SUM(RMenge) AS GutschriftMenge
+				FROM
+				(
+					SELECT DISTINCT 
+						dbo.DATA0098.RKEY,
+						dbo.DATA0098.QTY_CRED AS RMenge
+					FROM         
+						dbo.DATA0098 
+					WHERE   --(dbo.DATA0098.CUSTOMER_PART_PTR = dbo.DATA0050.RKEY)
+							--dbo.DATA0098.SO_PTR = dbo.DATA0060.RKEY
+							dbo.DATA0098.CUSTOMER_PART_PTR = ISNULL((SELECT TOP 1 RKEY FROM dbo.DATA0050 WHERE RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1), 0)
+							AND (dbo.DATA0098.RMA_DATE >= CONVERT(DATETIME, @para2, 103))
+							AND (dbo.DATA0098.RMA_DATE <= CONVERT(DATETIME, @para3, 103))
+				) AS tblGutschriftMenge
+			), 0) AS GS_Menge,
+			ISNULL((
+				ISNULL((
+					SELECT
+						SUM(BetragNetto) AS Gutschrift_EUR
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0116.RKEY,
+							dbo.DATA0116.PART_PRICE / dbo.DATA0116.EX_RATE * (dbo.DATA0116.QUANTITY + dbo.DATA0116.OVERSHIP_QTY) AS BetragNetto
+						FROM         dbo.DATA0116 INNER JOIN
+									dbo.DATA0112 ON dbo.DATA0116.INV_PTR = dbo.DATA0112.RKEY INNER JOIN
+									dbo.DATA0060 AS D60 INNER JOIN
+									dbo.DATA0050 ON D60.CUST_PART_PTR = dbo.DATA0050.RKEY ON dbo.DATA0112.SALES_ORDER_PTR = D60.RKEY
+						WHERE     --(dbo.DATA0050.RKEY = dbo.DATA0050.RKEY)
+								--D60.RKEY = dbo.DATA0060.RKEY
+								RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+								AND (dbo.DATA0116.TDATE >= CONVERT(DATETIME, @para2, 103))
+								AND (dbo.DATA0116.TDATE <= CONVERT(DATETIME, @para3, 103))
+					) AS tblGutschrift	
+				), 0) 
+				+
+				ISNULL((
+					SELECT
+						SUM(GSNK) AS GutschriftNK_EUR
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0116.RKEY,
+							(
+								((dbo.DATA0116.CREDIT_AMOUNT - dbo.DATA0116.STATE_TAX) / dbo.DATA0116.EX_RATE)
+								-
+								(dbo.DATA0116.PART_PRICE / dbo.DATA0116.EX_RATE * (dbo.DATA0116.QUANTITY + dbo.DATA0116.OVERSHIP_QTY)) 
+							) AS GSNK
+						FROM         dbo.DATA0116 INNER JOIN
+									dbo.DATA0112 ON dbo.DATA0116.INV_PTR = dbo.DATA0112.RKEY INNER JOIN
+									dbo.DATA0060 AS D60 INNER JOIN
+									dbo.DATA0050 ON D60.CUST_PART_PTR = dbo.DATA0050.RKEY ON dbo.DATA0112.SALES_ORDER_PTR = D60.RKEY
+						WHERE     --(dbo.DATA0050.RKEY = dbo.DATA0050.RKEY)
+								--D60.RKEY = dbo.DATA0060.RKEY
+								RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+								AND (dbo.DATA0116.TDATE >= CONVERT(DATETIME, @para2, 103))
+								AND (dbo.DATA0116.TDATE <= CONVERT(DATETIME, @para3, 103))
+					) AS tblGutschriftNK
+				), 0) 
+			), 0) AS GS_Vol
+	END
+
+	IF @Case_ = 'EKVKDetail_Restkosten'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '50742.300' --'52395.300'
+		--SET @para2 = '01.01.2016' 
+		--SET @para3 = '30.05.2016' 
+
+		DECLARE @tblBestellungenEKVK_Restkosten table(D70_PTR numeric(10, 0))
+
+		INSERT @tblBestellungenEKVK_Restkosten(D70_PTR)
+		SELECT DISTINCT
+			dbo.DATA0070.RKEY AS RES
+		FROM         dbo.DATA0005 INNER JOIN
+								dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+								dbo.DATA0017 INNER JOIN
+								dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+		WHERE    
+				--(dbo.DATA0017.INV_PART_NUMBER = 'HD' + @para1) 
+				(dbo.DATA0017.INV_PART_NUMBER COLLATE SQL_Latin1_General_CP1_CI_AS LIKE 'HD' + @para1 + '%') 
+				AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+				AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+
+
+		SELECT
+			ISNULL(SUM(AlleKostenarten_EUR), 0) AS Restkosten
+		FROM
+		(
+			SELECT
+				(
+					ISNULL((
+						ISNULL(Pers_var_HauptFA, 0) + ISNULL(Pers_fix_HauptFA, 0) + ISNULL(Pers_var_IL, 0) + ISNULL(Pers_fix_IL, 0) 
+						+ 
+						ISNULL(Ekosten_var_HauptFA, 0) + ISNULL(Ekosten_fix_HauptFA, 0) + ISNULL(Ekosten_var_IL, 0) + ISNULL(Ekosten_fix_IL, 0) 
+						+ 
+						ISNULL(Leasing_var_HauptFA, 0) + ISNULL(Leasing_fix_HauptFA, 0) + ISNULL(Leasing_var_IL, 0) + ISNULL(Leasing_fix_IL, 0) 
+						+ 
+						ISNULL(Inst_var_HauptFA, 0) + ISNULL(Inst_fix_HauptFA, 0) + ISNULL(Inst_var_IL, 0) + ISNULL(Inst_fix_IL, 0)
+						+ 
+						ISNULL(Sokosten_var_HauptFA, 0) + ISNULL(Sokosten_fix_HauptFA, 0) + ISNULL(Sokosten_var_IL, 0) + ISNULL(Sokosten_fix_IL, 0) 
+					), 0) 
+					+
+					ISNULL(( --NKEinkauf_EUR
+						SELECT
+							SUM(NK) AS NKEinkauf
+						FROM
+						(
+							SELECT DISTINCT 
+								D107_.RKEY,
+								CASE WHEN D107_.EX_RATE>0 THEN (D107_.SHIPPING + D107_.MISC_TOT) / D107_.EX_RATE ELSE 0 END AS NK
+							FROM         dbo.DATA0070 AS D70_ INNER JOIN
+												dbo.DATA0071 AS D71_ ON D70_.RKEY = D71_.PO_PTR INNER JOIN
+												dbo.DATA0108 AS D108_ ON D71_.RKEY = D108_.DATA0071_PTR INNER JOIN
+												dbo.DATA0107 AS D107_ ON D108_.DATA0107_PTR = D107_.RKEY INNER JOIN
+												dbo.DATA0017 AS D17_ ON D71_.INVT_PTR = D17_.RKEY
+							WHERE
+								--RTRIM(REPLACE(D17_.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE LTRIM(RTRIM(@para1)) + '%'
+								RTRIM(REPLACE(REPLACE(D17_.INV_PART_NUMBER, 'HD', ''),'KONSI','')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE LTRIM(RTRIM(@para1)) + '%'
+								AND (D107_.INV_DATE >= CONVERT(DATETIME, @para2, 103))
+								AND (D107_.INV_DATE <= CONVERT(DATETIME, @para3, 103))
+						) AS tblNKEinkauf_
+					), 0)
+					-
+					ISNULL(( --LastschriftNebenkostenHandel_EUR
+							SELECT TOP 1
+								SUM(Rest) AS LastschriftRest_EUR
+							FROM
+							(
+								SELECT DISTINCT 
+									dbo.DATA0132.RKEY,
+									dbo.DATA0212.AMOUNT/dbo.DATA0132.EX_RATE AS Rest
+								FROM         dbo.DATA0199 INNER JOIN
+														dbo.DATA0212 INNER JOIN
+														dbo.DATA0132 INNER JOIN
+														dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY ON dbo.DATA0212.DEBIT_PTR = dbo.DATA0132.RKEY ON 
+														dbo.DATA0199.RKEY = dbo.DATA0212.MISC_CHARGE_PTR INNER JOIN
+														dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+														dbo.DATA0071 INNER JOIN
+														dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+								WHERE     
+											--RTRIM(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE RTRIM(@para1) + '%'
+											RTRIM(REPLACE(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', ''),'KONSI','')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE LTRIM(RTRIM(@para1)) + '%'
+											AND dbo.DATA0199.MISC_CHARGE_CATEGORY = 'Nebenkosten Handel'
+											AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+											--AND dbo.DATA0132.MEMO_TP=1
+											AND dbo.DATA0132.MEMO_TP IN (1, 6)
+							) AS tblLastschriftenRest						
+					), 0)
+					+
+					ISNULL(Matko_GK_HauptFA, 0) + ISNULL(Matko_GK_IL, 0 )
+					+
+					ISNULL(Matko_So_HauptFA, 0 ) + ISNULL(Matko_So_IL, 0)
+					+
+					ISNULL(Fremd_EK_HauptFA, 0)
+					+
+					ISNULL(( --Umsatzprovision pro FA
+						SELECT TOP 1
+							SUM(RES) AS umsatzProv
+						FROM
+						(
+							SELECT 
+								dbo.DATA0006.RKEY AS D0006_PTR,
+								(
+									CASE 
+										WHEN ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+											CASE WHEN dbo.DATA0060.EXCH_RATE >0 THEN
+													ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+													/ 
+													dbo.DATA0060.EXCH_RATE 
+												ELSE	
+													0
+											END
+										ELSE
+											CASE WHEN dbo.DATA0060.EXCH_RATE>0 THEN dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE ELSE 0 END
+									END --ELP_Preis_EUR
+									*
+									dbo.DATA0052.QUAN_SHP --AS gesendet_FA
+									*
+									(dbo.DATA0509.SALES_COMMISSION_PER/100)
+								) AS RES
+							FROM         dbo.DATA0006 INNER JOIN
+													dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+													dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+													dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+													dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+													dbo.DATA0010 ON dbo.DATA0060.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+													dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+													dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY INNER JOIN
+													dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR INNER JOIN
+													dbo.DATA0507 ON dbo.DATA0064.RKEY = dbo.DATA0507.DATA0064_PTR INNER JOIN
+													dbo.DATA0509 ON dbo.DATA0507.RKEY = dbo.DATA0509.DATA0507_PTR
+							WHERE
+								(dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para2, 103))
+								AND (dbo.DATA0006.ACT_COMPL_DATE <= CONVERT(DATETIME, @para3, 103))
+						) AS tblFAUmsatzProv
+						WHERE D0006_PTR = D6_PTR 
+					), 0)
+					-
+					ISNULL(( --Gutschriftsprovision
+						SELECT
+							SUM(Provision) AS GutschriftNK_EUR
+						FROM
+						(
+							SELECT DISTINCT 
+								dbo.DATA0116.RKEY,
+								CASE 
+									WHEN dbo.DATA0509.EXCHANGE_RATE>0 THEN
+										ISNULL(dbo.DATA0509.COMMISSION_DEBITED / dbo.DATA0509.EXCHANGE_RATE, 0) 
+									ELSE
+										0
+								END AS Provision
+							FROM         dbo.DATA0125 INNER JOIN
+												  dbo.DATA0509 ON dbo.DATA0125.DATA0509_PTR = dbo.DATA0509.RKEY RIGHT OUTER JOIN
+												  dbo.DATA0116 INNER JOIN
+												  dbo.DATA0112 ON dbo.DATA0116.INV_PTR = dbo.DATA0112.RKEY INNER JOIN
+												  dbo.DATA0060 INNER JOIN
+												  dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY ON dbo.DATA0112.SALES_ORDER_PTR = dbo.DATA0060.RKEY ON 
+												  dbo.DATA0125.MEMO_PTR = dbo.DATA0116.RKEY LEFT OUTER JOIN
+												  dbo.DATA0508 INNER JOIN
+												  dbo.DATA0061 ON dbo.DATA0508.DATA0061_PTR = dbo.DATA0061.RKEY INNER JOIN
+												  dbo.DATA0124 ON dbo.DATA0508.RKEY = dbo.DATA0124.DATA0508_PTR ON dbo.DATA0116.RKEY = dbo.DATA0124.MEMO_PTR
+							WHERE     RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+									AND (dbo.DATA0116.TDATE >= CONVERT(DATETIME, @para2, 103))
+									AND (dbo.DATA0116.TDATE <= CONVERT(DATETIME, @para3, 103))
+						) AS tblGutschriftNK
+					), 0)
+					+
+					ISNULL((
+						SELECT TOP 1
+							--SUM(FK) AS FK1,
+							SUM(FK/CASE WHEN PlusZeichen_1=0 THEN 1 ELSE CASE WHEN PlusZeichen_1>0 AND PlusZeichen_2=0 THEN 2 ELSE 3 END END) AS FK_EUR
+						FROM
+						(
+							SELECT DISTINCT
+								dbo.DATA0072.RKEY,
+								dbo.DATA0072.DESCRIPTION2 AS LP,
+								(dbo.DATA0072.UNIT_PRICE/dbo.DATA0070.EXCHANGE_RATE * dbo.DATA0072.QUAN_ORD) AS FK,
+								CHARINDEX('+', dbo.DATA0072.DESCRIPTION2, 1) AS PlusZeichen_1,
+								CHARINDEX('+', dbo.DATA0072.DESCRIPTION2, 21) AS PlusZeichen_2
+							FROM         dbo.DATA0070 INNER JOIN
+												  dbo.DATA0072 ON dbo.DATA0070.RKEY = dbo.DATA0072.POPTR
+							WHERE
+								LEFT(LTRIM(ISNULL(dbo.DATA0072.DESCRIPTION, '')), 3) = 'FK '
+								AND LEFT(LTRIM(ISNULL(dbo.DATA0072.DESCRIPTION2, '')), 3) = 'LP '
+								AND dbo.DATA0072.DESCRIPTION2 COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%' + LTRIM(RTRIM(@para1)) + '%' 
+								AND (dbo.DATA0070.PO_DATE >= CONVERT(DATETIME, @para2, 103))
+								AND (dbo.DATA0070.PO_DATE <= CONVERT(DATETIME, @para3, 103))
+						) AS tblFK
+					), 0)
+					+
+					ISNULL((
+							SELECT TOP 1
+								SUM(Rest) AS LastschriftRest_EUR
+							FROM
+							(
+								SELECT DISTINCT 
+									dbo.DATA0132.RKEY,
+									dbo.DATA0212.AMOUNT/dbo.DATA0132.EX_RATE AS Rest
+								FROM         dbo.DATA0199 INNER JOIN
+														dbo.DATA0212 INNER JOIN
+														dbo.DATA0132 INNER JOIN
+														dbo.DATA0107 ON dbo.DATA0132.SRCE_PTR = dbo.DATA0107.RKEY ON dbo.DATA0212.DEBIT_PTR = dbo.DATA0132.RKEY ON 
+														dbo.DATA0199.RKEY = dbo.DATA0212.MISC_CHARGE_PTR INNER JOIN
+														dbo.DATA0108 ON dbo.DATA0107.RKEY = dbo.DATA0108.DATA0107_PTR INNER JOIN
+														dbo.DATA0071 INNER JOIN
+														dbo.DATA0017 ON dbo.DATA0071.INVT_PTR = dbo.DATA0017.RKEY ON dbo.DATA0108.DATA0071_PTR = dbo.DATA0071.RKEY
+								WHERE     
+											--RTRIM(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', '')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE RTRIM(@para1) + '%'
+											RTRIM(REPLACE(REPLACE(dbo.DATA0017.INV_PART_NUMBER, 'HD', ''),'KONSI','')) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE LTRIM(RTRIM(@para1)) + '%'
+											AND dbo.DATA0199.MISC_CHARGE_CATEGORY IN ('Filmerstellung', 'complete mounted PCB', 'Sonstiges', 'Transportkosten', 'Selection cost', 'Debit Handel Rekla.', 'Rekla. / Belastung', 'Nebenkosten/KleMenZ', 'additional cost QA')
+											AND (dbo.DATA0132.MEMO_DATE >= CONVERT(DATETIME, @para2, 103))
+											AND (dbo.DATA0132.MEMO_DATE <= CONVERT(DATETIME, @para3, 103))
+											--AND dbo.DATA0132.MEMO_TP=1
+											AND dbo.DATA0132.MEMO_TP IN (1, 6)
+							) AS tblLastschriftenRest						
+					), 0)
+				)
+				AS AlleKostenarten_EUR
+
+			FROM			
+				LIVE2.dbo.NachKalk_Daten_2 AS tblNachKalk_Daten_2
+			WHERE 
+				tblNachKalk_Daten_2.Aufbereitung = 'AUTO'
+				AND tblNachKalk_Daten_2.D6_PTR IN (
+								SELECT DISTINCT
+									D0006
+								FROM
+								(
+									SELECT    
+										ISNULL((
+												SELECT  TOP 1   dbo.DATA0070.RKEY
+												FROM         dbo.DATA0095 INNER JOIN
+																	  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+																	  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+																	  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																	  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																	  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+																	  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+												WHERE D6.RKEY=dbo.DATA0006.RKEY 
+										), 0) AS EKBestellnummer_PTR,
+										dbo.DATA0006.RKEY AS D0006
+										
+									FROM         dbo.DATA0006 INNER JOIN
+														  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+														  dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+														  dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+														  dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+														  dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY
+									WHERE
+										RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1
+								) AS tblVK
+								WHERE EKBestellnummer_PTR IN (SELECT D70_PTR FROM @tblBestellungenEKVK_Restkosten)
+							)
+
+		) AS tblRestkosten
+	END
+
+	IF @Case_ = 'EKVKDetail_LPListe'
+	BEGIN
+		--DECLARE
+		--	@para1 varchar(255),
+		--	@para2 varchar(255),
+		--	@para3 varchar(255)
+		--SET @para1 = '' --'50742.300' --'52395.300'
+		--SET @para2 = '01.01.2016' 
+		--SET @para3 = '30.05.2016' 
+
+		DECLARE @tblBestellungenEKVK_Liste table(D70_PTR numeric(10, 0))
+
+		INSERT @tblBestellungenEKVK_Liste(D70_PTR)
+		SELECT DISTINCT
+			dbo.DATA0070.RKEY AS RES
+		FROM         dbo.DATA0005 INNER JOIN
+								dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+								dbo.DATA0017 INNER JOIN
+								dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+		WHERE    
+				(dbo.DATA0017.INV_PART_NUMBER LIKE 'HD%') 
+				AND  (dbo.DATA0095.TRAN_TP = 5) AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+				AND (dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para2, 103))
+				AND (dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para3, 103))
+
+
+
+		SELECT 
+			dbo.DATA0010.CUSTOMER_NAME, 
+			dbo.DATA0010.CUST_CODE, 
+			RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+			dbo.DATA0008.PROD_CODE,
+            ISNULL((SELECT MAX(ACT_COMPL_DATE) FROM dbo.DATA0006 WHERE CUST_PART_PTR=dbo.DATA0050.RKEY AND PROD_STATUS=5), '') AS le_Produzierung 
+        FROM dbo.DATA0050 INNER JOIN dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN dbo.DATA0008 
+			ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY
+        WHERE 
+			(dbo.DATA0050.CP_REV COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '3%') 
+			--AND (
+			--		dbo.DATA0010.CUST_CODE COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%' + @para1 + '%' 
+            --        OR 
+			--		RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%' + @para1 + '%' 
+            --        OR 
+			--		dbo.DATA0010.CUSTOMER_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE '%' + @para1 + '%' 
+            --        --& IIf(PC <> "", " AND dbo.DATA0008.PROD_CODE = '" & PC & "' ", "") _
+			--	)
+			AND dbo.DATA0050.RKEY IN (
+										SELECT DISTINCT
+											D0050
+										FROM
+										(
+											SELECT    
+												ISNULL((
+														SELECT  TOP 1   dbo.DATA0070.RKEY
+														FROM         dbo.DATA0095 INNER JOIN
+																			  dbo.DATA0067 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+																			  dbo.DATA0006 AS D6 ON dbo.DATA0067.WO_PTR = D6.RKEY INNER JOIN
+																			  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																			  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																			  dbo.DATA0071 ON dbo.DATA0020.PO_PTR = dbo.DATA0071.RKEY INNER JOIN
+																			  dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY
+														WHERE D6.RKEY=dbo.DATA0006.RKEY 
+												), 0) AS EKBestellnummer_PTR,
+												D50.RKEY AS D0050
+										
+											FROM         dbo.DATA0006 INNER JOIN
+																  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+																  dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+																  dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+																  dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+																  dbo.DATA0050 AS D50 ON dbo.DATA0060.CUST_PART_PTR = D50.RKEY
+											WHERE
+												--RTRIM(D50.CUSTOMER_PART_NUMBER) + '.' + RTRIM(D50.CP_REV) = @para1
+												dbo.DATA0050.CP_REV LIKE '3%'
+										) AS tblVK
+										WHERE EKBestellnummer_PTR IN (SELECT D70_PTR FROM @tblBestellungenEKVK_Liste)
+									)
+		ORDER BY dbo.DATA0010.CUSTOMER_NAME, Kundenteil 
+	END
+
+	IF @Case_ = 'EKVKDetail_Konsimenge'
+	BEGIN
+		SELECT
+			ISNULL(SUM(ISNULL(QTY_ON_HAND, 0)), 0) AS LPKonsi
+		FROM
+		(
+			SELECT DISTINCT
+				dbo.DATA0053.RKEY, 
+				dbo.DATA0053.QTY_ON_HAND
+			FROM         dbo.DATA0006 INNER JOIN
+									dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR
+			WHERE     
+					dbo.DATA0006.CUST_PART_PTR = ISNULL((SELECT TOP 1 RKEY FROM dbo.DATA0050 WHERE RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + RTRIM(dbo.DATA0050.CP_REV) = @para1), 0)
+					AND dbo.DATA0053.LOC_PTR = 225
+		) AS tblNLPKonsiMenge
+	END
+
+
+	--geb. LB Applikation
+	--IF @Case_ = 'LBHandel_Gruppiert'
+	IF @Case_ = 'gebLB_Gruppiert'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+
+		SELECT
+			Kunde,
+			SUM(Wert_geb_LB) AS Wert_geb_LB,
+			ISNULL((
+				SELECT TOP 1
+					SUM(Wert_geb_LB_Vor) AS RES
+				FROM
+				(
+					SELECT
+						KundeVor,
+						CAST((StkPreis/WK)*Reserviert AS FLOAT) AS Wert_geb_LB_Vor
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor,
+							dbo.DATA0063.RKEY AS D63_PTR,   
+							dbo.DATA0063.TDATE AS D63_TDATE, 
+							CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+							CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+							--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+							CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+						--FROM         dbo.DATA0063 INNER JOIN
+						--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+						--					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+						--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+						--					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						FROM         dbo.DATA0001 INNER JOIN
+											  dbo.DATA0063 INNER JOIN
+											  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+											  dbo.DATA0050 INNER JOIN
+											  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							--YEAR(dbo.DATA0006.ACT_COMPL_DATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+							YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND dbo.DATA0050.CP_REV LIKE @para2
+							AND 
+								(
+									--(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+									--OR
+									dbo.DATA0053.QTY_ALLOC > 0
+								)
+							AND dbo.DATA0053.LOC_PTR = 18 -- IN (18, 225)
+							GROUP BY
+								dbo.DATA0063.RKEY,
+								dbo.DATA0063.TDATE,
+								dbo.DATA0010.CUSTOMER_NAME,
+								dbo.DATA0050.CUSTOMER_PART_NUMBER, 
+								dbo.DATA0050.CP_REV, 
+								dbo.DATA0006.WORK_ORDER_NUMBER, 
+								dbo.DATA0006.ACT_COMPL_DATE, 
+								dbo.DATA0053.QTY_ON_HAND,
+								dbo.DATA0063.QUAN_ALLOCATED,
+								dbo.DATA0053.LOC_PTR
+					) AS tblLB
+					WHERE
+						YEAR(tblLB.D63_TDATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+				) AS tblGrpVor
+				WHERE
+					tblGrpVor.KundeVor = tblGrp.Kunde
+			), 0) AS Wert_geb_LB_Vor,
+			SUM(Wert_Konsi) AS Wert_Konsi,
+			ISNULL((
+				SELECT TOP 1
+					SUM(Wert_geb_LB_Vor) AS RES
+				FROM
+				(
+					SELECT
+						KundeVor,
+						CAST((StkPreis/WK)*KonsiMenge AS FLOAT) AS Wert_geb_LB_Vor
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0053.QTY_ON_HAND AS KonsiMenge,
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor,
+							dbo.DATA0063.TDATE AS D63_TDATE, 
+							--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+							CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+							--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+							CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK
+						--FROM         dbo.DATA0063 INNER JOIN
+						--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+						--					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+						--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+						--					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						FROM         dbo.DATA0001 INNER JOIN
+											  dbo.DATA0063 INNER JOIN
+											  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+											  dbo.DATA0050 INNER JOIN
+											  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							--YEAR(dbo.DATA0006.ACT_COMPL_DATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+							YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND dbo.DATA0050.CP_REV LIKE @para2
+							AND dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225
+							--	(
+							--		(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+							--		OR
+							--		dbo.DATA0053.QTY_ALLOC > 0
+							--	)
+							AND dbo.DATA0053.LOC_PTR = 225
+							GROUP BY
+								dbo.DATA0053.QTY_ON_HAND,
+								dbo.DATA0010.CUSTOMER_NAME,
+								dbo.DATA0063.TDATE
+					) AS tblLB
+					WHERE
+						YEAR(tblLB.D63_TDATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+				) AS tblGrpVor
+				WHERE
+					tblGrpVor.KundeVor = tblGrp.Kunde
+			), 0) AS Wert_Konsi_Vor
+
+		FROM
+		(
+			SELECT
+				Kunde,
+				LP, 
+				Revision, 
+				Kommission,
+				FA, 
+				abgeschl, 
+				LBKonsi, 
+				CAST((StkPreis/WK)*LBKonsi AS FLOAT) AS Wert_Konsi,
+				ISNULL(Reserviert, 0) as geb_LB,
+				ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0) AS Wert_geb_LB,
+				StkPreis,
+				WK
+			FROM
+			(
+				SELECT DISTINCT 
+					dbo.DATA0063.RKEY AS D63_PTR,   
+					dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+					dbo.DATA0050.CUSTOMER_PART_NUMBER AS LP, 
+					dbo.DATA0050.CP_REV AS Revision, 
+					dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+					ISNULL(MAX(dbo.DATA0060.SALES_ORDER), 0) AS Kommission,
+					dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+					CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END AS LBKonsi,
+					CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+					--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+					CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+					--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+					--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+					CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK
+				----FROM         dbo.DATA0006 INNER JOIN
+				----				  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+				----				  dbo.DATA0063 INNER JOIN
+				----				  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR INNER JOIN
+				----				  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+				----				  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+				--FROM         dbo.DATA0063 INNER JOIN
+				--						dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+				--						dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+				--						dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+				--						dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+				--						dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+				--						dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+				FROM         dbo.DATA0001 INNER JOIN
+									  dbo.DATA0063 INNER JOIN
+									  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+									  dbo.DATA0050 INNER JOIN
+									  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+									  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+									  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+				WHERE     
+					--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+					dbo.DATA0053.MFG_DATE >= CONVERT(DATETIME, @para1, 103)
+					AND dbo.DATA0050.CP_REV LIKE @para2
+					AND 
+						(
+							(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+							OR
+							dbo.DATA0053.QTY_ALLOC > 0
+						)
+					AND dbo.DATA0053.LOC_PTR IN (18, 225)
+					AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+					GROUP BY
+						dbo.DATA0063.RKEY,
+						dbo.DATA0010.CUSTOMER_NAME,
+						dbo.DATA0050.CUSTOMER_PART_NUMBER, 
+						dbo.DATA0050.CP_REV, 
+						dbo.DATA0006.WORK_ORDER_NUMBER, 
+						dbo.DATA0006.ACT_COMPL_DATE, 
+						dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+						dbo.DATA0063.QUAN_ALLOCATED,
+						dbo.DATA0053.LOC_PTR
+			) AS tblLB
+		) AS tblGrp
+		GROUP BY
+			Kunde
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS 
+	END
+	IF @Case_ = 'gebLB_Gruppiert_AllesOhneHandel'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+
+		SELECT
+			Kunde,
+			SUM(Wert_geb_LB) AS Wert_geb_LB,
+			ISNULL((
+				SELECT TOP 1
+					SUM(Wert_geb_LB_Vor) AS RES
+				FROM
+				(
+					SELECT
+						KundeVor,
+						CAST((StkPreis/WK)*Reserviert AS FLOAT) AS Wert_geb_LB_Vor
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor,
+							dbo.DATA0063.RKEY AS D63_PTR,   
+							dbo.DATA0063.TDATE AS D63_TDATE, 
+							CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+							CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+							--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+							CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+						----FROM         dbo.DATA0006 INNER JOIN
+						----				  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+						----				  dbo.DATA0063 INNER JOIN
+						----				  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR INNER JOIN
+						----				  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						----				  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+						--FROM         dbo.DATA0063 INNER JOIN
+						--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+						--					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+						--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+						--					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						FROM         dbo.DATA0001 INNER JOIN
+											  dbo.DATA0063 INNER JOIN
+											  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+											  dbo.DATA0050 INNER JOIN
+											  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							--YEAR(dbo.DATA0006.ACT_COMPL_DATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+							YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+							AND 
+								(
+									(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+									OR
+									dbo.DATA0053.QTY_ALLOC > 0
+								)
+							AND dbo.DATA0053.LOC_PTR IN (18, 225)
+							GROUP BY
+								dbo.DATA0063.RKEY,
+								dbo.DATA0063.TDATE,
+								dbo.DATA0010.CUSTOMER_NAME,
+								dbo.DATA0050.CUSTOMER_PART_NUMBER, 
+								dbo.DATA0050.CP_REV, 
+								dbo.DATA0006.WORK_ORDER_NUMBER, 
+								dbo.DATA0006.ACT_COMPL_DATE, 
+								dbo.DATA0053.QTY_ON_HAND,
+								dbo.DATA0063.QUAN_ALLOCATED,
+								dbo.DATA0053.LOC_PTR
+					) AS tblLB
+					WHERE
+						YEAR(tblLB.D63_TDATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+				) AS tblGrpVor
+				WHERE
+					tblGrpVor.KundeVor = tblGrp.Kunde
+			), 0) AS Wert_geb_LB_Vor,
+			SUM(Wert_Konsi) AS Wert_Konsi,
+			ISNULL((
+				SELECT TOP 1
+					SUM(Wert_geb_LB_Vor) AS RES
+				FROM
+				(
+					SELECT
+						KundeVor,
+						CAST((StkPreis/WK)*KonsiMenge AS FLOAT) AS Wert_geb_LB_Vor
+					FROM
+					(
+						SELECT DISTINCT 
+							dbo.DATA0053.QTY_ON_HAND AS KonsiMenge,
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor,
+							dbo.DATA0063.TDATE AS D63_TDATE, 
+							--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+							CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+							--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+							CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK
+						--FROM         dbo.DATA0063 INNER JOIN
+						--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+						--					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+						--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+						--					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+						--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						FROM         dbo.DATA0001 INNER JOIN
+											  dbo.DATA0063 INNER JOIN
+											  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+											  dbo.DATA0050 INNER JOIN
+											  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							--YEAR(dbo.DATA0006.ACT_COMPL_DATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+							YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+							AND dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225
+							--	(
+							--		(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+							--		OR
+							--		dbo.DATA0053.QTY_ALLOC > 0
+							--	)
+							AND dbo.DATA0053.LOC_PTR = 225
+							GROUP BY
+								dbo.DATA0053.QTY_ON_HAND,
+								dbo.DATA0010.CUSTOMER_NAME,
+								dbo.DATA0063.TDATE
+					) AS tblLB
+					WHERE
+						YEAR(tblLB.D63_TDATE) < YEAR(GETDATE()) --CONVERT(DATETIME, @para1, 103)
+				) AS tblGrpVor
+				WHERE
+					tblGrpVor.KundeVor = tblGrp.Kunde
+			), 0) AS Wert_Konsi_Vor
+
+		FROM
+		(
+			SELECT
+				Kunde,
+				LP, 
+				Revision, 
+				Kommission,
+				FA, 
+				abgeschl, 
+				ISNULL(KonsiLB, 0) AS KonsiLB, 
+				ISNULL(CAST((StkPreis/WK)*KonsiLB AS FLOAT), 0) AS Wert_Konsi,
+				ISNULL(Reserviert, 0) as geb_LB,
+				ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0) AS Wert_geb_LB,
+				StkPreis,
+				WK
+			FROM
+			(
+				SELECT DISTINCT 
+					dbo.DATA0063.RKEY AS D63_PTR,   
+					dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+					dbo.DATA0050.CUSTOMER_PART_NUMBER AS LP, 
+					dbo.DATA0050.CP_REV AS Revision, 
+					dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+					ISNULL(MAX(dbo.DATA0060.SALES_ORDER), '') AS Kommission,
+					dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+					CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END AS KonsiLB,
+					CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+					--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+					CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+					--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+					--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+					CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK
+				----FROM         dbo.DATA0006 INNER JOIN
+				----				  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+				----				  dbo.DATA0063 INNER JOIN
+				----				  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR INNER JOIN
+				----				  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+				----				  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+				--FROM         dbo.DATA0063 INNER JOIN
+				--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+				--					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+				--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+				--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+				--					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+				--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+				FROM         dbo.DATA0001 INNER JOIN
+										dbo.DATA0063 INNER JOIN
+										dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+										dbo.DATA0050 INNER JOIN
+										dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+										dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+										dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+				WHERE     
+					--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+					dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, @para1, 103)
+					AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+					AND 
+						(
+							(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+							OR
+							dbo.DATA0053.QTY_ALLOC > 0
+						)
+					AND dbo.DATA0053.LOC_PTR IN (18, 225)
+					AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+					GROUP BY
+						dbo.DATA0063.RKEY,
+						dbo.DATA0010.CUSTOMER_NAME,
+						dbo.DATA0050.CUSTOMER_PART_NUMBER, 
+						dbo.DATA0050.CP_REV, 
+						dbo.DATA0006.WORK_ORDER_NUMBER, 
+						dbo.DATA0006.ACT_COMPL_DATE, 
+						dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+						dbo.DATA0063.QUAN_ALLOCATED,
+						dbo.DATA0053.LOC_PTR
+			) AS tblLB
+		) AS tblGrp
+		GROUP BY
+			Kunde
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS 
+	END
+
+	IF @Case_ = 'gebLB_GruppiertFreierLB'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+		SELECT
+			Kunde,
+			--SUM(ELP_LB * StkPreis_EUR) AS Wert_ELP_LB,
+			SUM(CASE WHEN StkPreis_EUR>0 THEN StkPreis_EUR ELSE LAST_SO_PRICE END * ELP_LB) AS Wert_ELP_LB,
+			ISNULL((
+					SELECT TOP 1 
+						SUM(StkPreis_EUR * ELP_LB) AS RES
+					FROM
+					(
+						SELECT
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor, 
+							RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+							dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+							dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LB, 
+							dbo.DATA0053.MFG_DATE AS Einlagerung,
+							ISNULL((
+									SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+									FROM         dbo.DATA0054 INNER JOIN
+										dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+									WHERE 
+										dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+									ORDER BY
+										dbo.DATA0006.RKEY DESC
+							), 0) AS StkPreis_EUR
+						--FROM         dbo.DATA0053 INNER JOIN
+						--						dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+						--						dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--						dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+						FROM         dbo.DATA0053 INNER JOIN
+											  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0 
+							AND dbo.DATA0053.LOC_PTR <> 225 --Konsi nicht berücksichtigen
+							AND YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND dbo.DATA0050.CP_REV LIKE @para2
+							AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+					) AS tblVorJahr
+					WHERE 
+						KundeVor = Kunde
+			), 0) AS Wert_VorAktLahr
+		FROM
+		(
+			SELECT
+				dbo.DATA0050.LAST_SO_PRICE,
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde, 
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LB, 
+				dbo.DATA0053.MFG_DATE AS Einlagerung,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0006.RKEY DESC
+				), 0) AS StkPreis_EUR
+			--FROM         dbo.DATA0053 INNER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			FROM         dbo.DATA0053 INNER JOIN
+								  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+				AND dbo.DATA0053.LOC_PTR <> 225 --Konsi nicht berücksichtigen
+				AND dbo.DATA0053.MFG_DATE >= CONVERT(DATETIME, @para1, 103)
+				AND dbo.DATA0050.CP_REV LIKE @para2
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+			--ORDER BY 
+			--	dbo.DATA0053.MFG_DATE DESC
+		) AS tblGrp
+		GROUP BY
+			Kunde
+		ORDER BY
+			SUM(ELP_LB) DESC
+	END
+
+	IF @Case_ = 'gebLB_GruppiertFreierLBOhneHandel'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+		SELECT
+			Kunde,
+			SUM(ELP_LB * CASE WHEN StkPreis_EUR>0 THEN StkPreis_EUR ELSE LAST_SO_PRICE END) AS Wert_ELP_LB,
+			ISNULL((
+					SELECT TOP 1 
+						SUM(CASE WHEN StkPreis_EUR>0 THEN StkPreis_EUR ELSE LAST_SO_PRICE END * ELP_LBvor) AS RES
+					FROM
+					(
+						SELECT
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor, 
+							RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+							dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+							dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LBvor, 
+							dbo.DATA0053.MFG_DATE AS Einlagerung,
+							ISNULL((
+									SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+									FROM         dbo.DATA0054 INNER JOIN
+										dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+									WHERE 
+										dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+									ORDER BY
+										dbo.DATA0006.RKEY DESC
+							), 0) AS StkPreis_EUR,
+							dbo.DATA0050.LAST_SO_PRICE
+						--FROM         dbo.DATA0053 INNER JOIN
+						--						dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+						--						dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+						--						dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+						FROM         dbo.DATA0053 INNER JOIN
+											  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+											  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+											  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+						WHERE     
+							(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+							AND dbo.DATA0053.LOC_PTR <> 225 --Konsi nicht berücksichtigen
+							AND YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+							AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+					) AS tblVorJahr
+					WHERE 
+						KundeVor = Kunde
+			), 0) AS Wert_VorAktLahr
+		FROM
+		(
+			SELECT
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde, 
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LB, 
+				dbo.DATA0053.MFG_DATE AS Einlagerung,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0006.RKEY DESC
+				), 0) AS StkPreis_EUR,
+				dbo.DATA0050.LAST_SO_PRICE
+			--FROM         dbo.DATA0053 INNER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			FROM         dbo.DATA0053 INNER JOIN
+							dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+							dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+							dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+				AND dbo.DATA0053.LOC_PTR <> 225 --Konsi nicht berücksichtigen
+				AND dbo.DATA0053.MFG_DATE >= CONVERT(DATETIME, @para1, 103)
+				AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+			--ORDER BY 
+			--	dbo.DATA0053.MFG_DATE DESC
+		) AS tblGrp
+		GROUP BY
+			Kunde
+		ORDER BY
+			SUM(ELP_LB) DESC
+	END
+
+	IF @Case_ = 'gebLB_DetailFreierLB'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '%' -- % = *
+		--SET @para3 = '%' -- % = *
+		
+		SELECT
+			D50_PTR,
+			Kunde,
+			Kundenteil,
+			ltz_Kommission,
+			FA,
+			SUM(ELP_LB) AS Menge_ELP_LB,
+			MAX(CASE WHEN StkPreis_EUR>0 THEN StkPreis_EUR ELSE LAST_SO_PRICE END) AS MAX_StkPreis_EUR,
+			SUM(CASE WHEN StkPreis_EUR>0 THEN StkPreis_EUR ELSE LAST_SO_PRICE END * ELP_LB) AS Wert_ELP_LB,
+			/*
+			ISNULL((
+					SELECT TOP 1 
+						SUM(ISNULL(StkPreis_EUR, 0) * ISNULL(ELP_LBvor, 0)) AS RES
+					FROM
+					(
+						SELECT
+							dbo.DATA0010.CUSTOMER_NAME AS KundeVor, 
+							LTRIM(RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV)) AS KundenteilVor, 
+							dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+							dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LBvor, 
+							YEAR(dbo.DATA0053.MFG_DATE) AS EinlagerungsJAhr,
+							ISNULL((
+									SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+									FROM         dbo.DATA0054 INNER JOIN
+										dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+									WHERE 
+										dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+									ORDER BY
+										dbo.DATA0006.RKEY DESC
+							), 0) AS StkPreis_EUR
+						FROM         dbo.DATA0053 INNER JOIN
+												dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+												dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+												dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+						WHERE     
+							(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+							--AND YEAR(dbo.DATA0053.MFG_DATE) < YEAR(GETDATE())
+							--AND dbo.DATA0050.CP_REV LIKE @para2
+							--AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+					) AS tblVorJahr
+					WHERE 
+						KundeVor = Kunde
+						AND KundenteilVor = Kundenteil
+						AND EinlagerungsJAhr < YEAR(GETDATE())
+			), 0) AS Wert_VorAktLahr,
+			*/
+			Einlagerung,
+			PC,
+			LDauer,
+			--ISNULL((
+			--		CASE	
+			--			WHEN
+			--			ISNULL((
+			--					SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--			), 0) > 0 THEN
+			--				MAX(StkPreis_EUR) 
+			--				/ 
+			--				ISNULL((
+			--						SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--				), 0) 
+			--			ELSE
+			--				0
+			--		END
+			--), 0) AS EUR_pro_dm2 
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							----StkPreis/WK  * ELP_KN / (KNX*KNY/10000)
+							MAX(StkPreis_EUR) 
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde, 
+				LTRIM(RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV)) AS Kundenteil, 
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LB, 
+				dbo.DATA0053.MFG_DATE AS Einlagerung,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0006.RKEY DESC
+				), 0) AS StkPreis_EUR,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.SALES_ORDER AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0060.SALES_ORDER DESC
+				), 0) AS ltz_Kommission,
+				dbo.DATA0050.LAST_SO_PRICE,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			----FROM         dbo.DATA0053 INNER JOIN
+			----					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+			----					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			----					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			--FROM         dbo.DATA0053 INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			FROM         dbo.DATA0053 INNER JOIN
+								  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+								  dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+				AND dbo.DATA0053.LOC_PTR <> 225 --Konsi nicht berücksichtigen
+				AND dbo.DATA0053.MFG_DATE >= CONVERT(DATETIME, @para1, 103)
+				AND dbo.DATA0050.CP_REV LIKE @para2
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+			--ORDER BY 
+			--	dbo.DATA0053.MFG_DATE DESC
+		) AS tblGrp
+		GROUP BY
+			D50_PTR,
+			Kunde,
+			Kundenteil,
+			ltz_Kommission,
+			FA,
+			Einlagerung,
+			PC,
+			LDauer
+		ORDER BY
+			Einlagerung DESC --SUM(StkPreis_EUR * ELP_LB) DESC
+	END
+
+	IF @Case_ = 'gebLB_DetailFreierLBOhneHandel'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '%' -- % = *
+		--SET @para3 = '%' -- % = *
+		
+		SELECT
+			D50_PTR,
+			Kunde,
+			Kundenteil,
+			ltz_Kommission,
+			FA,
+			SUM(ELP_LB) AS Menge_ELP_LB,
+			MAX(StkPreis_EUR) AS MAX_StkPreis_EUR,
+			SUM(StkPreis_EUR * ELP_LB) AS Wert_ELP_LB,
+			Einlagerung,
+			PC,
+			LDauer,
+			--ISNULL((
+			--		CASE	
+			--			WHEN
+			--			ISNULL((
+			--					SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--			), 0) > 0 THEN
+			--				MAX(StkPreis_EUR) 
+			--				/ 
+			--				ISNULL((
+			--						SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--				), 0) 
+			--			ELSE
+			--				0
+			--		END
+			--), 0) AS EUR_pro_dm2 
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							----StkPreis/WK  * ELP_KN / (KNX*KNY/10000)
+							MAX(StkPreis_EUR) 
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde, 
+				LTRIM(RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV)) AS Kundenteil, 
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC AS ELP_LB, 
+				dbo.DATA0053.MFG_DATE AS Einlagerung,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0006.RKEY DESC
+				), 0) AS StkPreis_EUR,
+				ISNULL((
+						SELECT TOP 1 dbo.DATA0060.SALES_ORDER AS RES
+						FROM         dbo.DATA0054 INNER JOIN
+						  dbo.DATA0060 ON dbo.DATA0054.SO_PTR = dbo.DATA0060.RKEY
+						WHERE 
+							dbo.DATA0054.WO_PTR = dbo.DATA0006.RKEY 
+						ORDER BY
+							dbo.DATA0060.SALES_ORDER DESC
+				), 0) AS ltz_Kommission,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			----FROM         dbo.DATA0053 INNER JOIN
+			----					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY INNER JOIN
+			----					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			----					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			--FROM         dbo.DATA0053 INNER JOIN
+			--					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY LEFT OUTER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			FROM         dbo.DATA0053 INNER JOIN
+								  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+								  dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				(dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC) > 0
+				AND dbo.DATA0053.MFG_DATE >= CONVERT(DATETIME, @para1, 103)
+				AND LEFT(dbo.DATA0050.CP_REV, 1) <>'3'
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+		) AS tblGrp
+		GROUP BY
+			D50_PTR,
+			Kunde,
+			Kundenteil,
+			ltz_Kommission,
+			FA,
+			Einlagerung,
+			PC,
+			LDauer
+		ORDER BY
+			Einlagerung DESC 
+	END
+
+	IF @Case_ = 'LBHandel_Detail'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+
+		SELECT
+			Kunde,
+			Kundenteil, 
+			--Revision, 
+			Kommission,
+			FA, 
+			abgeschl, 
+			LB as LB_Konsi, 
+			ISNULL(CAST((StkPreis/WK)*LB AS FLOAT), 0) AS Wert_Konsi,
+			Reserviert as geb_LB,
+			ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0) AS Wert_geb_LB,
+			ISNULL(CAST(StkPreis/WK AS FLOAT), 0) AS StkPreis,
+			ISNULL(WK, 0) AS WK,
+			D63_TDATE AS Reservierungsdatum,
+			ISNULL(DATEDIFF(dd, abgeschl, GETDATE()), 0) AS LTage,
+			KommGeplantAm,
+			ISNULL(DATEDIFF(dd, abgeschl, KommGeplantAm), 0) AS LTageBisLief,
+			ISNULL((
+					SELECT TOP 1 STATUS FROM dbo.DATA0060 WHERE RKEY = D63_SO_PTR
+			), 0) AS KommStatus,
+			PC,
+			LDauer,
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							----StkPreis/WK  * ELP_KN / (KNX*KNY/10000)
+							--(StkPreis/WK)
+							--/ 
+							--ISNULL((
+							--		SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNX, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							--), 0) 
+							(StkPreis/WK)
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT DISTINCT 
+				dbo.DATA0063.RKEY AS D63_PTR,   
+				dbo.DATA0063.SO_PTR AS D63_SO_PTR, 
+				dbo.DATA0063.TDATE AS D63_TDATE,
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0050.CP_REV AS Revision,
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				ISNULL(MAX(dbo.DATA0060.SALES_ORDER), 0) AS Kommission,
+				MAX(dbo.DATA0060.DUE_DATE) AS KommGeplantAm,
+				dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+				ISNULL(CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END, 0) AS LB,
+				ISNULL(CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT), 0) AS Reserviert,
+				--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+				--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+				--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			------FROM         dbo.DATA0006 INNER JOIN
+			------				  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+			------				  dbo.DATA0063 INNER JOIN
+			------				  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR INNER JOIN
+			------				  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			------				  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			----FROM         dbo.DATA0063 INNER JOIN
+			----					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+			----					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+			----					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			----					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+			----					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+			----					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			--FROM         dbo.DATA0001 INNER JOIN
+			--					  dbo.DATA0063 INNER JOIN
+			--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+			--					  dbo.DATA0050 INNER JOIN
+			--					  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0050 INNER JOIN
+								  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0050.PROD_CODE_PTR LEFT OUTER JOIN
+								  dbo.DATA0001 INNER JOIN
+								  dbo.DATA0063 INNER JOIN
+								  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR ON 
+								  dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+				dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, @para1, 103)
+				AND dbo.DATA0050.CP_REV LIKE @para2
+				AND 
+					(
+						(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+						OR
+						dbo.DATA0053.QTY_ALLOC > 0
+					)
+				AND dbo.DATA0053.LOC_PTR IN (18, 225)
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+			GROUP BY
+				dbo.DATA0063.RKEY,
+				dbo.DATA0063.SO_PTR,
+				dbo.DATA0063.TDATE,
+				dbo.DATA0010.CUSTOMER_NAME,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV),
+				dbo.DATA0050.CP_REV,
+				dbo.DATA0006.WORK_ORDER_NUMBER, 
+				dbo.DATA0006.ACT_COMPL_DATE, 
+				dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+				dbo.DATA0063.QUAN_ALLOCATED,
+				dbo.DATA0053.LOC_PTR,
+				dbo.DATA0008.PROD_CODE,
+				dbo.DATA0050.SHELF_LIFE,
+				dbo.DATA0050.RKEY
+		) AS tblLB
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS , Kundenteil
+	END
+	IF @Case_ = 'LBHandel_Detail_AllesOhneHandel'
+	BEGIN
+		SELECT
+			D50_PTR,
+			Kunde,
+			Kundenteil, 
+			--Revision, 
+			Kommission,
+			FA, 
+			abgeschl, 
+			ISNULL(LB, 0) as LB_Konsi, 
+			ISNULL(CAST((StkPreis/WK)*LB AS FLOAT), 0) AS Wert_Konsi,
+			ISNULL(Reserviert, 0) as geb_LB,
+			ISNULL(ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0), 0) AS Wert_geb_LB,
+			ISNULL(CAST(StkPreis/WK AS FLOAT), 0) AS StkPreis,
+			ISNULL(WK, 0) AS WK,
+			D63_TDATE AS Reservierungsdatum,
+			ISNULL(ISNULL(DATEDIFF(dd, abgeschl, GETDATE()), 0), 0) AS LTage,
+			KommGeplantAm,
+			ISNULL(ISNULL(DATEDIFF(dd, abgeschl, KommGeplantAm), 0), 0) AS LTageBisLief,
+			ISNULL((
+					SELECT TOP 1 STATUS FROM dbo.DATA0060 WHERE RKEY = D63_SO_PTR
+			), 0) AS KommStatus,
+			PC,
+			LDauer,
+			--ISNULL((
+			--		CASE	
+			--			WHEN
+			--			ISNULL((
+			--					SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--			), 0) > 0 THEN
+			--				StkPreis/WK 
+			--				/ 
+			--				ISNULL((
+			--						SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+			--				), 0) 
+			--			ELSE
+			--				0
+			--		END
+			--), 0) AS EUR_pro_dm2 
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							----StkPreis/WK  * ELP_KN / (KNX*KNY/10000)
+							--(StkPreis/WK)
+							--/ 
+							--ISNULL((
+							--		SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							--), 0) 
+							(StkPreis/WK)
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT DISTINCT 
+				dbo.DATA0063.RKEY AS D63_PTR,   
+				dbo.DATA0063.SO_PTR AS D63_SO_PTR,
+				dbo.DATA0063.TDATE AS D63_TDATE,
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0050.CP_REV AS Revision,
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				ISNULL(MAX(dbo.DATA0060.SALES_ORDER), '') AS Kommission,
+				MAX(dbo.DATA0060.DUE_DATE) AS KommGeplantAm,
+				dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+				CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END AS LB,
+				CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+				--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+				--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+				--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			------FROM         dbo.DATA0006 INNER JOIN
+			------				  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+			------				  dbo.DATA0063 INNER JOIN
+			------				  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR INNER JOIN
+			------				  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			------				  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+			----FROM         dbo.DATA0063 INNER JOIN
+			----					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+			----					  dbo.DATA0053 ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY INNER JOIN
+			----					  dbo.DATA0050 ON dbo.DATA0053.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+			----					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+			----					  dbo.DATA0001 ON dbo.DATA0060.CURRENCY_PTR = dbo.DATA0001.RKEY LEFT OUTER JOIN
+			----					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			--FROM         dbo.DATA0001 INNER JOIN
+			--					  dbo.DATA0063 INNER JOIN
+			--					  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR RIGHT OUTER JOIN
+			--					  dbo.DATA0050 INNER JOIN
+			--					  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+			--					  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0063.PART_BATCH_PTR = dbo.DATA0053.RKEY LEFT OUTER JOIN
+			--					  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0050 INNER JOIN
+								  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0050.PROD_CODE_PTR LEFT OUTER JOIN
+								  dbo.DATA0001 INNER JOIN
+								  dbo.DATA0063 INNER JOIN
+								  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR ON 
+								  dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+				dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, @para1, 103)
+				AND LEFT(dbo.DATA0050.CP_REV, 1) <> '3'
+				AND 
+					(
+						(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+						OR
+						dbo.DATA0053.QTY_ALLOC > 0
+					)
+				AND dbo.DATA0053.LOC_PTR IN (18, 225)
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+			GROUP BY
+				dbo.DATA0063.RKEY,
+				dbo.DATA0063.SO_PTR,
+				dbo.DATA0063.TDATE,
+				dbo.DATA0010.CUSTOMER_NAME,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV),
+				dbo.DATA0050.CP_REV,
+				dbo.DATA0006.WORK_ORDER_NUMBER, 
+				dbo.DATA0006.ACT_COMPL_DATE, 
+				dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+				dbo.DATA0063.QUAN_ALLOCATED,
+				dbo.DATA0053.LOC_PTR,
+				dbo.DATA0008.PROD_CODE,
+				dbo.DATA0050.SHELF_LIFE,
+				dbo.DATA0050.RKEY
+		) AS tblLB
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS , Kundenteil
+	END
+
+	--Detail nach Kundenteil eingeschränkt
+IF @Case_ = 'LBHandel_Detail_Kundenteil'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255)
+		--SET @para1 = '01.01.2016'
+		--SET @para2 = '3%' -- % = *
+		--SET @para3 = '%' -- % = *
+
+		SELECT
+			Kunde,
+			Kundenteil, 
+			--Revision, 
+			Kommission,
+			FA, 
+			abgeschl, 
+			LB as LB_Konsi, 
+			ISNULL(CAST((StkPreis/WK)*LB AS FLOAT), 0) AS Wert_Konsi,
+			Reserviert as geb_LB,
+			freiLB,
+			ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0) AS Wert_geb_LB,
+			ISNULL(CAST(StkPreis/WK AS FLOAT), 0) AS StkPreis,
+			ISNULL(WK, 0) AS WK,
+			D63_TDATE AS Reservierungsdatum,
+			ISNULL(DATEDIFF(dd, abgeschl, GETDATE()), 0) AS LTage,
+			KommGeplantAm,
+			ISNULL(DATEDIFF(dd, abgeschl, KommGeplantAm), 0) AS LTageBisLief,
+			ISNULL((
+					SELECT TOP 1 STATUS FROM dbo.DATA0060 WHERE RKEY = D63_SO_PTR
+			), 0) AS KommStatus,
+			PC,
+			LDauer,
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							(StkPreis/WK)
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT DISTINCT 
+				dbo.DATA0063.RKEY AS D63_PTR,   
+				dbo.DATA0063.SO_PTR AS D63_SO_PTR, 
+				dbo.DATA0063.TDATE AS D63_TDATE,
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0050.CP_REV AS Revision,
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				ISNULL(MAX(dbo.DATA0060.SALES_ORDER), 0) AS Kommission,
+				MAX(dbo.DATA0060.DUE_DATE) AS KommGeplantAm,
+				dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+				ISNULL(CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END, 0) AS LB,
+				ISNULL(CASE WHEN dbo.DATA0053.LOC_PTR=18 THEN dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC ELSE 0 END, 0) AS freiLB,
+				ISNULL(CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT), 0) AS Reserviert,
+				--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0050 INNER JOIN
+								  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0050.PROD_CODE_PTR LEFT OUTER JOIN
+								  dbo.DATA0001 INNER JOIN
+								  dbo.DATA0063 INNER JOIN
+								  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR ON 
+								  dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+				dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, @para1, 103)
+				AND dbo.DATA0050.CP_REV LIKE @para2
+				AND 
+					(
+						(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+						OR
+						dbo.DATA0053.QTY_ALLOC > 0
+					)
+				AND dbo.DATA0053.LOC_PTR IN (18, 225)
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+				AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) LIKE @para4
+			GROUP BY
+				dbo.DATA0063.RKEY,
+				dbo.DATA0063.SO_PTR,
+				dbo.DATA0063.TDATE,
+				dbo.DATA0010.CUSTOMER_NAME,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV),
+				dbo.DATA0050.CP_REV,
+				dbo.DATA0006.WORK_ORDER_NUMBER, 
+				dbo.DATA0006.ACT_COMPL_DATE, 
+				dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+				dbo.DATA0053.QTY_ALLOC,
+				dbo.DATA0063.QUAN_ALLOCATED,
+				dbo.DATA0053.LOC_PTR,
+				dbo.DATA0008.PROD_CODE,
+				dbo.DATA0050.SHELF_LIFE,
+				dbo.DATA0050.RKEY
+		) AS tblLB
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS , Kundenteil
+	END
+	IF @Case_ = 'LBHandel_Detail_AllesOhneHandel_Kundenteil'
+	BEGIN
+		SELECT
+			D50_PTR,
+			Kunde,
+			Kundenteil, 
+			--Revision, 
+			Kommission,
+			FA, 
+			abgeschl, 
+			ISNULL(LB, 0) as LB_Konsi, 
+			ISNULL(CAST((StkPreis/WK)*LB AS FLOAT), 0) AS Wert_Konsi,
+			ISNULL(Reserviert, 0) as geb_LB,
+			freiLB,
+			ISNULL(ISNULL(CAST((StkPreis/WK)*Reserviert AS FLOAT), 0), 0) AS Wert_geb_LB,
+			ISNULL(CAST(StkPreis/WK AS FLOAT), 0) AS StkPreis,
+			ISNULL(WK, 0) AS WK,
+			D63_TDATE AS Reservierungsdatum,
+			ISNULL(ISNULL(DATEDIFF(dd, abgeschl, GETDATE()), 0), 0) AS LTage,
+			KommGeplantAm,
+			ISNULL(ISNULL(DATEDIFF(dd, abgeschl, KommGeplantAm), 0), 0) AS LTageBisLief,
+			ISNULL((
+					SELECT TOP 1 STATUS FROM dbo.DATA0060 WHERE RKEY = D63_SO_PTR
+			), 0) AS KommStatus,
+			PC,
+			LDauer,
+			ISNULL((
+					CASE	
+						WHEN
+						ISNULL((
+								SELECT TOP 1 ISNULL(ELP_KN, 0) * (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+						), 0) > 0 THEN
+							(StkPreis/WK)
+							*
+							ISNULL((
+									SELECT TOP 1 ISNULL(ELP_KN, 0) / (ISNULL(KNX, 0) * ISNULL(KNY, 0) / 10000) FROM dbo.ARTIKELDATEN WHERE CUST_PART_PTR = D50_PTR
+							), 0) 
+						ELSE
+							0
+					END
+			), 0) AS EUR_pro_dm2
+		FROM
+		(
+			SELECT DISTINCT 
+				dbo.DATA0063.RKEY AS D63_PTR,   
+				dbo.DATA0063.SO_PTR AS D63_SO_PTR,
+				dbo.DATA0063.TDATE AS D63_TDATE,
+				dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+				dbo.DATA0050.CP_REV AS Revision,
+				dbo.DATA0050.RKEY AS D50_PTR,
+				dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+				ISNULL(MAX(dbo.DATA0060.SALES_ORDER), '') AS Kommission,
+				MAX(dbo.DATA0060.DUE_DATE) AS KommGeplantAm,
+				dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+				CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END AS LB,
+				ISNULL(CASE WHEN dbo.DATA0053.LOC_PTR=18 THEN dbo.DATA0053.QTY_ON_HAND - dbo.DATA0053.QTY_ALLOC ELSE 0 END, 0) AS freiLB,
+				CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT) AS Reserviert,
+				--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+				CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK,
+				dbo.DATA0008.PROD_CODE AS PC,
+				dbo.DATA0050.SHELF_LIFE AS LDauer
+			FROM         dbo.DATA0008 INNER JOIN
+								  dbo.DATA0050 INNER JOIN
+								  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+								  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0050.PROD_CODE_PTR LEFT OUTER JOIN
+								  dbo.DATA0001 INNER JOIN
+								  dbo.DATA0063 INNER JOIN
+								  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR ON 
+								  dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR LEFT OUTER JOIN
+								  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+			WHERE     
+				--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+				dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, @para1, 103)
+				AND LEFT(dbo.DATA0050.CP_REV, 1) <> '3'
+				AND 
+					(
+						(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+						OR
+						dbo.DATA0053.QTY_ALLOC > 0
+					)
+				AND dbo.DATA0053.LOC_PTR IN (18, 225)
+				AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+				AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) LIKE @para4
+			GROUP BY
+				dbo.DATA0063.RKEY,
+				dbo.DATA0063.SO_PTR,
+				dbo.DATA0063.TDATE,
+				dbo.DATA0010.CUSTOMER_NAME,
+				RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV),
+				dbo.DATA0050.CP_REV,
+				dbo.DATA0006.WORK_ORDER_NUMBER, 
+				dbo.DATA0006.ACT_COMPL_DATE, 
+				dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+				dbo.DATA0053.QTY_ALLOC,
+				dbo.DATA0063.QUAN_ALLOCATED,
+				dbo.DATA0053.LOC_PTR,
+				dbo.DATA0008.PROD_CODE,
+				dbo.DATA0050.SHELF_LIFE,
+				dbo.DATA0050.RKEY
+		) AS tblLB
+		ORDER BY 
+			Kunde COLLATE SQL_Latin1_General_CP1_CI_AS , Kundenteil
+	END
+
+	--EK-VK Handel Monatsende
+	IF @Case_ = 'HandelMonatsende_Einlagerungen'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255)
+		--SET @para1 = '11.08.2016'
+		--SET @para2 = '2'
+
+		DECLARE
+			@StartDatum varchar(255),
+			@EndDatum varchar(255)
+		SET @StartDatum = (SELECT TOP 1 DATEADD(day, -1 * CAST(@para2 AS INT), CONVERT(DATETIME, @para1, 103)))
+		SET @EndDatum = @para1
+		--PCB Einlagerung
+		SELECT 
+			'PCB Einlagerung' AS Bemerkung,
+			--dbo.DATA0017.RKEY AS D17_PTR,
+			dbo.DATA0023.SUPPLIER_NAME AS Lieferant,
+			dbo.DATA0017.INV_PART_NUMBER AS PCB, 
+			dbo.DATA0095.TRAN_DATE AS Datum_Einlagerung,
+			CAST(dbo.DATA0095.QUANTITY AS FLOAT) AS Einlagerungsmenge,
+			CAST((dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE*dbo.DATA0095.QUANTITY) AS FLOAT) AS EKWert_EUR,
+			dbo.DATA0070.PO_NUMBER AS BE_Nr
+		FROM         dbo.DATA0005 INNER JOIN
+								dbo.DATA0095 ON dbo.DATA0005.RKEY = dbo.DATA0095.TRAN_BY INNER JOIN
+								dbo.DATA0017 INNER JOIN
+								dbo.DATA0002 ON dbo.DATA0017.PURCH_UNIT_PTR = dbo.DATA0002.RKEY ON dbo.DATA0095.INVT_PTR = dbo.DATA0017.RKEY INNER JOIN
+								dbo.DATA0022 ON dbo.DATA0095.SRCE_PTR = dbo.DATA0022.RKEY INNER JOIN
+								dbo.DATA0071 ON dbo.DATA0022.SOURCE_PTR = dbo.DATA0071.RKEY INNER JOIN
+								dbo.DATA0070 ON dbo.DATA0071.PO_PTR = dbo.DATA0070.RKEY INNER JOIN
+								dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+		WHERE    
+			dbo.DATA0095.TRAN_TP = 5 
+			AND dbo.DATA0070.PURCHASE_ORDER_TYPE=0
+			AND dbo.DATA0070.STATUS <> 3
+			AND dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, @StartDatum, 103)
+			AND dbo.DATA0095.TRAN_DATE <= CONVERT(DATETIME, @EndDatum, 103)
+			AND dbo.DATA0017.RKEY NOT IN (62664, 72720) 
+			AND dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'PCB %'
+		ORDER BY
+			dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'HandelMonatsende_PCBAusgabe'
+	BEGIN
+		--DECLARE
+		--@para1 varchar(255),
+		--@para2 varchar(255)
+		--SET @para1 = '11.08.2016'
+		--SET @para2 = '2'
+
+		--DECLARE
+		--	@StartDatum varchar(255),
+		--	@EndDatum varchar(255)
+		SET @StartDatum = (SELECT TOP 1 DATEADD(day, -1 * CAST(@para2 AS INT), CONVERT(DATETIME, @para1, 103)))
+		SET @EndDatum = @para1
+		--PCB Ausgabe
+		SELECT
+			dbo.DATA0010.CUSTOMER_NAME As Kunde,
+			CAST(SUM(dbo.DATA0095.QUANTITY) AS INT) AS Ausgabe,
+			MAX(dbo.DATA0095.TRAN_DATE) AS Ausgabedatum,
+			dbo.DATA0006.RKEY,
+			dbo.DATA0006.WORK_ORDER_NUMBER AS FA,
+			dbo.DATA0017.INV_PART_DESCRIPTION,
+			ISNULL((
+				SELECT TOP 1
+					CAST(SUM(QUAN_SHP) AS INT) AS RES
+				FROM
+				(
+					SELECT DISTINCT	
+						dbo.DATA0052.RKEY,
+						dbo.DATA0052.QUAN_SHP,
+						dbo.DATA0006.RKEY AS D6_PTR
+					FROM         dbo.DATA0006 INNER JOIN
+											dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+											dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+											dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+											dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+											dbo.DATA0010 ON dbo.DATA0060.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+											dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+											dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY INNER JOIN
+											dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+					WHERE
+						dbo.DATA0006.RKEY IN (
+												SELECT
+													dbo.DATA0006.RKEY
+												FROM         dbo.DATA0095 INNER JOIN
+																		dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																		dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																		dbo.DATA0006 INNER JOIN
+																		dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+																		dbo.DATA0067 ON dbo.DATA0006.RKEY = dbo.DATA0067.WO_PTR ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY
+												WHERE     
+													dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'PCB %'
+													AND dbo.DATA0095.TRAN_TP IN (13, 14)
+													AND dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, @StartDatum, 103)
+													AND dbo.DATA0095.TRAN_DATE <= CONVERT(DATETIME, @EndDatum, 103)
+											)
+				) AS tblPCBVerkauft
+				WHERE 
+					tblPCBVerkauft.D6_PTR = dbo.DATA0006.RKEY
+			), 0) AS PCBVerkauft,
+			ISNULL((
+				SELECT TOP 1
+					CAST(SUM(gesendet_FA_WertEUR) AS INT) AS RES
+				FROM
+				(
+					SELECT DISTINCT	
+						dbo.DATA0052.RKEY,
+						CAST((
+							CASE 
+								WHEN ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)>0 THEN
+									ISNULL((SELECT TOP 1 dbo.DATA0507.UNIT_PRICE FROM dbo.DATA0507 WHERE dbo.DATA0507.DATA0060_PTR = dbo.DATA0060.RKEY), 0)
+									/ 
+									dbo.DATA0060.EXCH_RATE 
+								ELSE
+									dbo.DATA0060.PART_PRICE / dbo.DATA0060.EXCH_RATE 
+							END --ELP_Preis_EUR
+							*
+							dbo.DATA0052.QUAN_SHP --AS gesendet_FA
+						) AS FLOAT) AS gesendet_FA_WertEUR,
+						dbo.DATA0006.RKEY AS D6_PTR
+					FROM         dbo.DATA0006 INNER JOIN
+											dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+											dbo.DATA0052 ON dbo.DATA0053.RKEY = dbo.DATA0052.DATA0053_PTR INNER JOIN
+											dbo.DATA0064 ON dbo.DATA0052.SO_SHP_PTR = dbo.DATA0064.RKEY INNER JOIN
+											dbo.DATA0060 ON dbo.DATA0064.SO_PTR = dbo.DATA0060.RKEY INNER JOIN
+											dbo.DATA0010 ON dbo.DATA0060.CUSTOMER_PTR = dbo.DATA0010.RKEY INNER JOIN
+											dbo.DATA0050 ON dbo.DATA0060.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+											dbo.DATA0008 ON dbo.DATA0050.PROD_CODE_PTR = dbo.DATA0008.RKEY INNER JOIN
+											dbo.ARTIKELDATEN ON dbo.DATA0050.RKEY = dbo.ARTIKELDATEN.CUST_PART_PTR
+					WHERE
+						dbo.DATA0006.RKEY IN (
+												SELECT
+													dbo.DATA0006.RKEY
+												FROM         dbo.DATA0095 INNER JOIN
+																		dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																		dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																		dbo.DATA0006 INNER JOIN
+																		dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+																		dbo.DATA0067 ON dbo.DATA0006.RKEY = dbo.DATA0067.WO_PTR ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY
+												WHERE     
+													dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'PCB %'
+													AND dbo.DATA0095.TRAN_TP IN (13, 14)
+													AND dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, @StartDatum, 103)
+													AND dbo.DATA0095.TRAN_DATE <= CONVERT(DATETIME, @EndDatum, 103)
+											)
+				) AS tblPCBVerkauft
+				WHERE 
+					tblPCBVerkauft.D6_PTR = dbo.DATA0006.RKEY
+			), 0) AS PCBVerkauftEUR,
+			CASE
+				WHEN dbo.DATA0006.PROD_STATUS <> 5 THEN CAST(dbo.DATA0006.QUAN_SCH AS INT) ELSE 0
+			END AS PCBinProduktion,
+			dbo.DATA0006.QUAN_REJ AS PCB_Ausschuss,
+			ISNULL((
+					--FA Reserviert
+					SELECT TOP 1
+						CAST(SUM(ResMenge) AS INT) AS RES
+					FROM
+					(
+						SELECT     
+							dbo.DATA0006.RKEY AS D6_PTR, 
+							CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN ISNULL(dbo.DATA0063.QUAN_ALLOCATED, 0) + ISNULL(dbo.DATA0053.QTY_ON_HAND, 0) ELSE ISNULL(dbo.DATA0063.QUAN_ALLOCATED, 0) END AS ResMenge,
+							dbo.DATA0063.RKEY
+						--FROM         dbo.DATA0006 INNER JOIN
+						--					  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR INNER JOIN
+						--					  dbo.DATA0063 ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR
+						FROM         dbo.DATA0006 INNER JOIN
+											  dbo.DATA0053 ON dbo.DATA0006.RKEY = dbo.DATA0053.WORK_ORDER_PTR LEFT OUTER JOIN
+											  dbo.DATA0063 ON dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR
+						WHERE     
+							dbo.DATA0053.LOC_PTR IN (18, 225)
+							AND dbo.DATA0006.RKEY IN (
+														SELECT
+															dbo.DATA0006.RKEY
+														FROM         dbo.DATA0095 INNER JOIN
+																				dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+																				dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+																				dbo.DATA0006 INNER JOIN
+																				dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+																				dbo.DATA0067 ON dbo.DATA0006.RKEY = dbo.DATA0067.WO_PTR ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY
+														WHERE     
+															dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'PCB %'
+															AND dbo.DATA0095.TRAN_TP IN (13, 14)
+															AND dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, @StartDatum, 103)
+															AND dbo.DATA0095.TRAN_DATE <= CONVERT(DATETIME, @EndDatum, 103)
+													)
+						) AS tblPCBReserviert
+					WHERE 
+						tblPCBReserviert.D6_PTR = dbo.DATA0006.RKEY
+			), 0) AS PCBReserviert
+		FROM         dbo.DATA0095 INNER JOIN
+							  dbo.DATA0020 ON dbo.DATA0095.INVT_LOC_PTR = dbo.DATA0020.RKEY INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0020.INVENTORY_POINTER = dbo.DATA0017.RKEY INNER JOIN
+							  dbo.DATA0006 INNER JOIN
+							  dbo.DATA0050 ON dbo.DATA0006.CUST_PART_PTR = dbo.DATA0050.RKEY INNER JOIN
+							  dbo.DATA0067 ON dbo.DATA0006.RKEY = dbo.DATA0067.WO_PTR ON dbo.DATA0095.SRCE_PTR = dbo.DATA0067.RKEY INNER JOIN
+							  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY
+		WHERE     
+			dbo.DATA0017.INV_PART_DESCRIPTION LIKE 'PCB %'
+			AND dbo.DATA0095.TRAN_TP IN (13, 14)
+			AND dbo.DATA0095.TRAN_DATE >= CONVERT(DATETIME, @StartDatum, 103)
+			AND dbo.DATA0095.TRAN_DATE <= CONVERT(DATETIME, @EndDatum, 103)
+		GROUP BY
+			dbo.DATA0010.CUSTOMER_NAME,
+			dbo.DATA0006.RKEY,
+			dbo.DATA0006.WORK_ORDER_NUMBER,
+			dbo.DATA0006.PROD_STATUS,
+			dbo.DATA0006.QUAN_SCH,
+			dbo.DATA0006.QUAN_REJ,
+			dbo.DATA0017.INV_PART_DESCRIPTION
+		ORDER BY
+			dbo.DATA0017.INV_PART_DESCRIPTION
+	END
+
+	IF @Case_ = 'gebLB_Vormonat'
+	BEGIN
+		DECLARE
+			@VormonatInv AS varchar(7)
+
+		SET @VormonatInv =	LTRIM(CASE 
+								WHEN MONTH(GETDATE())=1 THEN 
+									RTRIM(STR(YEAR(GETDATE())-1))
+								ELSE 
+									RTRIM(STR(YEAR(GETDATE())))
+							END
+							+ '.' + 
+							CASE 
+								WHEN MONTH(GETDATE())=1 THEN 
+									'12' 
+								ELSE  
+									CASE 
+										WHEN MONTH(GETDATE())-1>9 THEN 
+											LTRIM(STR((MONTH(GETDATE())-1))) 
+										ELSE 
+											'0' + LTRIM(STR((MONTH(GETDATE())-1))) 
+									END
+							END)
+		SELECT
+			CUSTOMER_NAME AS Kunde,
+			Kundenteil,
+			SALES_ORDER AS Kommission,
+			WORK_ORDER_NUMBER AS FA,
+			ACT_COMPL_DATE AS FA_abgeschlossenAm,
+			gebLB_GGP,
+			WertGGP_EUR,
+			CASE 
+				WHEN PART_PRICE=0 THEN 
+					(SELECT TOP 1 LAST_SO_PRICE FROM dbo.DATA0050 WHERE RKEY = LIVE2.dbo.PEX_Inventurbestaende_LP.D50_PTR) 
+				ELSE 
+					PART_PRICE/EXCH_RATE 
+			END AS StkPreis_EUR,
+			LB_Konsi,
+			CASE 
+				WHEN WertKonsi_EUR=0 THEN 
+					LB_Konsi * (SELECT TOP 1 LAST_SO_PRICE FROM dbo.DATA0050 WHERE RKEY = LIVE2.dbo.PEX_Inventurbestaende_LP.D50_PTR) 
+				ELSE 
+					WertKonsi_EUR 
+			END AS WertKonsi_EUR
+
+		FROM
+			LIVE2.dbo.PEX_Inventurbestaende_LP
+		WHERE 
+			--JahrMonat = LTRIM(RTRIM(STR(YEAR(GETDATE()))) + '.' + CASE WHEN (MONTH(GETDATE())-1)>9 THEN LTRIM(STR((MONTH(GETDATE())-1))) ELSE '0' + LTRIM(STR((MONTH(GETDATE())-1))) END)
+			JahrMonat = @VormonatInv
+	END
+
+	IF @Case_ = 'Kommission-Preise'
+	BEGIN
+
+		SELECT   
+			LEFT(dbo.DATA0060.SALES_ORDER, 6) AS Kommission, 
+			RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS LP, 
+			CAST(dbo.DATA0060.PART_PRICE AS FLOAT) AS StkPreis,
+			CAST(dbo.DATA0060.EXCH_RATE AS FLOAT) AS WKurs
+                      
+		FROM         dbo.DATA0050 INNER JOIN
+								dbo.DATA0060 ON dbo.DATA0050.RKEY = dbo.DATA0060.CUST_PART_PTR
+		WHERE
+			dbo.DATA0060.STATUS = 1
+			AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) IN
+			(
+				SELECT
+					LP
+				FROM
+				(
+					SELECT   
+						--LEFT(dbo.DATA0060.SALES_ORDER, 6) AS Kommission, 
+						RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS LP, 
+						COUNT( DISTINCT CAST(dbo.DATA0060.PART_PRICE AS FLOAT)) AS AnzStkPreis
+						--CAST(dbo.DATA0060.EXCH_RATE AS FLOAT) AS WKurs
+                      
+					FROM         dbo.DATA0050 INNER JOIN
+										  dbo.DATA0060 ON dbo.DATA0050.RKEY = dbo.DATA0060.CUST_PART_PTR
+					WHERE
+						dbo.DATA0060.STATUS = 1
+						AND RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) IN
+						(
+							SELECT DISTINCT
+								Kundenteil
+							FROM
+							(
+								SELECT DISTINCT 
+									--dbo.DATA0050.RKEY AS D50_PTR,
+									dbo.DATA0063.RKEY AS D63_PTR,   
+									dbo.DATA0063.SO_PTR AS D63_SO_PTR, 
+									dbo.DATA0063.TDATE AS D63_TDATE,
+									dbo.DATA0010.CUSTOMER_NAME AS Kunde,
+									RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV) AS Kundenteil, 
+									dbo.DATA0050.CP_REV AS Revision,
+									dbo.DATA0050.RKEY AS D50_PTR,
+									dbo.DATA0006.WORK_ORDER_NUMBER AS FA, 
+									ISNULL(MAX(dbo.DATA0060.SALES_ORDER), '') AS Kommission,
+									MAX(dbo.DATA0060.DUE_DATE) AS KommGeplantAm,
+									dbo.DATA0006.ACT_COMPL_DATE AS abgeschl, 
+									ISNULL(CASE WHEN dbo.DATA0053.LOC_PTR=225 THEN dbo.DATA0053.QTY_ON_HAND ELSE 0 END, 0) AS LB,
+									ISNULL(CAST(dbo.DATA0063.QUAN_ALLOCATED AS FLOAT), 0) AS Reserviert,
+									--CAST(MAX(dbo.DATA0060.PART_PRICE) AS FLOAT) AS StkPreis,
+									CAST(CASE WHEN MAX(ISNULL(dbo.DATA0060.PART_PRICE, 0))>0 THEN MAX(dbo.DATA0060.PART_PRICE) ELSE MAX(dbo.DATA0050.LAST_SO_PRICE) END AS FLOAT) AS StkPreis,
+									--CAST(MAX(dbo.DATA0060.EXCH_RATE) AS FLOAT) AS WK
+									--CAST(MAX(dbo.DATA0001.EXCH_RATE) AS FLOAT) AS WK
+									CAST(CASE WHEN MAX(ISNULL(dbo.DATA0001.EXCH_RATE, 0))>0 THEN MAX(dbo.DATA0001.EXCH_RATE) ELSE 1 END AS FLOAT) AS WK,
+									dbo.DATA0008.PROD_CODE AS PC,
+									dbo.DATA0050.SHELF_LIFE AS LDauer
+								FROM         dbo.DATA0008 INNER JOIN
+													  dbo.DATA0050 INNER JOIN
+													  dbo.DATA0053 ON dbo.DATA0050.RKEY = dbo.DATA0053.CUST_PART_PTR INNER JOIN
+													  dbo.DATA0010 ON dbo.DATA0050.CUSTOMER_PTR = dbo.DATA0010.RKEY ON dbo.DATA0008.RKEY = dbo.DATA0050.PROD_CODE_PTR LEFT OUTER JOIN
+													  dbo.DATA0001 INNER JOIN
+													  dbo.DATA0063 INNER JOIN
+													  dbo.DATA0060 ON dbo.DATA0063.SO_PTR = dbo.DATA0060.RKEY ON dbo.DATA0001.RKEY = dbo.DATA0060.CURRENCY_PTR ON 
+													  dbo.DATA0053.RKEY = dbo.DATA0063.PART_BATCH_PTR LEFT OUTER JOIN
+													  dbo.DATA0006 ON dbo.DATA0053.WORK_ORDER_PTR = dbo.DATA0006.RKEY
+								WHERE     
+									--dbo.DATA0006.ACT_COMPL_DATE >= CONVERT(DATETIME, @para1, 103)
+									dbo.DATA0053.MFG_DATE  >= CONVERT(DATETIME, '01.01.2016', 103)
+									--AND dbo.DATA0050.CP_REV LIKE @para2
+									AND 
+										(
+											(dbo.DATA0053.QTY_ON_HAND > 0 AND dbo.DATA0053.LOC_PTR = 225)
+											OR
+											dbo.DATA0053.QTY_ALLOC > 0
+										)
+									AND dbo.DATA0053.LOC_PTR IN (18, 225)
+									--AND dbo.DATA0010.CUSTOMER_NAME LIKE @para3
+								GROUP BY
+									dbo.DATA0063.RKEY,
+									dbo.DATA0063.SO_PTR,
+									dbo.DATA0063.TDATE,
+									dbo.DATA0010.CUSTOMER_NAME,
+									RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV),
+									dbo.DATA0050.CP_REV,
+									dbo.DATA0006.WORK_ORDER_NUMBER, 
+									dbo.DATA0006.ACT_COMPL_DATE, 
+									dbo.DATA0053.QTY_ON_HAND, -- - dbo.DATA0053.QTY_ALLOC, 
+									dbo.DATA0063.QUAN_ALLOCATED,
+									dbo.DATA0053.LOC_PTR,
+									dbo.DATA0008.PROD_CODE,
+									dbo.DATA0050.SHELF_LIFE,
+									dbo.DATA0050.RKEY
+							) AS tblLB
+							WHERE Kommission = ''
+						)
+						GROUP BY
+							RTRIM(dbo.DATA0050.CUSTOMER_PART_NUMBER) + '.' + LTRIM(dbo.DATA0050.CP_REV)
+					) AS tblVerschPreise
+					WHERE
+						AnzStkPreis > 1
+				)
+	END
+END

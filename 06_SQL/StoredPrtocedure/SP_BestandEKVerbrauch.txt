@@ -1,0 +1,2439 @@
+USE [LIVE]
+GO
+/****** Object:  StoredProcedure [dbo].[GGP_SP_BestandEKVerbrauch]    Script Date: 22.12.2017 11:03:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER OFF
+GO
+-- =============================================
+-- Author:		DSI
+-- Create date: 15.10.2015
+-- Description:	Bestände-EK-Verbräuche nach Vorgaben von JHA/MSE
+-- =============================================
+ALTER PROCEDURE   [dbo].[GGP_SP_BestandEKVerbrauch]
+	@p_Case_ varchar(255) = '',
+	@p_para varchar(255) = '',
+	@p_para1 varchar(255) = '',
+	@p_para2 varchar(255) = '',
+	@p_para3 varchar(255) = '',
+	@p_para4 varchar(255) = '',
+	@p_para5 varchar(255) = '',
+	@p_para6 varchar(255) = '',
+	@p_para7 varchar(255) = '',
+	@p_para8 varchar(255) = '',
+	@p_para9 varchar(255) = '',
+	@p_para10 varchar(255) = '', 
+	@p_para11 varchar(255) = '',
+	@p_para12 varchar(255) = '', 
+	@p_para13 varchar(2000) = '',
+	@p_val1 numeric(10, 0) = 0,
+	@p_val2 numeric(10, 0) = 0,
+	@p_val3 numeric(10, 0) = 0,
+	@p_val4 numeric(10, 0) = 0,
+	@p_val5 numeric(10, 0) = 0,
+	@p_val6 decimal(10, 0) = 0,
+	@p_val7 decimal(10, 0) = 0,
+	@p_val8 decimal(10, 0) = 0,
+	@p_val9 decimal(10, 0) = 0,
+	@p_val10 decimal(10, 0) = 0,
+	@OUTPUT_RES AS varchar(1000) = '' OUTPUT
+AS
+BEGIN
+
+	DECLARE
+	@Case_ varchar(255) = '',
+	@para varchar(255) = '',
+	@para1 varchar(255) = '',
+	@para2 varchar(255) = '',
+	@para3 varchar(255) = '',
+	@para4 varchar(255) = '',
+	@para5 varchar(255) = '',
+	@para6 varchar(255) = '',
+	@para7 varchar(255) = '',
+	@para8 varchar(255) = '',
+	@para9 varchar(255) = '',
+	@para10 varchar(255) = '', 
+	@para11 varchar(255) = '',
+	@para12 varchar(255) = '', 
+	@para13 varchar(2000) = '',
+	@val1 numeric(10, 0) = 0,
+	@val2 numeric(10, 0) = 0,
+	@val3 numeric(10, 0) = 0,
+	@val4 numeric(10, 0) = 0,
+	@val5 numeric(10, 0) = 0,
+	@val6 decimal(10, 0) = 0,
+	@val7 decimal(10, 0) = 0,
+	@val8 decimal(10, 0) = 0,
+	@val9 decimal(10, 0) = 0,
+	@val10 decimal(10, 0) = 0
+
+	SET @Case_ = @p_Case_
+	SET @para = @p_para
+	SET @para1 = @p_para1
+	SET @para2 = @p_para2
+	SET @para3 = @p_para3
+	SET @para4 = @p_para4
+	SET @para5 = @p_para5
+	SET @para6 = @p_para6
+	SET @para7 = @p_para7
+	SET @para8 = @p_para8
+	SET @para9 = @p_para9
+	SET @para10 = @p_para10
+	SET @para11 = @p_para11
+	SET @para12 = @p_para12
+	SET @para13 = @p_para13
+	SET @val1 = @p_val1
+	SET @val2 = @p_val2
+	SET @val3 = @p_val3
+	SET @val4 = @p_val4
+	SET @val5 = @p_val5
+	SET @val6 = @p_val6
+	SET @val7 = @p_val7
+	SET @val8 = @p_val8
+	SET @val9 = @p_val9
+	SET @val10 = @p_val10
+
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Insert statements for procedure here
+	
+	IF @Case_ = 'DetailBestandVerbrauchEinkauf'
+	BEGIN
+		DECLARE @tblInvArt table(
+									JahrMonat varchar(7),
+									D17_PTR NUMERIC(10, 0),
+									Bezeichnung char(100),
+									LgMg FLOAT,
+									LgMg_Konsi FLOAT,
+									Lagereinheit varchar(5),
+									PRODUCT_NAME char(30),
+									PRODUCT_GROUP_NAME char(30),
+									Verrpreis DECIMAL(20, 7)
+								)
+
+		INSERT @tblInvArt(
+							JahrMonat,
+							D17_PTR,
+							Bezeichnung,
+							LgMg,
+							LgMg_Konsi,
+							Lagereinheit,
+							PRODUCT_NAME,
+							PRODUCT_GROUP_NAME,
+							Verrpreis
+						)
+		SELECT     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat, 
+			dbo.DATA0017.RKEY AS D17_PTR, 
+			--dbo.DATA0017.INV_PART_DESCRIPTION AS Bezeichnung, 
+			CASE 
+				WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+					RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+				ELSE 
+					RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+			END AS Bezeichnung,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg_Konsi, 
+			dbo.DATA0002.UNIT_CODE AS Lagereinheit, 
+			dbo.DATA0008.PRODUCT_NAME, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME,
+			dbo.DATA0017.STD_COST AS Verrpreis
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  dbo.DATA0017 INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY ON 
+							  dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+		WHERE     
+				(LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat >= LTRIM(RTRIM(STR(YEAR(GETDATE()) - 1))) + '.12') 
+				AND (dbo.DATA0017.TTYPE = 'R') 
+				--AND (dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN ('X-Basismaterial Alt', 'X-Prepreg Alt', 'X-Folien Alt', 'Alle-Fertigteile')) 
+                AND (
+						dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+						OR 
+						dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+					)
+				AND 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+				AND
+					dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+
+					--(
+					--	 dbo.DATA0017.RKEY IN (
+					--						SELECT DISTINCT LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+					--						FROM         LIVE2.dbo.MatRueck_Abteilung INNER JOIN
+					--											  LIVE2.dbo.MatRueck_Transaktion ON LIVE2.dbo.MatRueck_Abteilung.ID = LIVE2.dbo.MatRueck_Transaktion.Abteilung_PTR
+					--						WHERE     (LIVE2.dbo.MatRueck_Abteilung.Abteilung IN ('Black Hole')) --, 'Fotodruck'))
+					--						)
+					--	--OR 
+					--	-- dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial'
+					--)
+			
+		SELECT
+			D17_PTR,
+			Bezeichnung,
+			Lagereinheit,
+			PRODUCT_NAME,
+			PRODUCT_GROUP_NAME,
+			Verrpreis,
+
+			--Dez Vorjahr
+			B_VJ_Dez,
+			BK_VJ_Dez,
+			E_VJ_Dez,
+			EK_VJ_Dez,
+			V_VJ_Dez,
+			DR12MonEKP_VJ_Dez,
+			EinkWertKonsi_VJ_Dez,
+
+			--Jan
+			B_Jan,
+			BK_Jan,
+			E_Jan,
+			EK_Jan,
+			V_Jan,
+			DR12MonEKP_Jan,
+			EinkWertKonsi_Jan,
+
+			--Feb
+			CASE WHEN MONTH(GETDATE())<=2 THEN 0 ELSE B_Feb END AS B_Feb,
+			CASE WHEN MONTH(GETDATE())<=2 THEN 0 ELSE BK_Feb END AS BK_Feb,
+			CASE WHEN MONTH(GETDATE())<=2 THEN 0 ELSE E_Feb END AS E_Feb,
+			CASE WHEN MONTH(GETDATE())<=2 THEN 0 ELSE EK_Feb END AS EK_Feb,
+			CASE WHEN MONTH(GETDATE())<=2 THEN 0 ELSE V_Feb END AS V_Feb,
+			DR12MonEKP_Feb,
+			EinkWertKonsi_Feb,
+
+			--Mrz
+			CASE WHEN MONTH(GETDATE())<=3 THEN 0 ELSE B_Mrz END AS B_Mrz,
+			CASE WHEN MONTH(GETDATE())<=3 THEN 0 ELSE BK_Mrz END AS BK_Mrz,
+			CASE WHEN MONTH(GETDATE())<=3 THEN 0 ELSE E_Mrz END AS E_Mrz,
+			CASE WHEN MONTH(GETDATE())<=3 THEN 0 ELSE EK_Mrz END AS EK_Mrz,
+			CASE WHEN MONTH(GETDATE())<=3 THEN 0 ELSE V_Mrz END AS V_Mrz,
+			DR12MonEKP_Mrz,
+			EinkWertKonsi_Mrz,
+
+			--Apr
+			CASE WHEN MONTH(GETDATE())<=4 THEN 0 ELSE B_Apr END AS B_Apr,
+			CASE WHEN MONTH(GETDATE())<=4 THEN 0 ELSE BK_Apr END AS BK_Apr,
+			CASE WHEN MONTH(GETDATE())<=4 THEN 0 ELSE E_Apr END AS E_Apr,
+			CASE WHEN MONTH(GETDATE())<=4 THEN 0 ELSE EK_Apr END AS EK_Apr,
+			CASE WHEN MONTH(GETDATE())<=4 THEN 0 ELSE V_Apr END AS V_Apr,
+			DR12MonEKP_Apr,
+			EinkWertKonsi_Apr,
+
+			--Mai
+			CASE WHEN MONTH(GETDATE())<=5 THEN 0 ELSE B_Mai END AS B_Mai,
+			CASE WHEN MONTH(GETDATE())<=5 THEN 0 ELSE BK_Mai END AS BK_Mai,
+			CASE WHEN MONTH(GETDATE())<=5 THEN 0 ELSE E_Mai END AS E_Mai,
+			CASE WHEN MONTH(GETDATE())<=5 THEN 0 ELSE EK_Mai END AS EK_Mai,
+			CASE WHEN MONTH(GETDATE())<=5 THEN 0 ELSE V_Mai END AS V_Mai,
+			DR12MonEKP_Mai,
+			EinkWertKonsi_Mai,
+
+			--Jun
+			CASE WHEN MONTH(GETDATE())<=6 THEN 0 ELSE B_Jun END AS B_Jun,
+			CASE WHEN MONTH(GETDATE())<=6 THEN 0 ELSE BK_Jun END AS BK_Jun,
+			CASE WHEN MONTH(GETDATE())<=6 THEN 0 ELSE E_Jun END AS E_Jun,
+			CASE WHEN MONTH(GETDATE())<=6 THEN 0 ELSE EK_Jun END AS EK_Jun,
+			CASE WHEN MONTH(GETDATE())<=6 THEN 0 ELSE V_Jun END AS V_Jun,
+			DR12MonEKP_Jun,
+			EinkWertKonsi_Jun,
+
+			--Jul
+			CASE WHEN MONTH(GETDATE())<=7 THEN 0 ELSE B_Jul END AS B_Jul,
+			CASE WHEN MONTH(GETDATE())<=7 THEN 0 ELSE BK_Jul END AS BK_Jul,
+			CASE WHEN MONTH(GETDATE())<=7 THEN 0 ELSE E_Jul END AS E_Jul,
+			CASE WHEN MONTH(GETDATE())<=7 THEN 0 ELSE EK_Jul END AS EK_Jul,
+			CASE WHEN MONTH(GETDATE())<=7 THEN 0 ELSE V_Jul END AS V_Jul,
+			DR12MonEKP_Jul,
+			EinkWertKonsi_Jul,
+
+			--Aug
+			CASE WHEN MONTH(GETDATE())<=8 THEN 0 ELSE B_Aug END AS B_Aug,
+			CASE WHEN MONTH(GETDATE())<=8 THEN 0 ELSE BK_Aug END AS BK_Aug,
+			CASE WHEN MONTH(GETDATE())<=8 THEN 0 ELSE E_Aug END AS E_Aug,
+			CASE WHEN MONTH(GETDATE())<=8 THEN 0 ELSE EK_Aug END AS EK_Aug,
+			CASE WHEN MONTH(GETDATE())<=8 THEN 0 ELSE V_Aug END AS V_Aug,
+			DR12MonEKP_Aug,
+			EinkWertKonsi_Aug,
+
+			--Sep
+			CASE WHEN MONTH(GETDATE())<=9 THEN 0 ELSE B_Sep END AS B_Sep,
+			CASE WHEN MONTH(GETDATE())<=9 THEN 0 ELSE BK_Sep END AS BK_Sep,
+			CASE WHEN MONTH(GETDATE())<=9 THEN 0 ELSE E_Sep END AS E_Sep,
+			CASE WHEN MONTH(GETDATE())<=9 THEN 0 ELSE EK_Sep END AS EK_Sep,
+			CASE WHEN MONTH(GETDATE())<=9 THEN 0 ELSE V_Sep END AS V_Sep,
+			DR12MonEKP_Sep,
+			EinkWertKonsi_Sep,
+
+			--Okt
+			CASE WHEN MONTH(GETDATE())<=10 THEN 0 ELSE B_Okt END AS B_Okt,
+			CASE WHEN MONTH(GETDATE())<=10 THEN 0 ELSE BK_Okt END AS BK_Okt,
+			CASE WHEN MONTH(GETDATE())<=10 THEN 0 ELSE E_Okt END AS E_Okt,
+			CASE WHEN MONTH(GETDATE())<=10 THEN 0 ELSE EK_Okt END AS EK_Okt,
+			CASE WHEN MONTH(GETDATE())<=10 THEN 0 ELSE V_Okt END AS V_Okt,
+			DR12MonEKP_Okt,
+			EinkWertKonsi_Okt,
+
+			--Nov
+			CASE WHEN MONTH(GETDATE())<=11 THEN 0 ELSE B_Nov END AS B_Nov,
+			CASE WHEN MONTH(GETDATE())<=11 THEN 0 ELSE BK_Nov END AS BK_Nov,
+			CASE WHEN MONTH(GETDATE())<=11 THEN 0 ELSE E_Nov END AS E_Nov,
+			CASE WHEN MONTH(GETDATE())<=11 THEN 0 ELSE EK_Nov END AS EK_Nov,
+			CASE WHEN MONTH(GETDATE())<=11 THEN 0 ELSE V_Nov END AS V_Nov,
+			DR12MonEKP_Nov,
+			EinkWertKonsi_Nov,
+
+			--Dez
+			CASE WHEN MONTH(GETDATE())<=12 THEN 0 ELSE B_Dez END AS B_Dez,
+			CASE WHEN MONTH(GETDATE())<=12 THEN 0 ELSE BK_Dez END AS BK_Dez,
+			CASE WHEN MONTH(GETDATE())<=12 THEN 0 ELSE E_Dez END AS E_Dez,
+			CASE WHEN MONTH(GETDATE())<=12 THEN 0 ELSE EK_Dez END AS EK_Dez,
+			CASE WHEN MONTH(GETDATE())<=12 THEN 0 ELSE V_Dez END AS V_Dez,
+			DR12MonEKP_Dez,
+			EinkWertKonsi_Dez
+
+		FROM
+		(
+			SELECT
+				tblInvQuanOnHand.D17_PTR,
+				tblInvQuanOnHand.Bezeichnung,
+				tblInvQuanOnHand.Lagereinheit,
+				tblInvQuanOnHand.PRODUCT_NAME,
+				tblInvQuanOnHand.PRODUCT_GROUP_NAME,
+				tblInvQuanOnHand.Verrpreis,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(RTRIM(STR(YEAR(GETDATE())-1))) + '.12'
+				), 0) AS FLOAT) AS B_VJ_Dez,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(RTRIM(STR(YEAR(GETDATE())-1))) + '.12'
+				), 0) AS FLOAT) AS BK_VJ_Dez,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS E_VJ_Dez,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS EK_VJ_Dez,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())-1
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12 
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_VJ_Dez,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.12.' + LTRIM(STR(YEAR(GETDATE())-2)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS DR12MonEKP_VJ_Dez,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())-1
+							AND MONTH(dbo.DATA0070.PO_DATE) = 12 
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_VJ_Dez,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.01'
+				), 0) AS FLOAT) AS B_Jan,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.01'
+				), 0) AS FLOAT) AS BK_Jan,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.01.' + LTRIM(STR(YEAR(GETDATE()))), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jan,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.01.' + LTRIM(STR(YEAR(GETDATE()))), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Jan,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 1
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Jan,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.01.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jan,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 1 
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Jan,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.02'
+				), 0) AS FLOAT) AS B_Feb,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.02'
+				), 0) AS FLOAT) AS BK_Feb,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.02.' + LTRIM(STR(YEAR(GETDATE()))), CASE WHEN ISDATE(CAST(YEAR(GETDATE()) AS char(4)) + '0229') = 1 THEN '29' ELSE '28' END + '.02.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Feb,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.02.' + LTRIM(STR(YEAR(GETDATE()))), CASE WHEN ISDATE(CAST(YEAR(GETDATE()) AS char(4)) + '0229') = 1 THEN '29' ELSE '28' END + '.02.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Feb,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 2
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Feb,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '28.02.' + LTRIM(STR(YEAR(GETDATE())-1)), CASE WHEN ISDATE(CAST(YEAR(GETDATE()) AS char(4)) + '0229') = 1 THEN '29' ELSE '28' END + '.02.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Feb,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 2
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Feb,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.03'
+				), 0) AS FLOAT) AS B_Mrz,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.03'
+				), 0) AS FLOAT) AS BK_Mrz,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.03.' + LTRIM(STR(YEAR(GETDATE()))), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mrz,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.03.' + LTRIM(STR(YEAR(GETDATE()))), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Mrz,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 3
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Mrz,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.03.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mrz,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 3
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Mrz,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.04'
+				), 0) AS FLOAT) AS B_Apr,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.04'
+				), 0) AS FLOAT) AS BK_Apr,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE()))), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Apr,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE()))), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Apr,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 4
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Apr,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Apr,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 4
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Apr,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.05'
+				), 0) AS FLOAT) AS B_Mai,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.05'
+				), 0) AS FLOAT) AS BK_Mai,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE()))), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mai,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE()))), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Mai,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 5
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Mai,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mai,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 5 
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Mai,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.06'
+				), 0) AS FLOAT) AS B_Jun,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.06'
+				), 0) AS FLOAT) AS BK_Jun,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE()))), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jun,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE()))), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Jun,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 6
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Jun,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jun,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 6
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Jun,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.07'
+				), 0) AS FLOAT) AS B_Jul,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.07'
+				), 0) AS FLOAT) AS BK_Jul,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE()))), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jul,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE()))), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Jul,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 7
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Jul,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jul,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 7
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Jul,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.08'
+				), 0) AS FLOAT) AS B_Aug,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.08'
+				), 0) AS FLOAT) AS BK_Aug,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE()))), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Aug,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE()))), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Aug,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 8
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Aug,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Aug,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 8
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Aug,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.09'
+				), 0) AS FLOAT) AS B_Sep,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.09'
+				), 0) AS FLOAT) AS BK_Sep,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE()))), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Sep,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE()))), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Sep,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 9
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Sep,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Sep,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 9
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Sep,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.10'
+				), 0) AS FLOAT) AS B_Okt,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.10'
+				), 0) AS FLOAT) AS BK_Okt,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE()))), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Okt,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE()))), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Okt,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 10
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Okt,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Okt,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 10
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Okt,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.11'
+				), 0) AS FLOAT) AS B_Nov,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.11'
+				), 0) AS FLOAT) AS BK_Nov,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE()))), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Nov,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE()))), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Nov,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 11
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Nov,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Nov,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 11
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Nov,
+				-----------------------------------------------
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.12'
+				), 0) AS FLOAT) AS B_Dez,
+				CAST(ISNULL((
+						SELECT TOP 1  SUM(tmpArt.LgMg_Konsi) AS RES 
+						FROM @tblInvArt AS tmpArt 
+						WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.12'
+				), 0) AS FLOAT) AS BK_Dez,
+				dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE()))), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Dez,
+				dbo.F_dsi_EKMengeKonsi(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE()))), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS EK_Dez,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12
+						AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS FLOAT) AS V_Dez,
+				dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Dez,
+				ISNULL((
+					SELECT  
+						SUM(
+							(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+							*
+							(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+							) AS RES 
+					FROM         dbo.DATA0070 INNER JOIN
+										  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+										  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+					WHERE     
+							(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+							AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+							AND MONTH(dbo.DATA0070.PO_DATE) = 12 
+							AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+				), 0) AS EinkWertKonsi_Dez
+				-----------------------------------------------
+
+			FROM
+			(
+				SELECT
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+				FROM         
+					@tblInvArt AS tblInvArt
+				WHERE     
+					(tblInvArt.LgMg > CAST(@para1 AS FLOAT))
+				GROUP BY
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+			) AS tblInvQuanOnHand
+		) AS tblGrpRpt
+		ORDER BY
+			tblGrpRpt.PRODUCT_GROUP_NAME, tblGrpRpt.Bezeichnung
+	END
+
+	IF @Case_ = 'WarenGruppe_Gruppiert'
+	BEGIN
+		DECLARE @tblInvArtWG table(
+									JahrMonat varchar(7),
+									D17_PTR NUMERIC(10, 0),
+									Bezeichnung char(100),
+									LgMg FLOAT,
+									Lagereinheit varchar(5),
+									PRODUCT_NAME char(30),
+									PRODUCT_GROUP_NAME char(30),
+									Verrpreis DECIMAL(20, 7)
+								)
+
+		INSERT @tblInvArtWG(
+							JahrMonat,
+							D17_PTR,
+							Bezeichnung,
+							LgMg,
+							Lagereinheit,
+							PRODUCT_NAME,
+							PRODUCT_GROUP_NAME,
+							Verrpreis
+						)
+		SELECT     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat, 
+			dbo.DATA0017.RKEY AS D17_PTR, 
+			--dbo.DATA0017.INV_PART_DESCRIPTION AS Bezeichnung, 
+			CASE 
+				WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+					RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+				ELSE 
+					RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+			END AS Bezeichnung,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			dbo.DATA0002.UNIT_CODE AS Lagereinheit, 
+			dbo.DATA0008.PRODUCT_NAME, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME,
+			dbo.DATA0017.STD_COST AS Verrpreis
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  dbo.DATA0017 INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY ON 
+							  dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+		WHERE
+				(LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat >= LTRIM(RTRIM(STR(YEAR(GETDATE()) - 1))) + '.12') 
+				AND (dbo.DATA0017.TTYPE = 'R') 
+				--AND (dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN ('X-Basismaterial Alt', 'X-Prepreg Alt', 'X-Folien Alt', 'Alle-Fertigteile')) 
+                --AND (dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) OR dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT))   
+                AND (
+						dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+						OR 
+						dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+					)
+				AND 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+				AND
+					dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+				--AND
+				--	(
+				--		dbo.DATA0007.RKEY IN (@val1, @val2, @val3, @val4, @val5, @val6, @val7, @val8, @val9, @val10)
+				--		OR
+				--		dbo.DATA0007.PRODUCT_GROUP_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para2
+				--	)
+
+					--(LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat >= LTRIM(RTRIM(STR(YEAR(GETDATE()) - 1))) + '.12') 
+					--AND (dbo.DATA0017.RKEY IN (62381, 50372, 65198, 7, 1097))
+					--AND
+					--(
+					--	 dbo.DATA0017.RKEY IN (
+					--						SELECT DISTINCT LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+					--						FROM         LIVE2.dbo.MatRueck_Abteilung INNER JOIN
+					--											  LIVE2.dbo.MatRueck_Transaktion ON LIVE2.dbo.MatRueck_Abteilung.ID = LIVE2.dbo.MatRueck_Transaktion.Abteilung_PTR
+					--						WHERE     (LIVE2.dbo.MatRueck_Abteilung.Abteilung IN ('Black Hole')) --, 'Fotodruck'))
+					--						)
+					--	--OR 
+					--	-- dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial'
+					--)
+
+
+		SELECT
+			PRODUCT_GROUP_NAME,
+			SUM(B_VJ_Dez*DR12MonEKP_VJ_Dez) AS B_VJ_Dez,
+			SUM(E_VJ_Dez*DR12MonEKP_VJ_Dez) AS E_VJ_Dez,
+			SUM(V_VJ_Dez*DR12MonEKP_VJ_Dez) AS V_VJ_Dez,
+			SUM(EinkWertKonsi_VJ_Dez) AS EinkWertKonsi_VJ_Dez,
+			SUM(B_Jan*DR12MonEKP_Jan) AS B_Jan,
+			SUM(E_Jan*DR12MonEKP_Jan) AS E_Jan,
+			SUM(V_Jan*DR12MonEKP_Jan) AS V_Jan,
+			SUM(EinkWertKonsi_Jan) AS EinkWertKonsi_Jan,
+			SUM(B_Feb*DR12MonEKP_Feb) AS B_Feb,
+			SUM(E_Feb*DR12MonEKP_Feb) AS E_Feb,
+			SUM(V_Feb*DR12MonEKP_Feb) AS V_Feb,
+			SUM(EinkWertKonsi_Feb) AS EinkWertKonsi_Feb,
+			SUM(B_Mrz*DR12MonEKP_Mrz) AS B_Mrz,
+			SUM(E_Mrz*DR12MonEKP_Mrz) AS E_Mrz,
+			SUM(V_Mrz*DR12MonEKP_Mrz) AS V_Mrz,
+			SUM(EinkWertKonsi_Mrz) AS EinkWertKonsi_Mrz,
+			SUM(B_Apr*DR12MonEKP_Apr) AS B_Apr,
+			SUM(E_Apr*DR12MonEKP_Apr) AS E_Apr,
+			SUM(V_Apr*DR12MonEKP_Apr) AS V_Apr,
+			SUM(EinkWertKonsi_Apr) AS EinkWertKonsi_Apr,
+			SUM(B_Mai*DR12MonEKP_Mai) AS B_Mai,
+			SUM(E_Mai*DR12MonEKP_Mai) AS E_Mai,
+			SUM(V_Mai*DR12MonEKP_Mai) AS V_Mai,
+			SUM(EinkWertKonsi_Mai) AS EinkWertKonsi_Mai,
+			SUM(B_Jun*DR12MonEKP_Jun) AS B_Jun,
+			SUM(E_Jun*DR12MonEKP_Jun) AS E_Jun,
+			SUM(V_Jun*DR12MonEKP_Jun) AS V_Jun,
+			SUM(EinkWertKonsi_Jun) AS EinkWertKonsi_Jun,
+			SUM(B_Jul*DR12MonEKP_Jul) AS B_Jul,
+			SUM(E_Jul*DR12MonEKP_Jul) AS E_Jul,
+			SUM(V_Jul*DR12MonEKP_Jul) AS V_Jul,
+			SUM(EinkWertKonsi_Jul) AS EinkWertKonsi_Jul,
+			SUM(B_Aug*DR12MonEKP_Aug) AS B_Aug,
+			SUM(E_Aug*DR12MonEKP_Aug) AS E_Aug,
+			SUM(V_Aug*DR12MonEKP_Aug) AS V_Aug,
+			SUM(EinkWertKonsi_Aug) AS EinkWertKonsi_Aug,
+			SUM(B_Sep*DR12MonEKP_Sep) AS B_Sep,
+			SUM(E_Sep*DR12MonEKP_Sep) AS E_Sep,
+			SUM(V_Sep*DR12MonEKP_Sep) AS V_Sep,
+			SUM(EinkWertKonsi_Sep) AS EinkWertKonsi_Sep,
+			SUM(B_Okt*DR12MonEKP_Okt) AS B_Okt,
+			SUM(E_Okt*DR12MonEKP_Okt) AS E_Okt,
+			SUM(V_Okt*DR12MonEKP_Okt) AS V_Okt,
+			SUM(EinkWertKonsi_Okt) AS EinkWertKonsi_Okt,
+			SUM(B_Nov*DR12MonEKP_Nov) AS B_Nov,
+			SUM(E_Nov*DR12MonEKP_Nov) AS E_Nov,
+			SUM(V_Nov*DR12MonEKP_Nov) AS V_Nov,
+			SUM(EinkWertKonsi_Nov) AS EinkWertKonsi_Nov,
+			SUM(B_Dez*DR12MonEKP_Dez) AS B_Dez,
+			SUM(E_Dez*DR12MonEKP_Dez) AS E_Dez,
+			SUM(V_Dez*DR12MonEKP_Dez) AS V_Dez,
+			SUM(EinkWertKonsi_Dez) AS EinkWertKonsi_Dez
+
+		FROM
+		(
+			SELECT
+				tblInvQuanOnHand.D17_PTR,
+				tblInvQuanOnHand.Bezeichnung,
+				tblInvQuanOnHand.Lagereinheit,
+				tblInvQuanOnHand.PRODUCT_NAME,
+				tblInvQuanOnHand.PRODUCT_GROUP_NAME,
+				tblInvQuanOnHand.Verrpreis,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(RTRIM(STR(YEAR(GETDATE())-1))) + '.12'
+			), 0) AS FLOAT) AS B_VJ_Dez,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS E_VJ_Dez,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())-1
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12 
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_VJ_Dez,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.12.' + LTRIM(STR(YEAR(GETDATE())-2)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS DR12MonEKP_VJ_Dez,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())-1
+						AND MONTH(dbo.DATA0070.PO_DATE) = 12 
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_VJ_Dez,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.01'
+			), 0) AS FLOAT) AS B_Jan,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.01.' + LTRIM(STR(YEAR(GETDATE()))), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jan,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 1
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jan,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.01.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jan,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 1 
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jan,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.02'
+			), 0) AS FLOAT) AS B_Feb,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.02.' + LTRIM(STR(YEAR(GETDATE()))), CASE WHEN ISDATE(CAST(YEAR(GETDATE()) AS char(4)) + '0229') = 1 THEN '29' ELSE '28' END + '.02.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Feb,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 2
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Feb,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '28.02.' + LTRIM(STR(YEAR(GETDATE())-1)), '28.02.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Feb,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 2
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Feb,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.03'
+			), 0) AS FLOAT) AS B_Mrz,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.03.' + LTRIM(STR(YEAR(GETDATE()))), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mrz,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 3
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Mrz,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.03.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mrz,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 3
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Mrz,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.04'
+			), 0) AS FLOAT) AS B_Apr,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE()))), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Apr,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 4
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Apr,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Apr,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 4
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Apr,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.05'
+			), 0) AS FLOAT) AS B_Mai,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE()))), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mai,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 5
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Mai,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mai,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 5
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Mai,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.06'
+			), 0) AS FLOAT) AS B_Jun,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE()))), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jun,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 6
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jun,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jun,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 6
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jun,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.07'
+			), 0) AS FLOAT) AS B_Jul,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE()))), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jul,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 7
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jul,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jul,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 7
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jul,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.08'
+			), 0) AS FLOAT) AS B_Aug,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE()))), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Aug,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 8
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Aug,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Aug,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 8
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Aug,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.09'
+			), 0) AS FLOAT) AS B_Sep,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE()))), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Sep,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 9
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Sep,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Sep,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 9
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Sep,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.10'
+			), 0) AS FLOAT) AS B_Okt,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE()))), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Okt,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 10
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Okt,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Okt,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 10
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Okt,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.11'
+			), 0) AS FLOAT) AS B_Nov,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE()))), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Nov,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 11
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Nov,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Nov,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 11
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Nov,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtWG AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.12'
+			), 0) AS FLOAT) AS B_Dez,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE()))), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Dez,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Dez,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Dez,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 12
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Dez
+			-----------------------------------------------
+
+
+			FROM
+			(
+				SELECT
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+				FROM         
+					@tblInvArtWG AS tblInvArt
+				WHERE     
+					(tblInvArt.LgMg > CAST(@para1 AS FLOAT))
+				GROUP BY
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+			) AS tblInvQuanOnHand
+		) AS tblProdCode
+		GROUP BY
+			PRODUCT_GROUP_NAME
+		ORDER BY
+			PRODUCT_GROUP_NAME
+	END
+
+	IF @Case_ = 'Gruppiert'
+	BEGIN
+
+		DECLARE @tblInvArtGrp table(
+									JahrMonat varchar(7),
+									D17_PTR NUMERIC(10, 0),
+									Bezeichnung char(100),
+									LgMg FLOAT,
+									Lagereinheit varchar(5),
+									PRODUCT_NAME char(30),
+									PRODUCT_GROUP_NAME char(30),
+									Verrpreis DECIMAL(20, 7)
+								)
+
+		INSERT @tblInvArtGrp(
+							JahrMonat,
+							D17_PTR,
+							Bezeichnung,
+							LgMg,
+							Lagereinheit,
+							PRODUCT_NAME,
+							PRODUCT_GROUP_NAME,
+							Verrpreis
+						)
+		SELECT     
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat, 
+			dbo.DATA0017.RKEY AS D17_PTR, 
+			--dbo.DATA0017.INV_PART_DESCRIPTION AS Bezeichnung, 
+			CASE 
+				WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+					RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+				ELSE 
+					RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+			END AS Bezeichnung,
+			LIVE2.dbo.PEX_Inventurbestaende_RHB.LgMg, 
+			dbo.DATA0002.UNIT_CODE AS Lagereinheit, 
+			dbo.DATA0008.PRODUCT_NAME, 
+			dbo.DATA0007.PRODUCT_GROUP_NAME,
+			dbo.DATA0017.STD_COST AS Verrpreis
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  dbo.DATA0017 INNER JOIN
+							  LIVE2.dbo.PEX_Inventurbestaende_RHB ON dbo.DATA0017.RKEY = LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY ON 
+							  dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+		WHERE     
+				(LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat >= LTRIM(RTRIM(STR(YEAR(GETDATE()) - 1))) + '.12') 
+				AND (dbo.DATA0017.TTYPE = 'R') 
+				--AND (dbo.DATA0007.PRODUCT_GROUP_NAME NOT IN ('X-Basismaterial Alt', 'X-Prepreg Alt', 'X-Folien Alt', 'Alle-Fertigteile')) 
+                --AND (dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) OR dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT))
+                AND (
+						dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+						OR 
+						dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+					)
+				AND 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+				AND
+					dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+				--AND
+				--	(
+				--		dbo.DATA0007.RKEY IN (@val1, @val2, @val3, @val4, @val5, @val6, @val7, @val8, @val9, @val10)
+				--		OR
+				--		dbo.DATA0007.PRODUCT_GROUP_NAME COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para2
+				--	)
+
+					--(LIVE2.dbo.PEX_Inventurbestaende_RHB.JahrMonat >= LTRIM(RTRIM(STR(YEAR(GETDATE()) - 1))) + '.12') 
+					----AND (dbo.DATA0017.RKEY IN (62381, 50372, 65198, 7, 1097))
+					--AND
+					--(
+					--	 dbo.DATA0017.RKEY IN (
+					--						SELECT DISTINCT LIVE2.dbo.MatRueck_Transaktion.D17_Art_PTR
+					--						FROM         LIVE2.dbo.MatRueck_Abteilung INNER JOIN
+					--											  LIVE2.dbo.MatRueck_Transaktion ON LIVE2.dbo.MatRueck_Abteilung.ID = LIVE2.dbo.MatRueck_Transaktion.Abteilung_PTR
+					--						WHERE     (LIVE2.dbo.MatRueck_Abteilung.Abteilung IN ('Black Hole')) --, 'Fotodruck'))
+					--						)
+					--	--OR 
+					--	-- dbo.DATA0007.PRODUCT_GROUP_NAME='Basismaterial'
+					--)
+
+		SELECT
+			--PRODUCT_GROUP_NAME,
+			SUM(B_VJ_Dez*DR12MonEKP_VJ_Dez) AS B_VJ_Dez,
+			SUM(E_VJ_Dez*DR12MonEKP_VJ_Dez) AS E_VJ_Dez,
+			SUM(V_VJ_Dez*DR12MonEKP_VJ_Dez) AS V_VJ_Dez,
+			SUM(EinkWertKonsi_VJ_Dez) AS EinkWertKonsi_VJ_Dez,
+			SUM(B_Jan*DR12MonEKP_Jan) AS B_Jan,
+			SUM(E_Jan*DR12MonEKP_Jan) AS E_Jan,
+			SUM(V_Jan*DR12MonEKP_Jan) AS V_Jan,
+			SUM(EinkWertKonsi_Jan) AS EinkWertKonsi_Jan,
+			SUM(B_Feb*DR12MonEKP_Feb) AS B_Feb,
+			SUM(E_Feb*DR12MonEKP_Feb) AS E_Feb,
+			SUM(V_Feb*DR12MonEKP_Feb) AS V_Feb,
+			SUM(EinkWertKonsi_Feb) AS EinkWertKonsi_Feb,
+			SUM(B_Mrz*DR12MonEKP_Mrz) AS B_Mrz,
+			SUM(E_Mrz*DR12MonEKP_Mrz) AS E_Mrz,
+			SUM(V_Mrz*DR12MonEKP_Mrz) AS V_Mrz,
+			SUM(EinkWertKonsi_Mrz) AS EinkWertKonsi_Mrz,
+			SUM(B_Apr*DR12MonEKP_Apr) AS B_Apr,
+			SUM(E_Apr*DR12MonEKP_Apr) AS E_Apr,
+			SUM(V_Apr*DR12MonEKP_Apr) AS V_Apr,
+			SUM(EinkWertKonsi_Apr) AS EinkWertKonsi_Apr,
+			SUM(B_Mai*DR12MonEKP_Mai) AS B_Mai,
+			SUM(E_Mai*DR12MonEKP_Mai) AS E_Mai,
+			SUM(V_Mai*DR12MonEKP_Mai) AS V_Mai,
+			SUM(EinkWertKonsi_Mai) AS EinkWertKonsi_Mai,
+			SUM(B_Jun*DR12MonEKP_Jun) AS B_Jun,
+			SUM(E_Jun*DR12MonEKP_Jun) AS E_Jun,
+			SUM(V_Jun*DR12MonEKP_Jun) AS V_Jun,
+			SUM(EinkWertKonsi_Jun) AS EinkWertKonsi_Jun,
+			SUM(B_Jul*DR12MonEKP_Jul) AS B_Jul,
+			SUM(E_Jul*DR12MonEKP_Jul) AS E_Jul,
+			SUM(V_Jul*DR12MonEKP_Jul) AS V_Jul,
+			SUM(EinkWertKonsi_Jul) AS EinkWertKonsi_Jul,
+			SUM(B_Aug*DR12MonEKP_Aug) AS B_Aug,
+			SUM(E_Aug*DR12MonEKP_Aug) AS E_Aug,
+			SUM(V_Aug*DR12MonEKP_Aug) AS V_Aug,
+			SUM(EinkWertKonsi_Aug) AS EinkWertKonsi_Aug,
+			SUM(B_Sep*DR12MonEKP_Sep) AS B_Sep,
+			SUM(E_Sep*DR12MonEKP_Sep) AS E_Sep,
+			SUM(V_Sep*DR12MonEKP_Sep) AS V_Sep,
+			SUM(EinkWertKonsi_Sep) AS EinkWertKonsi_Sep,
+			SUM(B_Okt*DR12MonEKP_Okt) AS B_Okt,
+			SUM(E_Okt*DR12MonEKP_Okt) AS E_Okt,
+			SUM(V_Okt*DR12MonEKP_Okt) AS V_Okt,
+			SUM(EinkWertKonsi_Okt) AS EinkWertKonsi_Okt,
+			SUM(B_Nov*DR12MonEKP_Nov) AS B_Nov,
+			SUM(E_Nov*DR12MonEKP_Nov) AS E_Nov,
+			SUM(V_Nov*DR12MonEKP_Nov) AS V_Nov,
+			SUM(EinkWertKonsi_Nov) AS EinkWertKonsi_Nov,
+			SUM(B_Dez*DR12MonEKP_Dez) AS B_Dez,
+			SUM(E_Dez*DR12MonEKP_Dez) AS E_Dez,
+			SUM(V_Dez*DR12MonEKP_Dez) AS V_Dez,
+			SUM(EinkWertKonsi_Dez) AS EinkWertKonsi_Dez
+
+		FROM
+		(
+			SELECT
+				tblInvQuanOnHand.D17_PTR,
+				tblInvQuanOnHand.Bezeichnung,
+				tblInvQuanOnHand.Lagereinheit,
+				tblInvQuanOnHand.PRODUCT_NAME,
+				tblInvQuanOnHand.PRODUCT_GROUP_NAME,
+				tblInvQuanOnHand.Verrpreis,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(RTRIM(STR(YEAR(GETDATE())-1))) + '.12'
+			), 0) AS FLOAT) AS B_VJ_Dez,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS E_VJ_Dez,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())-1
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12 
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_VJ_Dez,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.12.' + LTRIM(STR(YEAR(GETDATE())-2)), '31.12.' + LTRIM(STR(YEAR(GETDATE())-1))) AS DR12MonEKP_VJ_Dez,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())-1
+						AND MONTH(dbo.DATA0070.PO_DATE) = 12 
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_VJ_Dez,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.01'
+			), 0) AS FLOAT) AS B_Jan,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.01.' + LTRIM(STR(YEAR(GETDATE()))), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jan,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 1
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jan,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.01.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.01.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jan,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 1 
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jan,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.02'
+			), 0) AS FLOAT) AS B_Feb,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.02.' + LTRIM(STR(YEAR(GETDATE()))), CASE WHEN ISDATE(CAST(YEAR(GETDATE()) AS char(4)) + '0229') = 1 THEN '29' ELSE '28' END + '.02.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Feb,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 2
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Feb,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '28.02.' + LTRIM(STR(YEAR(GETDATE())-1)), '28.02.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Feb,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 2
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Feb,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.03'
+			), 0) AS FLOAT) AS B_Mrz,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.03.' + LTRIM(STR(YEAR(GETDATE()))), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mrz,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 3
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Mrz,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '31.03.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.03.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mrz,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 3
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Mrz,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.04'
+			), 0) AS FLOAT) AS B_Apr,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE()))), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Apr,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 4
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Apr,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.04.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.04.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Apr,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 4
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Apr,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.05'
+			), 0) AS FLOAT) AS B_Mai,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE()))), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Mai,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 5
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Mai,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.05.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.05.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Mai,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 5
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Mai,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.06'
+			), 0) AS FLOAT) AS B_Jun,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE()))), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jun,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 6
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jun,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.06.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.06.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jun,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 6
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jun,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.07'
+			), 0) AS FLOAT) AS B_Jul,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE()))), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Jul,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 7
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Jul,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.07.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.07.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Jul,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 7
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Jul,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.08'
+			), 0) AS FLOAT) AS B_Aug,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE()))), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Aug,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 8
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Aug,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.08.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.08.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Aug,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 8
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Aug,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.09'
+			), 0) AS FLOAT) AS B_Sep,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE()))), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Sep,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 9
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Sep,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.09.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.09.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Sep,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 9
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Sep,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.10'
+			), 0) AS FLOAT) AS B_Okt,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE()))), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Okt,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 10
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Okt,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.10.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.10.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Okt,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 10
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Okt,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.11'
+			), 0) AS FLOAT) AS B_Nov,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE()))), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Nov,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 11
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Nov,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.11.' + LTRIM(STR(YEAR(GETDATE())-1)), '30.11.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Nov,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 11
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Nov,
+			-----------------------------------------------
+			CAST(ISNULL((
+					SELECT TOP 1  SUM(tmpArt.LgMg) AS RES 
+					FROM @tblInvArtGrp AS tmpArt 
+					WHERE tmpArt.D17_PTR=tblInvQuanOnHand.D17_PTR AND tmpArt.JahrMonat = LTRIM(STR(YEAR(GETDATE()))) + '.12'
+			), 0) AS FLOAT) AS B_Dez,
+			dbo.F_dsi_EKMengeGGP(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE()))), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS E_Dez,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = YEAR(GETDATE())
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = 12
+					AND dbo.DATA0095.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS FLOAT) AS V_Dez,
+			dbo.F_dsi_12M_DEKPreis_gew(tblInvQuanOnHand.D17_PTR, '01.12.' + LTRIM(STR(YEAR(GETDATE())-1)), '31.12.' + LTRIM(STR(YEAR(GETDATE())))) AS DR12MonEKP_Dez,
+			ISNULL((
+				SELECT  
+					SUM(
+						(dbo.DATA0071.PRICE/dbo.DATA0070.EXCHANGE_RATE)
+						*
+						(dbo.DATA0071.QUAN_ORD/LIVE.dbo.F_dsi_ConvFact(dbo.DATA0071.INVT_PTR, dbo.DATA0023.RKEY))
+						) AS RES 
+				FROM         dbo.DATA0070 INNER JOIN
+									  dbo.DATA0071 ON dbo.DATA0070.RKEY = dbo.DATA0071.PO_PTR INNER JOIN
+									  dbo.DATA0023 ON dbo.DATA0070.SUPPLIER_POINTER = dbo.DATA0023.RKEY
+				WHERE     
+						(dbo.DATA0070.PURCHASE_ORDER_TYPE = 2) 
+						AND YEAR(dbo.DATA0070.PO_DATE) = YEAR(GETDATE())
+						AND MONTH(dbo.DATA0070.PO_DATE) = 12
+						AND dbo.DATA0071.INVT_PTR = tblInvQuanOnHand.D17_PTR
+			), 0) AS EinkWertKonsi_Dez
+			-----------------------------------------------
+
+
+			FROM
+			(
+				SELECT
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+				FROM         
+					@tblInvArtGrp AS tblInvArt
+				WHERE     
+					(tblInvArt.LgMg > CAST(@para1 AS FLOAT))
+				GROUP BY
+					Bezeichnung,
+					D17_PTR,
+					Lagereinheit,
+					PRODUCT_NAME,
+					PRODUCT_GROUP_NAME,
+					Verrpreis
+			) AS tblInvQuanOnHand
+		) AS tblProdCode
+	END
+
+	IF @Case_ = 'EntwicklungRHBMonate'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255),
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255),
+		--@para4 varchar(255)
+		--SET @para = 'Black Hole %'
+		--SET @para1 = '-1'
+		--SET @para3 = '31.10.2014'	--Datum Von
+		--SET @para4 = '31.01.2015'	--Datum Bis
+
+		DECLARE
+			@myAddMonthDate as smalldatetime,
+			@myJahrMonat varchar(7),
+			@myJahrMonatBis varchar(7)
+		SET @myJahrMonatBis = LTRIM(RTRIM(STR(YEAR(CONVERT(DATETIME, @para4, 103)))))   + '.' + CASE WHEN MONTH(CONVERT(DATETIME, @para4, 103))<10 THEN '0' + LTRIM(RTRIM(STR(MONTH(CONVERT(DATETIME, @para4, 103))))) ELSE LTRIM(RTRIM(STR(MONTH(CONVERT(DATETIME, @para4, 103))))) END
+		SET @myJahrMonat = LTRIM(RTRIM(STR(YEAR(CONVERT(DATETIME, @para3, 103)))))   + '.' + CASE WHEN MONTH(CONVERT(DATETIME, @para3, 103))<10 THEN '0' + LTRIM(RTRIM(STR(MONTH(CONVERT(DATETIME, @para3, 103))))) ELSE LTRIM(RTRIM(STR(MONTH(CONVERT(DATETIME, @para3, 103))))) END
+
+		DECLARE @tblMonate table(
+								JahrMonat varchar(7), 
+								MonatJahr varchar(7), 
+								Datum smalldatetime, 
+								D17_PTR NUMERIC(10, 0), 
+								Bezeichnung  char(100),
+								Lagereinheit varchar(5),
+								PRODUCT_NAME char(30),
+								PRODUCT_GROUP_NAME char(30),
+								Verrpreis DECIMAL(20, 7),
+								UmrechFaktor DECIMAL(20, 7),
+								QUAN_ON_HAND DECIMAL(20, 7), 
+								CONSIGN_ONHAND_QTY DECIMAL(20, 7)
+								)
+
+		WHILE @myJahrMonat <= @myJahrMonatBis
+		BEGIN
+			IF ISNULL(CAST(@para5 AS INT), 0)=0 
+			BEGIN
+				INSERT @tblMonate(
+									JahrMonat, 
+									MonatJahr,
+									Datum, 
+									D17_PTR,
+									Bezeichnung,
+									Lagereinheit,
+									PRODUCT_NAME,
+									PRODUCT_GROUP_NAME,
+									Verrpreis,
+									UmrechFaktor,
+									QUAN_ON_HAND,
+									CONSIGN_ONHAND_QTY
+									)
+				SELECT 
+					@myJahrMonat AS JahrMonat, 
+					RIGHT(@myJahrMonat, 2) + '.' + LEFT(@myJahrMonat, 4) AS MonatJahr, 
+					CONVERT(DATETIME, '01.' + RTRIM(LTRIM(RIGHT(@myJahrMonat, 2))) + '.' + RTRIM(LTRIM(LEFT(@myJahrMonat, 4))), 103),
+					dbo.DATA0017.RKEY AS D17_PTR, 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE 
+							RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END AS Bezeichnung, 
+					dbo.DATA0002.UNIT_CODE AS Lagereinheit, 
+					dbo.DATA0008.PRODUCT_NAME, 
+					dbo.DATA0007.PRODUCT_GROUP_NAME,
+					dbo.DATA0017.STD_COST AS Verrpreis,
+					dbo.DATA0017.STOCK_PURCH AS UmrechFaktor,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY
+				FROM         dbo.DATA0008 INNER JOIN
+									  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+									  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE     
+						(dbo.DATA0017.TTYPE = 'R') 
+						AND (
+								dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+								OR 
+								dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+							)
+						AND 
+							CASE 
+								WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+									RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+								ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+							END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+						AND
+							dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+
+				SET @myAddMonthDate = DateAdd(month,1, CONVERT(DATETIME, '01.' + RTRIM(LTRIM(RIGHT(@myJahrMonat, 2))) + '.' + RTRIM(LTRIM(LEFT(@myJahrMonat, 4))), 103))
+				SET @myJahrMonat = LTRIM(RTRIM(STR(YEAR(@myAddMonthDate))))   + '.' + CASE WHEN LTRIM(RTRIM(STR(MONTH(@myAddMonthDate))))<10 THEN '0' + LTRIM(RTRIM(STR(MONTH(@myAddMonthDate)))) ELSE LTRIM(RTRIM(STR(MONTH(@myAddMonthDate)))) END
+
+				--PRINT @myJahrMonat
+				--PRINT @myJahrMonatBis
+			END
+			ELSE
+			BEGIN
+				INSERT @tblMonate(
+									JahrMonat, 
+									MonatJahr,
+									Datum, 
+									D17_PTR,
+									Bezeichnung,
+									Lagereinheit,
+									PRODUCT_NAME,
+									PRODUCT_GROUP_NAME,
+									Verrpreis,
+									UmrechFaktor,
+									QUAN_ON_HAND,
+									CONSIGN_ONHAND_QTY
+									)
+				SELECT 
+					@myJahrMonat AS JahrMonat, 
+					RIGHT(@myJahrMonat, 2) + '.' + LEFT(@myJahrMonat, 4) AS MonatJahr, 
+					CONVERT(DATETIME, '01.' + RTRIM(LTRIM(RIGHT(@myJahrMonat, 2))) + '.' + RTRIM(LTRIM(LEFT(@myJahrMonat, 4))), 103),
+					dbo.DATA0017.RKEY AS D17_PTR, 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE 
+							RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END AS Bezeichnung, 
+					dbo.DATA0002.UNIT_CODE AS Lagereinheit, 
+					dbo.DATA0008.PRODUCT_NAME, 
+					dbo.DATA0007.PRODUCT_GROUP_NAME,
+					dbo.DATA0017.STD_COST AS Verrpreis,
+					dbo.DATA0017.STOCK_PURCH AS UmrechFaktor,
+					dbo.DATA0017.QUAN_ON_HAND,
+					dbo.DATA0017.CONSIGN_ONHAND_QTY
+
+				FROM         dbo.DATA0008 INNER JOIN
+									  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+									  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+									  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+				WHERE   dbo.DATA0017.RKEY = CAST(@para5 AS INT)  
+						--(dbo.DATA0017.TTYPE = 'R') 
+						--AND (
+						--		dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+						--		OR 
+						--		dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+						--	)
+						--AND
+							--CASE 
+							--	WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							--		RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+							--	ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+							--END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+						--AND
+						--	dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+
+				SET @myAddMonthDate = DateAdd(month,1, CONVERT(DATETIME, '01.' + RTRIM(LTRIM(RIGHT(@myJahrMonat, 2))) + '.' + RTRIM(LTRIM(LEFT(@myJahrMonat, 4))), 103))
+				SET @myJahrMonat = LTRIM(RTRIM(STR(YEAR(@myAddMonthDate))))   + '.' + CASE WHEN LTRIM(RTRIM(STR(MONTH(@myAddMonthDate))))<10 THEN '0' + LTRIM(RTRIM(STR(MONTH(@myAddMonthDate)))) ELSE LTRIM(RTRIM(STR(MONTH(@myAddMonthDate)))) END
+			END
+
+		END
+
+
+
+		SELECT 
+			*, 
+			dbo.F_dsi_EKMengeGGP(tblMonate_.D17_PTR, '01.' + MonatJahr, LTRIM(RTRIM(STR(DAY(DATEADD(d, -1, DATEADD(m, DATEDIFF(m, 0, '01.' + MonatJahr) + 1, 0)))))) + '.' + MonatJahr) AS EeinkaufGGP,
+			dbo.F_dsi_EKMengeKonsi(tblMonate_.D17_PTR, '01.' + MonatJahr, LTRIM(RTRIM(STR(DAY(DATEADD(d, -1, DATEADD(m, DATEDIFF(m, 0, '01.' + MonatJahr) + 1, 0)))))) + '.' +  MonatJahr) AS EeinkaufKonsi,
+			CAST(ISNULL((
+				SELECT TOP 1
+					SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+				FROM dbo.DATA0095 
+				WHERE 
+					dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+					AND YEAR(dbo.DATA0095.ENTERED_DATE) = CAST(LEFT(JahrMonat, 4) AS INT)
+					AND MONTH(dbo.DATA0095.ENTERED_DATE) = CAST(LEFT(MonatJahr, 2) AS INT)
+					AND dbo.DATA0095.INVT_PTR = tblMonate_.D17_PTR
+			), 0) AS FLOAT) AS Verbrauch,
+			dbo.F_dsi_12M_DEKPreis_gew(tblMonate_.D17_PTR, '01.' + MonatJahr, LTRIM(RTRIM(STR(DAY(DATEADD(d, -1, DATEADD(m, DATEDIFF(m, 0, '01.' + MonatJahr) + 1, 0)))))) + '.' +  MonatJahr) AS DR12MonEKPreis
+
+		FROM @tblMonate AS tblMonate_
+		ORDER BY
+			Bezeichnung,
+			JahrMonat
+	END
+
+	IF @Case_ = 'EntwicklungRHBMonateGrp'
+	BEGIN
+		--DECLARE 
+		--@para varchar(255),
+		--@para1 varchar(255),
+		--@para2 varchar(255),
+		--@para3 varchar(255),
+		--@para4 varchar(255)
+		--SET @para = 'Black Hole %'
+		--SET @para1 = '-1'
+		--SET @para3 = '31.10.2014'	--Datum Von
+		--SET @para4 = '31.01.2015'	--Datum Bis
+
+		DECLARE @tblMonateGrp table(D17_PTR NUMERIC(10, 0), Bezeichnung  char(100), UmrechFaktor DECIMAL(20, 7), VerrPreis DECIMAL(20, 7), QUAN_ON_HAND DECIMAL(20, 7), CONSIGN_ONHAND_QTY DECIMAL(20, 7))
+
+		INSERT @tblMonateGrp(D17_PTR, Bezeichnung, UmrechFaktor, VerrPreis, QUAN_ON_HAND, CONSIGN_ONHAND_QTY)
+		SELECT DISTINCT
+			dbo.DATA0017.RKEY AS D17_PTR, 
+			CASE 
+				WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+					RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+				ELSE 
+					RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+			END AS Bezeichnung,
+			dbo.DATA0017.STOCK_PURCH AS UmrechFaktor,
+			dbo.DATA0017.STD_COST AS VerrPreis,
+			dbo.DATA0017.QUAN_ON_HAND,
+			dbo.DATA0017.CONSIGN_ONHAND_QTY
+
+		FROM         dbo.DATA0008 INNER JOIN
+							  dbo.DATA0007 ON dbo.DATA0008.PR_GRP_POINTER = dbo.DATA0007.RKEY INNER JOIN
+							  dbo.DATA0017 ON dbo.DATA0008.RKEY = dbo.DATA0017.PROD_CODE_SELL_PTR INNER JOIN
+							  dbo.DATA0002 ON dbo.DATA0017.STOCK_UNIT_PTR = dbo.DATA0002.RKEY
+		WHERE     
+				(dbo.DATA0017.TTYPE = 'R') 
+				AND (
+						dbo.DATA0017.QUAN_ON_HAND > CAST(@para1 AS FLOAT) 
+						OR 
+						dbo.DATA0017.CONSIGN_ONHAND_QTY > CAST(@para1 AS FLOAT)
+					)
+				AND 
+					CASE 
+						WHEN RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER)<>'' THEN 
+							RTRIM(dbo.DATA0017.LONG_INVENTORY_PART_NUMBER) 
+						ELSE RTRIM(dbo.DATA0017.INV_PART_DESCRIPTION) 
+					END  COLLATE SQL_Latin1_General_CP1_CI_AS LIKE @para + '%'
+				AND
+					dbo.DATA0007.RKEY IN (SELECT D7_PTR FROM LIVE2.dbo.Entwicklung_RHB_WG_TMP WHERE TS=@para2)
+
+		SELECT
+			D17_PTR,
+			Bezeichnung,
+			ISNULL((
+					CASE
+						WHEN (SELECT COUNT(dbo.DATA0028.RKEY) AS RES FROM dbo.DATA0028 WHERE dbo.DATA0028.INVENTORY_PTR=D17_PTR)=1 THEN
+							(SELECT TOP 1 dbo.DATA0028.SUPPLIER_PART_NO FROM dbo.DATA0028 WHERE dbo.DATA0028.INVENTORY_PTR=D17_PTR)
+						ELSE
+							CASE
+								WHEN (SELECT COUNT(dbo.DATA0028.RKEY) AS RES FROM dbo.DATA0028 WHERE dbo.DATA0028.INVENTORY_PTR=D17_PTR)>1 THEN
+									--'mehr als 1 Lief.-Bez.'
+									(
+										SELECT TOP 1 dbo.DATA0028.SUPPLIER_PART_NO 
+										FROM dbo.DATA0028 INNER JOIN  dbo.DATA0017 ON dbo.DATA0028.INVENTORY_PTR = dbo.DATA0017.RKEY 
+											INNER JOIN dbo.DATA0023 ON dbo.DATA0028.SUPPLIER_PTR = dbo.DATA0023.RKEY 
+										WHERE dbo.DATA0028.INVENTORY_PTR=D17_PTR AND dbo.DATA0017.AVL_FLAG = 'Y'
+									)
+								ELSE
+									'keine Lief.Bez.'
+							END
+					END
+			), '') AS Lieferantenbezeichnung,
+			UmrechFaktor,
+			SUM(EeinkaufGGP) AS EeinkaufGGP,
+			SUM(EeinkaufKonsi) AS EeinkaufKonsi,
+			SUM(Verbrauch) AS Verbrauch,
+			AVG(DR12MonEKPreis) AS DR12MonEKPreis,
+			VerrPreis,
+			QUAN_ON_HAND,
+			CONSIGN_ONHAND_QTY,
+			ISNULL((
+				SELECT
+					AVG(SUM_LgMg) AS AVG_LgMg_GGP
+				FROM
+				(
+					SELECT 
+						RKEY,
+						JahrMonat, 
+						SUM(LgMg) AS SUM_LgMg
+					FROM 
+						LIVE2.dbo.PEX_Inventurbestaende_RHB 
+					WHERE 
+						--LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY=D17_PTR
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum >= CONVERT(DATETIME, @para3, 103) 
+						AND LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum <= CONVERT(DATETIME, @para4, 103)
+					GROUP BY
+						RKEY,
+						JahrMonat
+				) AS tblDurchschnittLgMgGGP
+				WHERE
+					tblDurchschnittLgMgGGP.RKEY=D17_PTR
+			), 0) AS Durchschnitt_LB_GGP,
+			ISNULL((
+				SELECT
+					AVG(SUM_LgMg_Konsi) AS AVG_LgMg_Konsi
+				FROM
+				(
+					SELECT 
+						RKEY,
+						JahrMonat, 
+						SUM(LgMg_Konsi) AS SUM_LgMg_Konsi
+					FROM 
+						LIVE2.dbo.PEX_Inventurbestaende_RHB 
+					WHERE 
+						--LIVE2.dbo.PEX_Inventurbestaende_RHB.RKEY=D17_PTR
+						LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum >= CONVERT(DATETIME, @para3, 103) 
+						AND LIVE2.dbo.PEX_Inventurbestaende_RHB.Datum <= CONVERT(DATETIME, @para4, 103)
+					GROUP BY
+						RKEY,
+						JahrMonat
+				) AS tblDurchschnittLgMgKonsi
+				WHERE
+					tblDurchschnittLgMgKonsi.RKEY=D17_PTR
+			), 0) AS Durchschnitt_LB_Konsi
+
+		FROM
+		(
+			SELECT 
+				D17_PTR,
+				Bezeichnung,
+				UmrechFaktor,
+				dbo.F_dsi_EKMengeGGP(tblMonate_.D17_PTR, @para3, @para4) AS EeinkaufGGP,
+				dbo.F_dsi_EKMengeKonsi(tblMonate_.D17_PTR, @para3, @para4) AS EeinkaufKonsi,
+				CAST(ISNULL((
+					SELECT TOP 1
+						SUM(CASE WHEN TRAN_TP=23 THEN (-1)*QUANTITY ELSE QUANTITY END) AS RES
+					FROM dbo.DATA0095 
+					WHERE 
+						dbo.DATA0095.TRAN_TP IN (13, 14, 15, 16, 23)
+						AND dbo.DATA0095.ENTERED_DATE >= CONVERT(DATETIME, @para3, 103) 
+						AND dbo.DATA0095.ENTERED_DATE <= CONVERT(DATETIME, @para4, 103) 
+						AND dbo.DATA0095.INVT_PTR = tblMonate_.D17_PTR
+				), 0) AS FLOAT) AS Verbrauch,
+				dbo.F_dsi_12M_DEKPreis_gew(tblMonate_.D17_PTR, @para3, @para4) AS DR12MonEKPreis,
+				VerrPreis,
+				QUAN_ON_HAND,
+				CONSIGN_ONHAND_QTY
+
+			FROM @tblMonateGrp AS tblMonate_
+		) AS tblGrp
+		GROUP BY
+			D17_PTR,
+			Bezeichnung,
+			UmrechFaktor,
+			VerrPreis,
+			QUAN_ON_HAND,
+			CONSIGN_ONHAND_QTY
+		ORDER BY
+			(SUM(EeinkaufGGP)+SUM(EeinkaufKonsi)) DESC
+	END
+END

@@ -1,0 +1,6 @@
+
+
+
+POGLEDAJ:
+bloginfo() funkcija
+https://developer.wordpress.org/reference/functions/bloginfo/
