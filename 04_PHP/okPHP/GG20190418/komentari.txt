@@ -1,0 +1,31 @@
+Overriding - prepravizi, pregaziti funkciju u chilg klasi koja je vec definisana u perent clasi
+Abstraktna klasa je samo roditelj. od nje se ne prave objekti ali njena svojstva nasledjuju deca.
+Abstraktna klasa ima strukturu bitnu da decu da je naslede, ali nema nikakvu funkcionalnost te je besmisleno od nje praviti objekat.
+Ona moze da bude child neke parent klase bilo kog tipa.
+
+http://knjige.kombib.rs/php-mysql-javascript-u-jednoj-knjizi
+PHP 7, MYSQL I JAVASCRIPT U JEDNOJ KNJIZI
+Autor: Julie C. Meloni
+Broj strana: 704
+Godina izdanja: 2018.
+Naša povoljnija cena: 2100 RSD
+
+BOLJA KNJIGA O'Raily
+
+__construct() - konstruktor, sistemska funkcija, izvrsava se cim se pzove i napravi objekat klase
+
+Klasa: atributi (varijable), metode (funkcije)
+parent class = superklasa, child class = podklasa
+
+public (atribut i metoda) - dostupno u celoj aplikaciji
+private  (atribut i metoda) - dostupno i parent i child, u okviru grane
+private  (atribut i metoda) - dostupno u okviru klase gde je napisano
+
+void ?
+static ?
+
+DOMACI:
+napravi abstraktnu i obicnu klasu (strudent, kosarkas), funkciju polozi ispit, eksperimentisati sa public, protected i private
+
+
+

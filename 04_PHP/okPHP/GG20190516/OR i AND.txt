@@ -1,0 +1,9 @@
+Zdravo svima,
+hteo bih da podelim sa vama zakljuèke o OR i AND.
+1. OR predstavlja opciju i daje izbor da se izvrši uslov sa leve ili sa desne strane operatera OR (ili oba)
+2. AND nas uslovljava da se moraju izvršiti oba uslova sa obe strane operatera AND
+3. ako se jedan uslov nalazi izmeðu operatera OR i AND, "šèepaæe" ga operater AND i usloviti da mora da se izvrši zajedno sa onim uslovom sa druge strane AND-a
+4. ako imamo više operatera AND u nizu ( 1 AND 2 AND 3 AND 4 AND 5), svi uslovi (1,2,3,4,5) moraju biti T (true - izvodljivi) da bi se izvršili
+5. ako je bar jedan od uslova vezanih operateroma AND u nizu ( 1 AND 2 AND 3 AND 4 AND 5) F (false), onda se svi uslovi (ceo niz, cela grupa) tretiraju kao F i ne izvršava se ni jedan od njih
+6. takoðe, ništa se ne izvršava pre ili posle, veæ se sve izvršava istovremeno
+
