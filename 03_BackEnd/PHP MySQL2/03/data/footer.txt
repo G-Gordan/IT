@@ -1,1 +1,0 @@
-<h4 style="text-align: right;">Knez Mihailova 6/VI <br /> 011/32-81-720, 011/32-81-614, 011/32-82-995 <br /> cetskola@cet.rs <br /> Radno vreme: 0-25 casova alert('ovaj sajt bas nista ne valja');</h4>

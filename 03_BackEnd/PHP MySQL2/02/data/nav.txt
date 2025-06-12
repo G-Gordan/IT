@@ -1,4 +1,0 @@
-index.php|Pocetna
-ponuda.php|Ponuda
-kontakt.php|Kontakt
-utisci.php|Utisci
